@@ -2,11 +2,11 @@ const {
   ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionFlagsBits,
   AttachmentBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle,
 } = require('discord.js');
-const { getSettings, updateSettings, tickets } = require('../../database');
 const { fillPlaceholders, ok, fail, sendLog } = require('../utils');
 const config = require('../../config');
 
 async function postPanel(channel) {
+  const { getSettings } = channel.client.db;
   const s = getSettings(channel.guild.id).tickets;
   const embed = new EmbedBuilder().setColor(config.color).setTitle(s.panelTitle).setDescription(s.panelDescription);
   const row = new ActionRowBuilder().addComponents(
@@ -30,6 +30,7 @@ async function showOpenModal(interaction) {
 }
 
 async function openTicket(interaction, topic = '') {
+  const { getSettings, updateSettings, tickets } = interaction.client.db;
   const { guild, member } = interaction;
   const s = getSettings(guild.id).tickets;
   if (!s.enabled) return interaction.reply({ embeds: [fail('Tiketi su isključeni na ovom serveru.')], flags: MessageFlags.Ephemeral });
@@ -80,6 +81,7 @@ async function openTicket(interaction, topic = '') {
 }
 
 async function claimTicket(interaction) {
+  const { getSettings, updateSettings, tickets } = interaction.client.db;
   const s = getSettings(interaction.guild.id).tickets;
   if (!isStaff(interaction.member, s)) return interaction.reply({ embeds: [fail('Samo tim može preuzeti tiket.')], flags: MessageFlags.Ephemeral });
   return interaction.reply({ embeds: [ok(`${interaction.user} je preuzeo/la ovaj tiket.`)] });
@@ -106,6 +108,7 @@ async function buildTranscript(channel) {
 }
 
 async function closeTicket(interaction, reason = '') {
+  const { getSettings, updateSettings, tickets } = interaction.client.db;
   const { guild, channel } = interaction;
   const t = tickets.byChannel(channel.id);
   if (!t || t.status !== 'open') return interaction.reply({ embeds: [fail('Ovo nije otvoreni tiket.')], flags: MessageFlags.Ephemeral });

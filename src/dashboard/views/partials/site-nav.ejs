@@ -1,0 +1,19 @@
+<header class="site-nav">
+  <div class="wrap nav-inner">
+    <%- include('logo') %>
+    <nav class="nav-links" id="navLinks">
+      <a href="/catalog">Botovi</a>
+      <a href="/#moduli">Moduli</a>
+      <a href="/pricing">Cijene</a>
+      <a href="/#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <% if (user) { %>
+        <a class="btn btn-primary" href="/app"><img class="avatar-xs" src="<%= user.avatar %>" alt="">Dashboard</a>
+      <% } else { %>
+        <a class="btn btn-ghost hide-sm" href="/login">Prijava</a>
+        <a class="btn btn-primary" href="/login">Započni besplatno</a>
+      <% } %>
+    </div>
+  </div>
+</header>

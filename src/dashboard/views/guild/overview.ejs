@@ -1,5 +1,5 @@
-<%- include('../partials/guildStart') %>
-<h1>Pregled</h1>
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Pregled', icon: 'grid', sub: 'Statistika i aktivnost servera.' }) %>
 <div class="stat-grid">
   <% [['Članovi', counts.members], ['Kanali', counts.channels], ['Uloge', counts.roles], ['Upozorenja', counts.warnings],
       ['Mod slučajevi', counts.cases], ['Otvoreni tiketi', counts.openTickets], ['Rangirani članovi', counts.ranked], ['Custom komande', counts.customCommands]
@@ -55,4 +55,4 @@
     <% } %>
   </div>
 </div>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

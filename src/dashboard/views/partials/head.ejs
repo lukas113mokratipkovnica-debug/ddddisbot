@@ -3,27 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= typeof title !== 'undefined' ? title + ' • ' : '' %><%= bot ? bot.username : 'Bot' %> Dashboard</title>
-  <link rel="icon" href="<%= bot ? bot.displayAvatarURL({ size: 64 }) : '' %>">
+  <title><%= typeof title !== 'undefined' ? title + ' · ' : '' %><%= brand %></title>
+  <meta name="description" content="<%= brand %> — napravi vlastitog Discord bota bez kodiranja. Moderacija, leveling, ekonomija, tiketi, giveaway i još 20+ modula.">
+  <% if (brandLogo) { %><link rel="icon" href="<%= brandLogo %>"><% } %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-<header class="topbar">
-  <a class="brand" href="/">
-    <% if (bot) { %><img src="<%= bot.displayAvatarURL({ size: 64 }) %>" alt=""><% } %>
-    <span><%= bot ? bot.username : 'Bot' %></span>
-  </a>
-  <nav class="topnav">
-    <a href="/dashboard">Serveri</a>
-    <a href="<%= inviteUrl %>" target="_blank" rel="noopener">Dodaj bota</a>
-    <% if (user) { %>
-      <span class="me"><img src="<%= user.avatar %>" alt=""><%= user.username %></span>
-      <a class="btn btn-ghost btn-sm" href="/logout">Odjava</a>
-    <% } else { %>
-      <a class="btn btn-primary btn-sm" href="/login">Prijava s Discordom</a>
-    <% } %>
-  </nav>
-</header>
-<% if (flash) { %>
-  <div class="flash flash-<%= flash.type %>" id="flash"><%= flash.msg %></div>
-<% } %>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
+<%- include('icons') %>
+<% if (flash) { %><div class="toast toast-<%= flash.type %>" id="toast" role="status"><svg class="ic"><use href="#i-<%= flash.type === 'success' ? 'check' : 'zap' %>"/></svg><span><%= flash.msg %></span></div><% } %>

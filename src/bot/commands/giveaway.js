@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
-const { giveaways } = require('../../database');
 const gw = require('../systems/giveaways');
 const { ok, fail, parseDuration, formatDuration } = require('../utils');
 
@@ -26,7 +25,7 @@ module.exports = [
         return i.reply({ embeds: [ok(`Giveaway #${g.id} pokrenut u ${ch} na ${formatDuration(ms)}.`)], flags: MessageFlags.Ephemeral });
       }
       const id = i.options.getInteger('id');
-      const g = giveaways.get(id);
+      const g = i.client.db.giveaways.get(id);
       if (!g || g.guild_id !== i.guild.id) return i.reply({ embeds: [fail('Giveaway nije pronađen.')], flags: MessageFlags.Ephemeral });
       if (sub === 'end' && g.ended) return i.reply({ embeds: [fail('Već je završen.')], flags: MessageFlags.Ephemeral });
       if (sub === 'reroll' && !g.ended) return i.reply({ embeds: [fail('Giveaway još traje.')], flags: MessageFlags.Ephemeral });

@@ -1,0 +1,52 @@
+<%- include('../partials/app-start') %>
+<% const E = settings.economy; %>
+<%- include('../partials/pagehead', { heading: 'Ekonomija', icon: 'coins', sub: 'Komande: <code>/balance</code> <code>/daily</code> <code>/work</code> <code>/pay</code> <code>/deposit</code> <code>/withdraw</code> <code>/gamble</code> <code>/slots</code> <code>/rob</code> <code>/shop</code> <code>/buy</code> <code>/inventory</code> <code>/richest</code> <code>/eco</code>' }) %>
+<form method="post" action="<%= base %>/save/economy">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <h3>Valuta</h3>
+    <div class="grid3">
+      <label>Naziv valute<input name="currency" maxlength="20" value="<%= E.currency %>"></label>
+      <label>Emoji<input name="emoji" maxlength="64" value="<%= E.emoji %>"></label>
+      <label>Početno stanje<input type="number" name="startBalance" min="0" value="<%= E.startBalance %>"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Zarada</h3>
+    <div class="grid3">
+      <label>Dnevna nagrada<input type="number" name="dailyAmount" min="0" value="<%= E.dailyAmount %>"></label>
+      <label>Posao min<input type="number" name="workMin" min="0" value="<%= E.workMin %>"></label>
+      <label>Posao max<input type="number" name="workMax" min="0" value="<%= E.workMax %>"></label>
+      <label>Cooldown posla (sek)<input type="number" name="workCooldown" min="0" max="86400" value="<%= E.workCooldown %>"></label>
+      <label>Šansa uspješne pljačke (%)<input type="number" name="robChance" min="0" max="100" value="<%= E.robChance %>"></label>
+    </div>
+    <%- include('../partials/toggle', { name: 'robEnabled', checked: E.robEnabled, label: 'Dozvoli /rob' }) %>
+  </div>
+  <div class="card">
+    <h3>🛒 Trgovina</h3>
+    <p class="hint">Artikli mogu davati ulogu (npr. VIP). Do 25 artikala.</p>
+    <div id="shop-rows">
+      <% (E.shop.length ? E.shop : [{ id: '', name: '', price: '', role: '', description: '' }]).forEach(it => { %>
+        <div class="row shop-row">
+          <input type="hidden" name="itemId" value="<%= it.id %>">
+          <input name="itemName" placeholder="Naziv" maxlength="60" value="<%= it.name %>">
+          <input name="itemPrice" type="number" min="0" placeholder="Cijena" value="<%= it.price %>" class="w-sm">
+          <%- include('../partials/roleSelect', { name: 'itemRole', value: it.role, placeholder: '— bez uloge —', assignableOnly: true }) %>
+          <input name="itemDesc" placeholder="Opis" maxlength="200" value="<%= it.description %>">
+          <button type="button" class="icon-btn" data-remove-row title="Ukloni"><svg class="ic"><use href="#i-trash"/></svg></button>
+        </div>
+      <% }) %>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" data-add-row="shop-rows"><svg class="ic"><use href="#i-plus"/></svg>Dodaj artikl</button>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<div class="card">
+  <div class="row between"><h3>💰 Najbogatiji</h3>
+    <form method="post" action="<%= base %>/economy/reset" onsubmit="return confirm('Resetirati novac SVIH članova?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Resetiraj sve</button></form></div>
+  <% if (!richest.length) { %><p class="muted">Još nema podataka.</p><% } else { %>
+  <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Član</th><th>Novčanik</th><th>Banka</th><th>Ukupno</th></tr></thead><tbody>
+    <% richest.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td class="user"><img src="<%= userAvatar(r.user_id) %>" alt=""><%= userName(r.user_id) %></td><td><%= r.wallet.toLocaleString('hr-HR') %></td><td><%= r.bank.toLocaleString('hr-HR') %></td><td><b><%= E.emoji %> <%= r.total.toLocaleString('hr-HR') %></b></td></tr><% }) %>
+  </tbody></table></div><% } %>
+</div>
+<%- include('../partials/app-end') %>

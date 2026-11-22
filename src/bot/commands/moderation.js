@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder, MessageFlags } = require('discord.js');
-const { warnings, getSettings } = require('../../database');
 const { ok, fail, logModAction, canModerate, parseDuration, formatDuration } = require('../utils');
 const { thresholdPunish } = require('../systems/automod');
 
@@ -102,12 +101,12 @@ module.exports = [
       const reason = i.options.getString('razlog');
       if (!member) return i.reply({ embeds: [fail('Korisnik nije na serveru.')], flags: MessageFlags.Ephemeral });
       if (member.user.bot) return i.reply({ embeds: [fail('Ne možeš upozoriti bota.')], flags: MessageFlags.Ephemeral });
-      warnings.add(i.guild.id, member.id, i.user.id, reason);
-      const count = warnings.count(i.guild.id, member.id);
+      i.client.db.warnings.add(i.guild.id, member.id, i.user.id, reason);
+      const count = i.client.db.warnings.count(i.guild.id, member.id);
       await dmUser(member.user, i.guild, `Dobio/la si upozorenje (#${count}). Razlog: ${reason}`);
       const id = await logModAction(i.guild, 'warn', member.user, i.user, reason, `Ukupno upozorenja: ${count}`);
       await i.reply({ embeds: [ok(`**${member.user.tag}** je upozoren/a. Ukupno: **${count}**. (slučaj #${id})`)] });
-      const T = getSettings(i.guild.id).automod.warnThreshold;
+      const T = i.client.db.getSettings(i.guild.id).automod.warnThreshold;
       if (T.enabled && count >= T.count && count % T.count === 0) await thresholdPunish(member, T, count);
     },
   },
@@ -117,7 +116,7 @@ module.exports = [
       .addUserOption((o) => o.setName('korisnik').setDescription('Korisnik').setRequired(true)),
     async execute(i) {
       const user = i.options.getUser('korisnik');
-      const list = warnings.list(i.guild.id, user.id);
+      const list = i.client.db.warnings.list(i.guild.id, user.id);
       const e = new EmbedBuilder().setColor(0xfee75c).setTitle(`Upozorenja: ${user.tag}`).setThumbnail(user.displayAvatarURL());
       e.setDescription(list.length
         ? list.slice(0, 20).map((w) => `**#${w.id}** • <t:${Math.floor(w.created_at / 1000)}:d> • <@${w.mod_id}>\n${w.reason || '—'}`).join('\n\n')
@@ -135,11 +134,11 @@ module.exports = [
       const id = i.options.getInteger('id');
       const user = i.options.getUser('korisnik');
       if (id) {
-        const n = warnings.remove(i.guild.id, id);
+        const n = i.client.db.warnings.remove(i.guild.id, id);
         return i.reply({ embeds: [n ? ok(`Upozorenje #${id} obrisano.`) : fail('Nema tog upozorenja.')] });
       }
       if (user) {
-        const n = warnings.clear(i.guild.id, user.id);
+        const n = i.client.db.warnings.clear(i.guild.id, user.id);
         return i.reply({ embeds: [ok(`Obrisano ${n} upozorenja za **${user.tag}**.`)] });
       }
       return i.reply({ embeds: [fail('Navedi `id` ili `korisnik`.')], flags: MessageFlags.Ephemeral });

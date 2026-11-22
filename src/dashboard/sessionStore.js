@@ -1,5 +1,5 @@
 const session = require('express-session');
-const { db } = require('../database');
+const { db } = require('../platform');
 
 class SqliteStore extends session.Store {
   constructor() {

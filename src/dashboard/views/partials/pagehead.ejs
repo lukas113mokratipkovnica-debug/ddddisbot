@@ -1,0 +1,7 @@
+<div class="page-head">
+  <div>
+    <h1><% if (typeof icon !== 'undefined') { %><span class="h-icon"><svg class="ic"><use href="#i-<%= icon %>"/></svg></span><% } %><%= heading %></h1>
+    <% if (typeof sub !== 'undefined' && sub) { %><p class="muted"><%- sub %></p><% } %>
+  </div>
+  <% if (typeof actions !== 'undefined') { %><div class="page-actions"><%- actions %></div><% } %>
+</div>

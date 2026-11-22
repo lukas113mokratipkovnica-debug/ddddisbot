@@ -1,6 +1,6 @@
-<%- include('../partials/guildStart') %>
-<h1>Logovi</h1>
-<form method="post" action="/dashboard/<%= guild.id %>/save/logs">
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Logovi', icon: 'scroll', sub: 'Sve što se događa na serveru, u jednom kanalu.' }) %>
+<form method="post" action="<%= base %>/save/logs">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <%- include('../partials/toggle', { name: 'enabled', checked: settings.logs.enabled, label: 'Logovi uključeni' }) %>
@@ -18,4 +18,4 @@
   </div>
   <%- include('../partials/saveBar') %>
 </form>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

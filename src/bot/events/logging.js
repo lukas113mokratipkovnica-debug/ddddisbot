@@ -1,4 +1,4 @@
-// Multiple log listeners bundled; exported as a pseudo-event registering the rest.
+// Log listeners bundled into one "ready" hook so they can be registered together.
 const { Events, EmbedBuilder, AuditLogEvent } = require('discord.js');
 const { sendLog, truncate } = require('../utils');
 

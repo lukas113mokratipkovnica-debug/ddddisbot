@@ -1,14 +1,10 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType, MessageFlags, version: djsVersion } = require('discord.js');
-const { getSettings } = require('../../database');
 const { ok, fail, formatDuration } = require('../utils');
 const config = require('../../config');
 
-const CATEGORY_NAMES = {
-  moderation: '🛡️ Moderacija', utility: '🔧 Korisno', leveling: '📈 Leveling', giveaway: '🎉 Giveaway',
-  tickets: '🎫 Tiketi', community: '💬 Zajednica',
-};
+const { MODULES } = require('../../modules');
 
-module.exports = [
+const cmds = [
   {
     data: new SlashCommandBuilder().setName('ping').setDescription('Latencija bota'),
     async execute(i) {
@@ -21,14 +17,14 @@ module.exports = [
     data: new SlashCommandBuilder().setName('help').setDescription('Popis svih komandi'),
     async execute(i) {
       const groups = {};
-      for (const cmd of i.client.commands.values()) (groups[cmd.category] ||= []).push(cmd.data);
+      for (const cmd of i.client.commands.values()) (groups[cmd.module] ||= []).push(cmd.data);
       const e = new EmbedBuilder().setColor(config.color).setTitle(`${i.client.user.username} • Komande`)
-        .setDescription(`Sve postavke se mijenjaju na dashboardu: ${config.dashboardUrl}`)
+        .setDescription(`Sve postavke se mijenjaju na dashboardu: ${config.dashboardUrl}/bots/${i.client.botId}/g/${i.guild.id}`)
         .setThumbnail(i.client.user.displayAvatarURL());
       for (const [cat, cmds] of Object.entries(groups)) {
-        e.addFields({ name: CATEGORY_NAMES[cat] || cat, value: cmds.map((c) => `\`/${c.name}\``).join(' ') });
+        e.addFields({ name: cat === 'core' ? 'Osnovno' : MODULES[cat]?.name || cat, value: cmds.map((c) => `\`/${c.name}\``).join(' ') });
       }
-      const s = getSettings(i.guild.id);
+      const s = i.client.db.getSettings(i.guild.id);
       e.setFooter({ text: `Prefix za custom komande: ${s.prefix}` });
       return i.reply({ embeds: [e] });
     },
@@ -36,7 +32,7 @@ module.exports = [
   {
     data: new SlashCommandBuilder().setName('dashboard').setDescription('Link na web dashboard'),
     async execute(i) {
-      return i.reply({ embeds: [ok(`Dashboard: ${config.dashboardUrl}/dashboard/${i.guild.id}`)] });
+      return i.reply({ embeds: [ok(`Dashboard: ${config.dashboardUrl}/bots/${i.client.botId}/g/${i.guild.id}`)] });
     },
   },
   {
@@ -50,7 +46,8 @@ module.exports = [
           { name: 'Uptime', value: formatDuration(c.uptime), inline: true },
           { name: 'Ping', value: `${c.ws.ping}ms`, inline: true },
           { name: 'RAM', value: `${(process.memoryUsage().rss / 1048576).toFixed(0)} MB`, inline: true },
-          { name: 'Verzija', value: `discord.js ${djsVersion} • Node ${process.version}`, inline: true },
+          { name: 'Moduli', value: `${i.client.modules.size}`, inline: true },
+          { name: 'Platforma', value: `${config.brand} • discord.js ${djsVersion}`, inline: true },
         );
       return i.reply({ embeds: [e] });
     },
@@ -134,3 +131,6 @@ module.exports = [
     },
   },
 ];
+const CORE = ['ping', 'help', 'dashboard', 'botinfo'];
+cmds.forEach((c) => { c.module = CORE.includes(c.data.name) ? 'core' : 'utility'; });
+module.exports = cmds;

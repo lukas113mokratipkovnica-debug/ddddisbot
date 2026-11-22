@@ -1,9 +1,8 @@
-<%- include('../partials/guildStart') %>
-<h1>Button role</h1>
-<p class="muted">Napravi panel s dugmadima — klik daje/uzima ulogu.</p>
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Button role', icon: 'layers', sub: 'Napravi panel s dugmadima — klik daje ili uzima ulogu.' }) %>
 <div class="card">
   <h3>Novi panel</h3>
-  <form method="post" action="/dashboard/<%= guild.id %>/roles/create">
+  <form method="post" action="<%= base %>/roles/create">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <div class="grid2">
       <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
@@ -34,10 +33,10 @@
         <div class="chips"><% p.roles.forEach(r => { const role = roles.find(x => x.id === r.role); %><span class="chip"><%= r.emoji %> <%= r.label || (role ? role.name : 'obrisana') %></span><% }) %></div>
       </div>
       <div class="actions">
-        <form method="post" action="/dashboard/<%= guild.id %>/roles/<%= p.id %>/republish"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Osvježi</button></form>
-        <form method="post" action="/dashboard/<%= guild.id %>/roles/<%= p.id %>/delete" onsubmit="return confirm('Obrisati panel i poruku?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+        <form method="post" action="<%= base %>/roles/<%= p.id %>/republish"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Osvježi</button></form>
+        <form method="post" action="<%= base %>/roles/<%= p.id %>/delete" onsubmit="return confirm('Obrisati panel i poruku?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
       </div>
     </div>
   <% }) %>
 </div>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

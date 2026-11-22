@@ -1,0 +1,11 @@
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <%- include('logo') %>
+      <p class="muted">Discord botovi bez kodiranja. Odaberi, poveži, podesi — gotovo.</p>
+    </div>
+    <div><h4>Platforma</h4><a href="/catalog">Katalog botova</a><a href="/pricing">Cijene</a><a href="/app">Dashboard</a></div>
+    <div><h4>Resursi</h4><a href="/#faq">Česta pitanja</a><a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Developer Portal</a><% if (supportUrl) { %><a href="<%= supportUrl %>" target="_blank" rel="noopener">Podrška</a><% } %></div>
+  </div>
+  <div class="wrap footer-bottom muted">© <%= new Date().getFullYear() %> <%= brand %>. Nije povezano s Discord Inc.</div>
+</footer>

@@ -1,0 +1,12 @@
+<div class="faq">
+  <% [
+    ['Trebam li znati programirati?', 'Ne. Napraviš aplikaciju u Discord Developer Portalu (vodimo te kroz to), zalijepiš token i sve ostalo radiš klikom u dashboardu.'],
+    ['Gdje se bot hosta?', 'Na našim serverima, 24/7. Ne trebaš ništa instalirati niti držati računalo upaljeno.'],
+    ['Mogu li imati svoje ime i sliku bota?', 'Da — to je tvoj bot, s tvojim imenom, avatarom i statusom. Mijenjaš ih u postavkama bota.'],
+    ['Je li moj token siguran?', 'Token se sprema šifriran (AES-256-GCM) i nikad se ne prikazuje u dashboardu. Možeš ga resetirati u Developer Portalu kad god želiš.'],
+    ['Mogu li jednog bota koristiti na više servera?', 'Da. Svaki server ima svoje, potpuno odvojene postavke, XP, novac i statistiku.'],
+    ['Mogu li kasnije promijeniti tip bota?', 'Naravno. Predložak je samo početna kombinacija modula — u "Moduli" uključuješ i isključuješ bilo što.'],
+  ].forEach(([q, a]) => { %>
+    <details><summary><%= q %><svg class="ic"><use href="#i-plus"/></svg></summary><p><%= a %></p></details>
+  <% }) %>
+</div>

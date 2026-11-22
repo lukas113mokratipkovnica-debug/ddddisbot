@@ -1,5 +1,4 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { getSettings, cases } = require('../database');
 const config = require('../config');
 
 function fillPlaceholders(text, { member, user, guild, extra = {} } = {}) {
@@ -26,7 +25,8 @@ const ok = (d) => embed(`✅ ${d}`, 0x57f287);
 const fail = (d) => embed(`❌ ${d}`, 0xed4245);
 
 async function sendLog(guild, type, embedObj) {
-  const s = getSettings(guild.id);
+  if (!guild.client.modules?.has('logging')) return;
+  const s = guild.client.db.getSettings(guild.id);
   if (!s.logs.enabled || !s.logs.channel || (type && s.logs[type] === false)) return;
   const ch = guild.channels.cache.get(s.logs.channel);
   if (!ch?.isTextBased()) return;
@@ -40,7 +40,7 @@ const CASE_COLORS = {
 
 /** Records a moderation case and posts it to the log channel. */
 async function logModAction(guild, type, target, moderator, reason, extra = '') {
-  const id = cases.add(guild.id, type, target.id, moderator.id, reason || null);
+  const id = guild.client.db.cases.add(guild.id, type, target.id, moderator.id, reason || null);
   const e = new EmbedBuilder()
     .setColor(CASE_COLORS[type] || config.color)
     .setTitle(`Slučaj #${id} • ${type.toUpperCase()}`)
@@ -70,7 +70,7 @@ function canModerate(mod, target, me) {
 function isMod(member) {
   if (!member) return false;
   if (member.permissions.has(PermissionFlagsBits.ManageGuild)) return true;
-  const s = getSettings(member.guild.id);
+  const s = member.client.db.getSettings(member.guild.id);
   return Boolean(s.modRole && member.roles.cache.has(s.modRole));
 }
 

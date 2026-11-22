@@ -1,6 +1,7 @@
-<%- include('../partials/guildStart') %>
-<h1>Dobrodošlica & Autorole</h1>
-<form method="post" action="/dashboard/<%= guild.id %>/save/welcome">
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Dobrodošlica & Autorole', icon: 'hand', sub: 'Poruke ulaska i izlaska, automatske uloge i pozivnice.' }) %>
+<% if (modules.has('welcome')) { %>
+<form method="post" action="<%= base %>/save/welcome">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <h3>👋 Poruka dobrodošlice</h3>
@@ -30,4 +31,26 @@
   </div>
   <%- include('../partials/saveBar') %>
 </form>
-<%- include('../partials/guildEnd') %>
+<% } %>
+<% if (modules.has('invites')) { %>
+<form method="post" action="<%= base %>/save/invites">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <h3>📨 Praćenje pozivnica</h3>
+    <p class="hint">Bot treba dozvolu <b>Manage Server</b> da vidi pozivnice. U poruku dobrodošlice također možeš staviti <code>{inviter}</code> i <code>{invites}</code>.</p>
+    <%- include('../partials/toggle', { name: 'enabled', checked: settings.invites.enabled, label: 'Posebna poruka o tome tko je koga pozvao' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: settings.invites.channel }) %></label>
+    <label>Poruka<textarea name="message" rows="2"><%= settings.invites.message %></textarea></label>
+    <%- include('../partials/placeholders', { extra: '<code>{inviter}</code> <code>{invites}</code>' }) %>
+    <button class="btn btn-primary">Spremi</button>
+  </div>
+</form>
+<div class="card">
+  <h3>Top pozivači</h3>
+  <% if (!inviteTop.length) { %><p class="muted">Još nema podataka.</p><% } else { %>
+  <table class="table"><thead><tr><th>#</th><th>Član</th><th>Ukupno</th><th>Ušlo</th><th>Izašlo</th></tr></thead><tbody>
+    <% inviteTop.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td class="user"><img src="<%= userAvatar(r.user_id) %>" alt=""><%= userName(r.user_id) %></td><td><b><%= r.total %></b></td><td><%= r.joins %></td><td><%= r.leaves %></td></tr><% }) %>
+  </tbody></table><% } %>
+</div>
+<% } %>
+<%- include('../partials/app-end') %>

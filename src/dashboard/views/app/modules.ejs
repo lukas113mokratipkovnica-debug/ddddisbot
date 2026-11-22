@@ -1,0 +1,31 @@
+<%- include('../partials/app-start') %>
+<% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
+   const groups = {}; Object.entries(MODULES).forEach(([k, m]) => (groups[m.group] ||= []).push([k, m]));
+   const on = new Set(botRec.modules); %>
+<%- include('../partials/pagehead', { heading: 'Moduli', icon: 'layers', sub: 'Uključi ili isključi funkcije bota. Slash komande se automatski ažuriraju na svim serverima.' }) %>
+<form method="post" action="/bots/<%= botRec.id %>/modules">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="mod-toolbar">
+    <span class="muted small"><b id="modCount"><%= on.size %></b> od <%= Object.keys(MODULES).length %> uključeno</span>
+    <div class="row">
+      <button type="button" class="btn btn-ghost btn-sm" data-mods="all">Uključi sve</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mods="none">Isključi sve</button>
+      <% Object.entries(TEMPLATES).slice(1, 6).forEach(([k, t]) => { %><button type="button" class="btn btn-ghost btn-sm hide-sm" data-mods="<%= t.modules.join(',') %>"><%= t.name %></button><% }) %>
+    </div>
+  </div>
+  <% Object.entries(groups).forEach(([g, items]) => { %>
+    <h3 class="group-title"><%= g %></h3>
+    <div class="mod-toggle-grid">
+      <% items.forEach(([k, m]) => { %>
+        <label class="mod-toggle">
+          <input type="checkbox" name="modules" value="<%= k %>" <%= on.has(k) ? 'checked' : '' %>>
+          <span class="mod-icon"><%- ic(m.icon) %></span>
+          <span class="mod-toggle-text"><b><%= m.name %></b><small><%= m.desc %></small><% if (counts[k]) { %><em><%= counts[k] %> komand<%= counts[k] === 1 ? 'a' : 'i' %></em><% } %></span>
+          <span class="slider"></span>
+        </label>
+      <% }) %>
+    </div>
+  <% }) %>
+  <%- include('../partials/saveBar') %>
+</form>
+<%- include('../partials/app-end') %>

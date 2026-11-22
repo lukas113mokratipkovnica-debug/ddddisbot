@@ -1,0 +1,49 @@
+<%- include('../partials/app-start') %>
+<% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; %>
+<%- include('../partials/pagehead', { heading: 'Novi bot', sub: 'Odaberi predložak, poveži Discord aplikaciju i bot je online.' }) %>
+<% if (limitReached) { %>
+  <div class="callout callout-warn"><%- ic('crown') %><div><b>Dosegnuo/la si limit paketa (<%= plan.maxBots %>).</b> Obriši postojećeg bota ili nadogradi paket.</div><a class="btn btn-sm btn-primary" href="/pricing">Paketi</a></div>
+<% } %>
+<form method="post" action="/app/new" class="wizard">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="wizard-step">
+    <div class="step-label"><span>1</span>Odaberi bota</div>
+    <div class="tpl-pick">
+      <% Object.entries(TEMPLATES).forEach(([key, t], idx) => { %>
+        <label class="tpl-option" style="--c:<%= t.color %>">
+          <input type="radio" name="template" value="<%= key %>" <%= (template ? template === key : idx === 0) ? 'checked' : '' %>>
+          <span class="tpl-option-body">
+            <span class="tpl-icon"><%- ic(t.icon) %></span>
+            <b><%= t.name %></b>
+            <small><%= t.tagline %></small>
+            <span class="tpl-count"><%= t.modules.length %> modula</span>
+          </span>
+        </label>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="wizard-step">
+    <div class="step-label"><span>2</span>Napravi Discord aplikaciju</div>
+    <div class="guide card">
+      <ol>
+        <li>Otvori <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal <%- ic('external') %></a> → <b>New Application</b> i daj mu ime.</li>
+        <li>Lijevo otvori <b>Bot</b>. Ovdje možeš postaviti avatar i ime.</li>
+        <li>Ispod <b>Privileged Gateway Intents</b> uključi <span class="kbd">Server Members Intent</span> i <span class="kbd">Message Content Intent</span>, pa klikni <b>Save</b>.</li>
+        <li>Klikni <b>Reset Token</b>, potvrdi i kopiraj token.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="wizard-step">
+    <div class="step-label"><span>3</span>Zalijepi token</div>
+    <div class="card">
+      <label>Bot token
+        <div class="input-icon"><%- ic('key') %><input type="password" name="token" required autocomplete="off" spellcheck="false" placeholder="MTEx…" <%= limitReached ? 'disabled' : '' %>></div>
+      </label>
+      <p class="hint"><%- ic('lock') %> Token se sprema šifriran i nikad se ne prikazuje. Nikome ga ne šalji.</p>
+      <button class="btn btn-primary btn-lg" <%= limitReached ? 'disabled' : '' %> data-loading="Pokrećem bota…"><%- ic('zap') %>Napravi i pokreni bota</button>
+    </div>
+  </div>
+</form>
+<%- include('../partials/app-end') %>

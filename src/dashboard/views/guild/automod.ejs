@@ -1,8 +1,7 @@
-<%- include('../partials/guildStart') %>
+<%- include('../partials/app-start') %>
 <% const A = settings.automod; %>
-<h1>AutoMod</h1>
-<p class="muted">Članovi s dozvolom <b>Manage Messages</b> su automatski izuzeti.</p>
-<form method="post" action="/dashboard/<%= guild.id %>/save/automod">
+<%- include('../partials/pagehead', { heading: 'AutoMod', icon: 'bot', sub: 'Članovi s dozvolom <b>Manage Messages</b> su automatski izuzeti.' }) %>
+<form method="post" action="<%= base %>/save/automod">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <%- include('../partials/toggle', { name: 'enabled', checked: A.enabled, label: 'AutoMod uključen' }) %>
@@ -72,4 +71,4 @@
   </div>
   <%- include('../partials/saveBar') %>
 </form>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

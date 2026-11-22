@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
-const { tickets, getSettings } = require('../../database');
 const T = require('../systems/tickets');
 const { ok, fail } = require('../utils');
 
@@ -18,7 +17,7 @@ module.exports = [
         .addUserOption((o) => o.setName('korisnik').setDescription('Korisnik').setRequired(true))),
     async execute(i) {
       const sub = i.options.getSubcommand();
-      const s = getSettings(i.guild.id).tickets;
+      const s = i.client.db.getSettings(i.guild.id).tickets;
       if (sub === 'panel') {
         if (!i.member.permissions.has(PermissionFlagsBits.ManageGuild)) return i.reply({ embeds: [fail('Treba ti Manage Server.')], flags: MessageFlags.Ephemeral });
         const ch = i.options.getChannel('kanal') || i.channel;
@@ -28,7 +27,7 @@ module.exports = [
       if (sub === 'open') return T.openTicket(i, i.options.getString('tema') || '');
       if (sub === 'close') return T.closeTicket(i, i.options.getString('razlog') || '');
 
-      const t = tickets.byChannel(i.channel.id);
+      const t = i.client.db.tickets.byChannel(i.channel.id);
       if (!t || t.status !== 'open') return i.reply({ embeds: [fail('Ovo nije tiket kanal.')], flags: MessageFlags.Ephemeral });
       if (!T.isStaff(i.member, s)) return i.reply({ embeds: [fail('Samo tim to može.')], flags: MessageFlags.Ephemeral });
       const user = i.options.getUser('korisnik');

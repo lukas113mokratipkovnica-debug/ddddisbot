@@ -1,7 +1,7 @@
-<%- include('../partials/guildStart') %>
+<%- include('../partials/app-start') %>
 <% const T = settings.tickets; %>
-<h1>Tiketi</h1>
-<form method="post" action="/dashboard/<%= guild.id %>/save/tickets">
+<%- include('../partials/pagehead', { heading: 'Tiketi', icon: 'ticket', sub: 'Privatni support kanali s transkriptima.' }) %>
+<form method="post" action="<%= base %>/save/tickets">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <%- include('../partials/toggle', { name: 'enabled', checked: T.enabled, label: 'Tiketi uključeni' }) %>
@@ -24,7 +24,7 @@
 </form>
 <div class="card">
   <h3>Pošalji panel</h3>
-  <form method="post" action="/dashboard/<%= guild.id %>/tickets/panel" class="row">
+  <form method="post" action="<%= base %>/tickets/panel" class="row">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %>
     <button class="btn btn-primary">Pošalji</button>
@@ -37,4 +37,4 @@
     <% ticketList.forEach(t => { %><tr><td><%= t.number %></td><td class="user"><img src="<%= userAvatar(t.user_id) %>" alt=""><%= userName(t.user_id) %></td><td class="clip"><%= t.topic || '—' %></td><td><span class="tag tag-<%= t.status === 'open' ? 'unban' : 'ban' %>"><%= t.status === 'open' ? 'otvoren' : 'zatvoren' %></span></td><td><%= new Date(t.created_at).toLocaleString('hr-HR') %></td></tr><% }) %>
   </tbody></table><% } %>
 </div>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

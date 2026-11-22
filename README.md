@@ -1,77 +1,113 @@
-# ddddisbot
+# Botnica — platforma za Discord botove
 
-Sve-u-jednom Discord bot s web dashboardom. Node.js + discord.js v14, SQLite baza (nema vanjskog servera baze), dashboard s Discord loginom.
+Web platforma na kojoj korisnici sami prave svoje Discord botove bez kodiranja: prijave se Discordom, odaberu gotovog bota, zalijepe token, i bot je online 24/7 na tvom serveru. Sve se podešava klikom u dashboardu.
 
-## Mogućnosti
+Ime usluge mijenjaš u `.env` (`BRAND_NAME`).
+
+## Što platforma ima
+
+**Za posjetitelje:** landing stranica (hero, katalog botova, moduli, cijene, FAQ), `/catalog` s komandama svakog modula, `/pricing`.
+
+**Za korisnike (`/app`):**
+- **Moji botovi**: kartice sa statusom uživo, serverima i korisnicima, te limit po paketu
+- **Novi bot**: odabir predloška, upute za Developer Portal i token. Token se provjerava kod Discorda, kao i jesu li uključeni intenti, pa se bot odmah pokreće.
+- **Pregled bota**: statistika, start/stop/restart, link za dodavanje na server, popis servera
+- **Moduli**: uključivanje i isključivanje 25 modula. Slash komande se same ponovo registriraju.
+- **Postavke**: status/aktivnost, ime i avatar bota, zamjena tokena, autostart, brisanje
+- **Konzola**: log bota uživo
+- **Server postavke**: svaki modul ima svoju stranicu, a vide se samo uključeni moduli
+
+**Admin (`/admin`, korisnici iz `OWNER_IDS`):** svi botovi i korisnici, dodjela paketa (Free/Pro/Business), blokiranje korisnika, start/stop bilo kojeg bota.
+
+**Službeni bot:** bot iz `.env` je All-in-One bot platforme. Svatko ga može dodati na svoj server i podesiti bez pravljenja vlastitog bota.
+
+## Gotovi botovi (predlošci)
+
+All-in-One · Moderator · Leveling · Ekonomija · Support · Welcome · Giveaway · Community · Voice Master · Notifier · Utility · Role Manager · Fun
+
+Predložak je samo početna kombinacija modula, a svaki bot može uključiti bilo koji modul.
+
+## Moduli (25) i komande (60)
 
 | Modul | Što radi |
 |---|---|
-| 🛡️ **Moderacija** | `/ban` `/unban` `/kick` `/timeout` `/untimeout` `/warn` `/warnings` `/delwarn` `/purge` `/slowmode` `/lock` `/unlock` `/nick` `/role`. Svaka akcija dobije broj slučaja i ide u log. Provjera hijerarhije uloga. |
-| 🤖 **AutoMod** | Zabranjene riječi (s `*` wildcardom), Discord invite, linkovi (whitelist domena), masovno tagovanje, CAPS, spam. Akcije: obriši / obriši + warn / obriši + timeout. Automatski timeout/kick/ban nakon X upozorenja. Izuzeti kanali i uloge. |
-| 📈 **Leveling** | XP za poruke (min/max, cooldown, multiplikator), `/rank`, `/leaderboard`, `/xp` (admin), nagradne uloge po levelu (zadrži sve ili samo najvišu), level-up poruka (kanal / DM / isključeno), kanali i uloge bez XP-a. |
-| 👋 **Dobrodošlica** | Poruka ulaska i izlaska (tekst ili embed), DM novom članu, autorole posebno za ljude i botove. |
-| 📜 **Logovi** | Obrisane/uređene poruke, masovno brisanje, ulasci/izlasci, promjene uloga i nadimaka, timeouti, voice, kanali, banovi (i oni ručni). |
-| 🎫 **Tiketi** | Panel s dugmetom → modal s temom → privatni kanal. Support uloge, preuzimanje, `/ticket add/remove/close`, transkript (.txt) u log kanal i u DM korisniku. |
-| 🎉 **Giveaway** | Start iz Discorda ili s dashboarda, prijava dugmetom, automatski kraj, reroll. |
-| 🎭 **Button role** | Paneli s do 25 dugmadi (emoji, boja, opis), opcija "samo jedna uloga" (npr. boje). |
-| 💬 **Custom komande** | `!okidač` → odgovor (tekst ili embed), varijable `{user}` `{args}` itd. |
-| ⭐ **Starboard** | Poruke s dovoljno reakcija idu u poseban kanal. |
-| 💡 **Prijedlozi** | `/suggest` → kanal s ✅/❌ i threadom za raspravu. |
-| 🔧 **Ostalo** | `/help` `/ping` `/botinfo` `/serverinfo` `/userinfo` `/avatar` `/say` `/embed` `/poll` `/8ball` `/coinflip` `/roll` `/dashboard` |
+| Moderacija | `/ban` `/unban` `/kick` `/timeout` `/untimeout` `/warn` `/warnings` `/delwarn` `/purge` `/slowmode` `/lock` `/unlock` `/nick` `/role`, slučajevi s brojem |
+| AutoMod | psovke (wildcard), invite, linkovi s whitelistom, spam, CAPS, masovni tagovi; automatska kazna nakon X upozorenja |
+| Logovi | brisanje/uređivanje poruka, ulasci/izlasci, uloge, nadimci, timeout, voice, kanali, banovi |
+| Verifikacija | panel s dugmetom i captcha kodom, daje ulogu i opcionalno skida "unverified" ulogu, `/verify-panel` |
+| Dobrodošlica | poruka ulaska i izlaska (embed), DM, autorole za ljude i botove |
+| Praćenje pozivnica | tko je koga pozvao, `{inviter}` u dobrodošlici, `/invites user/top` |
+| Button role | paneli do 25 dugmadi, način "samo jedna uloga" |
+| Leveling | XP, `/rank`, `/leaderboard`, `/xp`, nagradne uloge, multiplikator, kanali bez XP-a |
+| Ekonomija | `/balance` `/daily` `/work` `/pay` `/deposit` `/withdraw` `/gamble` `/slots` `/rob` `/shop` `/buy` `/inventory` `/richest` `/eco`, shop s ulogama |
+| Giveaway | `/giveaway start/end/reroll`, prijava dugmetom, pokretanje i s dashboarda |
+| Brojanje | counting kanal s rekordom i pravilima |
+| Zabava | `/rps` `/choose` `/rate` `/ship` `/8ball` `/coinflip` `/roll` `/trivia` |
+| Tiketi | panel → modal → privatni kanal, preuzimanje, transkript u log i DM |
+| Custom komande | `!okidač` komande + autoresponder (sadrži / točno / počinje s) + reakcija emojijem |
+| Sticky poruke | poruka koja uvijek ostaje na dnu kanala, `/sticky` ili dashboard |
+| Starboard | najbolje poruke po reakcijama |
+| Prijedlozi | `/suggest` s glasanjem i threadom |
+| Anonimne ispovijesti | `/confess`, privatni log autora za moderatore |
+| Rođendani | `/birthday set/remove/list`, čestitka i uloga za taj dan |
+| Privremeni voice | "uđi za kreiranje" kanal, `/voice name/limit/lock/unlock/kick/claim` |
+| Statistika kanali | voice kanali s brojem članova/ljudi/botova/boostova, automatsko kreiranje |
+| Podsjetnici | `/remind set/list/delete` |
+| AFK | `/afk`, odgovor kad te netko tagne, automatski povratak |
+| Obavijesti | novi YouTube videi i RSS/Atom objave u kanal |
+| Korisno | `/serverinfo` `/userinfo` `/avatar` `/poll` `/say` `/embed` |
 
-**Dashboard:** pregled sa statistikom (poruke, ulasci/izlasci 14 dana, top XP, zadnji slučajevi), postavke svih modula, uključivanje/isključivanje pojedinih komandi, popis upozorenja i slučajeva, leaderboard s resetom, slanje poruka/embedova s live pregledom, upravljanje giveawayima, panelima i tiketima.
+Uvijek uključeno: `/help` `/ping` `/botinfo` `/dashboard`.
 
 ## Postavljanje
 
-### 1. Discord aplikacija
-1. Idi na <https://discord.com/developers/applications> → **New Application**.
-2. **Bot** tab → *Reset Token* → kopiraj token.
-3. Na istom tabu uključi **Server Members Intent** i **Message Content Intent** (obavezno).
-4. **OAuth2** tab → kopiraj **Client ID** i **Client Secret**.
-5. **OAuth2 → Redirects** → dodaj `http://localhost:3000/callback` (ili `https://tvoja-domena.com/callback` na serveru).
+### 1. Službena Discord aplikacija (za login i službeni bot)
+1. <https://discord.com/developers/applications> → **New Application**
+2. **Bot** → Reset Token → kopiraj. Uključi **Server Members Intent** i **Message Content Intent**.
+3. **OAuth2** → kopiraj Client ID i Client Secret, a pod **Redirects** dodaj `DASHBOARD_URL/callback` (npr. `http://localhost:3000/callback`).
 
-### 2. Instalacija
-Treba Node.js 18.17+ (preporuka 20 ili 22).
+### 2. Pokretanje
+Node.js 18.17+ (preporuka 20/22).
 
 ```bash
-git clone <repo> && cd ddddisbot
 npm install
-cp .env.example .env   # pa popuni vrijednosti
+cp .env.example .env   # popuni
 npm start
 ```
 
-U `.env`:
-- `DISCORD_TOKEN`, `CLIENT_ID`, `CLIENT_SECRET` — iz koraka 1
-- `DASHBOARD_URL` — javni URL dashboarda bez `/` na kraju; redirect u portalu mora biti točno `DASHBOARD_URL/callback`
-- `SESSION_SECRET` — bilo kakav dugi random string
-- `DEV_GUILD_ID` — (opcionalno) ID tvog servera da se slash komande pojave odmah; bez toga se registriraju globalno
-- `OWNER_IDS` — (opcionalno) tvoj Discord ID, dobiješ pristup svim serverima u dashboardu
+Važno u `.env`:
+- `OWNER_IDS`: tvoj Discord ID, da dobiješ Admin panel i neograničen broj botova
+- `ENCRYPTION_KEY`: postavi dugi random string **prije** nego korisnici dodaju botove i nikad ga ne mijenjaj (njime su šifrirani tokeni)
+- `BRAND_NAME`, `SUPPORT_URL`: ime usluge i link na support
 
-### 3. Dodavanje bota
-Otvori dashboard (`http://localhost:3000`) → **Dodaj bota**, ili uloguj se i klikni *Pozovi bota* kod servera. Bot traži Administrator dozvolu.
+### 3. Paketi i cijene
+Uređuju se u `src/plans.js` (ime, cijena, broj botova, popis pogodnosti). **Naplata nije integrirana.** Paket korisniku dodjeljuješ ručno u Admin panelu nakon što plati (PayPal, uplata, Ko-fi…). Stripe se može dodati kasnije.
 
-**Važno:** u Server Settings → Roles pomakni ulogu bota **iznad** uloga koje treba davati (autorole, level nagrade, button role) i iznad članova koje treba moderirati.
+## Hosting
+Svi botovi rade u jednom Node procesu. Za par desetaka manjih botova dovoljan je VPS s 1–2 GB RAM-a.
 
-## Hosting 24/7
-- **VPS (preporuka)**: `npm i -g pm2 && pm2 start src/index.js --name bot && pm2 save && pm2 startup`. Ispred stavi Nginx/Caddy s HTTPS-om i postavi `DASHBOARD_URL=https://...`.
-- **Railway / Render / Fly.io**: start komanda `npm start`, postavi env varijable, `PORT` daje platforma. Za SQLite treba **persistent volume** montiran na `data/`, inače se baza briše pri svakom deployu.
+- **VPS:** `pm2 start src/index.js --name botnica && pm2 save && pm2 startup`. Ispred stavi Nginx/Caddy s HTTPS-om i `DASHBOARD_URL=https://…`.
+- **Railway/Render/Fly:** `npm start`, env varijable i **persistent volume** na `data/`, inače se gube svi botovi i podaci.
+
+## Podaci
+```
+data/platform.db       korisnici, botovi (tokeni šifrirani AES-256-GCM), sesije
+data/bots/<id>.db      zasebna baza za svakog bota (postavke, XP, novac, upozorenja…)
+```
 
 ## Struktura
 ```
 src/
-  index.js              start bota + dashboarda
-  config.js             .env
-  database.js           SQLite tablice, postavke po serveru (s defaultima)
+  index.js               pokreće dashboard i sve botove
+  config.js  plans.js  modules.js (katalog modula i predložaka)
+  platform.js            korisnici, botovi, šifriranje tokena
+  database.js            baza po botu
   bot/
-    client.js           klijent, učitavanje komandi/evenata, registracija slash komandi
-    commands/           slash komande (grupirane po modulu)
-    events/             discord eventi (poruke, ulasci, logovi, interakcije, starboard)
-    systems/            automod, leveling, tiketi, giveaway, button role
+    manager.js           start/stop/restart više botova, status i log
+    createClient.js      discord.js klijent s uključenim modulima
+    commands/ events/ systems/
   dashboard/
-    server.js           Express, Discord OAuth2, rute i spremanje postavki
-    views/              EJS stranice
-    public/             CSS + JS
-data/bot.db             baza (stvara se sama)
+    server.js  helpers.js  routes/{app,guild,admin}.js
+    views/               EJS (landing, app, guild, admin)
+    public/              CSS + JS
 ```
-
-Dodavanje nove komande: napravi datoteku u `src/bot/commands/` koja exporta `{ data: SlashCommandBuilder, execute(interaction) }` (ili niz takvih). Kategorija = ime datoteke. Registrira se automatski pri pokretanju.

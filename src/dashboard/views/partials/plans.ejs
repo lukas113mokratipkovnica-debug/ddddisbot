@@ -1,0 +1,12 @@
+<div class="plans">
+  <% Object.values(plans).forEach(p => { %>
+    <div class="plan <%= p.highlight ? 'plan-hl' : '' %>">
+      <% if (p.highlight) { %><span class="plan-badge">Najpopularnije</span><% } %>
+      <h3><%= p.name %></h3>
+      <div class="plan-price"><b><%= p.price %></b><span>/ <%= p.period %></span></div>
+      <ul><% p.features.forEach(f => { %><li><svg class="ic"><use href="#i-check"/></svg><%= f %></li><% }) %></ul>
+      <a class="btn <%= p.highlight ? 'btn-primary' : 'btn-ghost' %> btn-block" href="<%= user ? '/app' : '/login' %>"><%= p.key === 'free' ? 'Započni besplatno' : 'Odaberi ' + p.name %></a>
+    </div>
+  <% }) %>
+</div>
+<p class="muted center small">Za nadogradnju paketa javi se administratoru platforme<% if (supportUrl) { %> na <a href="<%= supportUrl %>">podršci</a><% } %>.</p>

@@ -1,7 +1,7 @@
-<%- include('../partials/guildStart') %>
+<%- include('../partials/app-start') %>
 <% const L = settings.leveling; %>
-<h1>Leveling</h1>
-<form method="post" action="/dashboard/<%= guild.id %>/save/leveling">
+<%- include('../partials/pagehead', { heading: 'Leveling', icon: 'trending', sub: 'XP za aktivnost, nagradne uloge i leaderboard.' }) %>
+<form method="post" action="<%= base %>/save/leveling">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <%- include('../partials/toggle', { name: 'enabled', checked: L.enabled, label: 'Leveling uključen' }) %>
@@ -49,7 +49,7 @@
 
 <div class="card">
   <div class="row between"><h3>🏆 Leaderboard</h3>
-    <form method="post" action="/dashboard/<%= guild.id %>/leveling/reset" onsubmit="return confirm('Resetirati XP SVIH članova? Ovo se ne može vratiti.')">
+    <form method="post" action="<%= base %>/leveling/reset" onsubmit="return confirm('Resetirati XP SVIH članova? Ovo se ne može vratiti.')">
       <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Resetiraj sve</button>
     </form>
   </div>
@@ -62,7 +62,7 @@
         <td><%= r.level %></td><td><%= r.xp %></td>
         <td><div class="bar"><i style="width:<%= Math.floor(r.current / r.needed * 100) %>%"></i></div></td>
         <td><%= r.messages %></td>
-        <td><form method="post" action="/dashboard/<%= guild.id %>/leveling/reset" onsubmit="return confirm('Resetirati ovog člana?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="userId" value="<%= r.user_id %>"><button class="btn btn-ghost btn-xs">Reset</button></form></td>
+        <td><form method="post" action="<%= base %>/leveling/reset" onsubmit="return confirm('Resetirati ovog člana?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="userId" value="<%= r.user_id %>"><button class="btn btn-ghost btn-xs">Reset</button></form></td>
       </tr>
     <% }) %>
   </tbody></table>
@@ -73,4 +73,4 @@
   </div>
   <% } %>
 </div>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

@@ -1,8 +1,8 @@
-<%- include('../partials/guildStart') %>
-<h1>Giveaway</h1>
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Giveaway', icon: 'gift', sub: 'Pokreni nagradnu igru ili upravljaj postojećima.' }) %>
 <div class="card">
   <h3>Novi giveaway</h3>
-  <form method="post" action="/dashboard/<%= guild.id %>/giveaways/create">
+  <form method="post" action="<%= base %>/giveaways/create">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <div class="grid2">
       <label>Nagrada<input name="prize" maxlength="200" required placeholder="Discord Nitro"></label>
@@ -23,12 +23,12 @@
         <td><%= g.ended ? 'završen' : new Date(g.ends_at).toLocaleString('hr-HR') %></td>
         <td><%= g.winner_ids.map(userName).join(', ') || '—' %></td>
         <td class="actions">
-          <% if (!g.ended) { %><form method="post" action="/dashboard/<%= guild.id %>/giveaways/<%= g.id %>/end"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Završi</button></form><% } else { %>
-          <form method="post" action="/dashboard/<%= guild.id %>/giveaways/<%= g.id %>/reroll"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Reroll</button></form><% } %>
-          <form method="post" action="/dashboard/<%= guild.id %>/giveaways/<%= g.id %>/delete" onsubmit="return confirm('Obrisati iz baze?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+          <% if (!g.ended) { %><form method="post" action="<%= base %>/giveaways/<%= g.id %>/end"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Završi</button></form><% } else { %>
+          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/reroll"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Reroll</button></form><% } %>
+          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/delete" onsubmit="return confirm('Obrisati iz baze?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
         </td>
       </tr>
     <% }) %>
   </tbody></table><% } %>
 </div>
-<%- include('../partials/guildEnd') %>
+<%- include('../partials/app-end') %>

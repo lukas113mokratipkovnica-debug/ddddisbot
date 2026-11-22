@@ -1,9 +1,9 @@
-<%- include('partials/head') %>
-<div class="container narrow">
-  <div class="card">
-    <h1><%= title %></h1>
-    <p><%= message %></p>
-    <a class="btn btn-primary" href="/dashboard">Natrag</a>
-  </div>
-</div>
+<%- include('partials/head', { bodyClass: 'site' }) %>
+<%- include('partials/site-nav') %>
+<section class="error-page"><div class="wrap narrow center">
+  <span class="error-icon"><svg class="ic"><use href="#i-zap"/></svg></span>
+  <h1><%= title %></h1>
+  <p class="lead muted"><%= message %></p>
+  <div class="hero-actions center"><a class="btn btn-primary" href="/app">Natrag na dashboard</a><a class="btn btn-ghost" href="/">Početna</a></div>
+</div></section>
 <%- include('partials/foot') %>

@@ -1,4 +1,3 @@
-const { levels, getSettings } = require('../../database');
 const { fillPlaceholders } = require('../utils');
 
 const cooldowns = new Map(); // `${guild}:${user}` -> timestamp
@@ -29,13 +28,14 @@ async function applyRewards(member, level, settings) {
 }
 
 async function handleMessage(message) {
-  const s = getSettings(message.guild.id);
+  const db = message.client.db;
+  const s = db.getSettings(message.guild.id);
   const L = s.leveling;
   if (!L.enabled) return;
   if (L.noXpChannels.includes(message.channel.id) || L.noXpChannels.includes(message.channel.parentId)) return;
   if (message.member && L.noXpRoles.some((r) => message.member.roles.cache.has(r))) return;
 
-  const key = `${message.guild.id}:${message.author.id}`;
+  const key = `${message.client.user.id}:${message.guild.id}:${message.author.id}`;
   const now = Date.now();
   if (now - (cooldowns.get(key) || 0) < L.cooldown * 1000) return;
   cooldowns.set(key, now);
@@ -43,8 +43,8 @@ async function handleMessage(message) {
   const min = Math.max(0, Number(L.xpMin) || 0);
   const max = Math.max(min, Number(L.xpMax) || min);
   const gain = Math.round((Math.floor(Math.random() * (max - min + 1)) + min) * (Number(L.multiplier) || 1));
-  const before = levels.get(message.guild.id, message.author.id);
-  const newLevel = levels.set(message.guild.id, message.author.id, before.xp + gain, 1);
+  const before = db.levels.get(message.guild.id, message.author.id);
+  const newLevel = db.levels.set(message.guild.id, message.author.id, before.xp + gain, 1);
 
   if (newLevel > before.level) {
     if (message.member) await applyRewards(message.member, newLevel, s);

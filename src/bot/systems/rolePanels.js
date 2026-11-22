@@ -1,5 +1,4 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } = require('discord.js');
-const { rolePanels } = require('../../database');
 const { fail } = require('../utils');
 const config = require('../../config');
 
@@ -26,6 +25,7 @@ function buildPanel(panel, guild) {
 }
 
 async function publish(client, panelId, guildId) {
+  const { rolePanels } = client.db;
   const panel = rolePanels.get(guildId, panelId);
   if (!panel) throw new Error('Panel ne postoji');
   const guild = client.guilds.cache.get(guildId);
@@ -42,6 +42,7 @@ async function publish(client, panelId, guildId) {
 }
 
 async function handleButton(interaction, panelId, roleId) {
+  const { rolePanels } = interaction.client.db;
   const { guild, member } = interaction;
   const panel = rolePanels.get(guild.id, Number(panelId));
   const role = guild.roles.cache.get(roleId);

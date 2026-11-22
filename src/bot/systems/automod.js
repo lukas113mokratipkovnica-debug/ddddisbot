@@ -1,5 +1,4 @@
 const { PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const { getSettings, warnings } = require('../../database');
 const { logModAction, sendLog, truncate } = require('../utils');
 
 const spamTracker = new Map(); // `${guild}:${user}` -> [timestamps]
@@ -40,7 +39,7 @@ function detect(message, A) {
     }
   }
   if (A.spam.enabled) {
-    const key = `${message.guild.id}:${message.author.id}`;
+    const key = `${message.client.user.id}:${message.guild.id}:${message.author.id}`;
     const now = Date.now();
     const arr = (spamTracker.get(key) || []).filter((t) => now - t < A.spam.seconds * 1000);
     arr.push(now);
@@ -65,7 +64,7 @@ async function punish(message, hit, A) {
   if (notice) setTimeout(() => notice.delete().catch(() => {}), 6000);
 
   if (hit.action === 'warn' || hit.action === 'timeout') {
-    if (hit.action === 'warn') warnings.add(guild.id, member.id, me.id, reason);
+    if (hit.action === 'warn') message.client.db.warnings.add(guild.id, member.id, me.id, reason);
     if (hit.action === 'timeout' && member.moderatable) {
       await member.timeout(A.timeoutMinutes * 60_000, reason).catch(() => {});
     }
@@ -73,7 +72,7 @@ async function punish(message, hit, A) {
       `Kanal: <#${message.channel.id}>\nPoruka: ${truncate(message.content, 900) || '*prazno*'}`);
 
     if (hit.action === 'warn' && A.warnThreshold.enabled) {
-      const count = warnings.count(guild.id, member.id);
+      const count = message.client.db.warnings.count(guild.id, member.id);
       if (count >= A.warnThreshold.count && count % A.warnThreshold.count === 0) {
         await thresholdPunish(member, A.warnThreshold, count);
       }
@@ -105,7 +104,7 @@ async function thresholdPunish(member, T, count) {
 
 /** Returns true if the message was removed. */
 async function handleMessage(message) {
-  const s = getSettings(message.guild.id);
+  const s = message.client.db.getSettings(message.guild.id);
   const A = s.automod;
   if (!A.enabled || !message.member) return false;
   if (message.member.permissions.has(PermissionFlagsBits.ManageMessages)) return false;

@@ -1,5 +1,4 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } = require('discord.js');
-const { giveaways } = require('../../database');
 const { ok, fail } = require('../utils');
 
 function gwEmbed(g, ended = false) {
@@ -26,10 +25,11 @@ function gwRow(g, ended = false) {
 }
 
 async function start(channel, prize, durationMs, winners, hostId) {
-  const id = giveaways.create(channel.guild.id, channel.id, prize, winners, hostId, Date.now() + durationMs);
-  const g = giveaways.get(id);
+  const giveaways = channel.client.db;
+  const id = giveaways.giveaways.create(channel.guild.id, channel.id, prize, winners, hostId, Date.now() + durationMs);
+  const g = giveaways.giveaways.get(id);
   const msg = await channel.send({ embeds: [gwEmbed(g)], components: [gwRow(g)] });
-  giveaways.setMessage(id, msg.id);
+  giveaways.giveaways.setMessage(id, msg.id);
   return { ...g, message_id: msg.id };
 }
 
@@ -41,6 +41,7 @@ function pick(arr, n) {
 }
 
 async function end(client, id, { reroll = false } = {}) {
+  const { giveaways } = client.db;
   const g = giveaways.get(id);
   if (!g) return null;
   const channel = await client.channels.fetch(g.channel_id).catch(() => null);
@@ -58,6 +59,7 @@ async function end(client, id, { reroll = false } = {}) {
 }
 
 async function handleJoin(interaction, id) {
+  const { giveaways } = interaction.client.db;
   const g = giveaways.get(Number(id));
   if (!g || g.ended) return interaction.reply({ embeds: [fail('Ovaj giveaway je završen.')], flags: MessageFlags.Ephemeral });
   const uid = interaction.user.id;
@@ -76,8 +78,8 @@ async function handleJoin(interaction, id) {
 }
 
 function startTicker(client) {
-  setInterval(async () => {
-    for (const g of giveaways.due()) {
+  return setInterval(async () => {
+    for (const g of client.db.giveaways.due()) {
       await end(client, g.id).catch((e) => console.warn('[giveaway] end error', e.message));
     }
   }, 10_000);
