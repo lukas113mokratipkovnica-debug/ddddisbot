@@ -1,0 +1,57 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Poruke & sticky', icon: 'mail', sub: 'Pošalji poruku ili embed kao bot, i postavi sticky poruke.' }) %>
+<div class="two-col">
+  <form class="card" method="post" action="<%= base %>/messages/send" id="msg-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
+    <label>Tekst poruke<textarea name="content" rows="3" maxlength="2000" data-preview="content"></textarea></label>
+    <%- include('../partials/toggle', { name: 'useEmbed', checked: true, label: 'Dodaj embed' }) %>
+    <div class="grid2">
+      <label>Naslov<input name="title" maxlength="256" data-preview="title"></label>
+      <label>Boja<input type="color" name="color" value="#5865f2" data-preview="color"></label>
+    </div>
+    <label>Opis<textarea name="description" rows="6" maxlength="4096" data-preview="description"></textarea></label>
+    <div class="grid2">
+      <label>Slika (URL)<input name="image" type="url" data-preview="image"></label>
+      <label>Thumbnail (URL)<input name="thumbnail" type="url" data-preview="thumbnail"></label>
+    </div>
+    <label>Footer<input name="footer" maxlength="2048" data-preview="footer"></label>
+    <%- include('../partials/toggle', { name: 'timestamp', checked: false, label: 'Prikaži vrijeme' }) %>
+    <button class="btn btn-primary">Pošalji</button>
+  </form>
+  <div class="card">
+    <h3>Pregled</h3>
+    <div class="dc-msg">
+      <img src="<%= botInfo.avatar || botRec.avatar || "https://cdn.discordapp.com/embed/avatars/0.png" %>" alt="">
+      <div>
+        <div class="dc-name"><%= botRec.name %> <span class="dc-bot">BOT</span></div>
+        <div id="pv-content" class="dc-text"></div>
+        <div id="pv-embed" class="dc-embed">
+          <div class="dc-embed-body"><div id="pv-title" class="dc-title"></div><div id="pv-description" class="dc-desc"></div><img id="pv-image" class="dc-image" alt="" hidden><div id="pv-footer" class="dc-footer"></div></div>
+          <img id="pv-thumbnail" class="dc-thumb" alt="" hidden>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% if (modules.has('sticky')) { %>
+<div class="two-col">
+  <form class="card" method="post" action="<%= base %>/sticky/add">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>📌 Nova sticky poruka</h3>
+    <p class="hint">Poruka koja se nakon svakog razgovora ponovo pojavi na dnu kanala.</p>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
+    <label>Tekst<textarea name="content" rows="3" maxlength="1800" required></textarea></label>
+    <button class="btn btn-primary">Postavi</button>
+  </form>
+  <div class="card">
+    <h3>Aktivne sticky poruke</h3>
+    <% if (!stickies.length) { %><p class="muted">Nema sticky poruka.</p><% } %>
+    <% stickies.forEach(st => { %>
+      <div class="list-item"><div><b>#<%= (guild.channels.cache.get(st.channel_id) || {}).name || 'obrisan' %></b><small class="muted clip-2"><%= st.content %></small></div>
+        <form method="post" action="<%= base %>/sticky/<%= st.channel_id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Ukloni</button></form></div>
+    <% }) %>
+  </div>
+</div>
+<% } %>
+<%- include('../partials/app-end') %>

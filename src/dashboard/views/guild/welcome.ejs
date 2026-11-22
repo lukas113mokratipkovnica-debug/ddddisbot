@@ -1,0 +1,56 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Dobrodošlica & Autorole', icon: 'hand', sub: 'Poruke ulaska i izlaska, automatske uloge i pozivnice.' }) %>
+<% if (modules.has('welcome')) { %>
+<form method="post" action="<%= base %>/save/welcome">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <h3>👋 Poruka dobrodošlice</h3>
+    <%- include('../partials/toggle', { name: 'welcomeEnabled', checked: settings.welcome.enabled, label: 'Uključeno' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'welcomeChannel', value: settings.welcome.channel }) %></label>
+    <label>Poruka<textarea name="welcomeMessage" rows="3"><%= settings.welcome.message %></textarea></label>
+    <%- include('../partials/placeholders') %>
+    <%- include('../partials/toggle', { name: 'welcomeEmbed', checked: settings.welcome.embed, label: 'Pošalji kao embed (s avatarom)' }) %>
+    <%- include('../partials/toggle', { name: 'welcomeDm', checked: settings.welcome.dm, label: 'Pošalji i privatnu poruku (DM)' }) %>
+    <label>DM poruka<textarea name="welcomeDmMessage" rows="2"><%= settings.welcome.dmMessage %></textarea></label>
+  </div>
+  <div class="card">
+    <h3>🚪 Poruka izlaska</h3>
+    <%- include('../partials/toggle', { name: 'goodbyeEnabled', checked: settings.goodbye.enabled, label: 'Uključeno' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'goodbyeChannel', value: settings.goodbye.channel }) %></label>
+    <label>Poruka<textarea name="goodbyeMessage" rows="2"><%= settings.goodbye.message %></textarea></label>
+    <%- include('../partials/toggle', { name: 'goodbyeEmbed', checked: settings.goodbye.embed, label: 'Pošalji kao embed' }) %>
+  </div>
+  <div class="card">
+    <h3>🎭 Autorole</h3>
+    <%- include('../partials/toggle', { name: 'autoroleEnabled', checked: settings.autorole.enabled, label: 'Uključeno' }) %>
+    <div class="grid2">
+      <div><b>Uloge za nove članove</b><%- include('../partials/multi', { name: 'autoroleRoles', kind: 'role', values: settings.autorole.roles }) %></div>
+      <div><b>Uloge za nove botove</b><%- include('../partials/multi', { name: 'autoroleBotRoles', kind: 'role', values: settings.autorole.botRoles }) %></div>
+    </div>
+    <p class="hint">Bot može dati samo uloge koje su ispod njegove najviše uloge.</p>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<% } %>
+<% if (modules.has('invites')) { %>
+<form method="post" action="<%= base %>/save/invites">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <h3>📨 Praćenje pozivnica</h3>
+    <p class="hint">Bot treba dozvolu <b>Manage Server</b> da vidi pozivnice. U poruku dobrodošlice također možeš staviti <code>{inviter}</code> i <code>{invites}</code>.</p>
+    <%- include('../partials/toggle', { name: 'enabled', checked: settings.invites.enabled, label: 'Posebna poruka o tome tko je koga pozvao' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: settings.invites.channel }) %></label>
+    <label>Poruka<textarea name="message" rows="2"><%= settings.invites.message %></textarea></label>
+    <%- include('../partials/placeholders', { extra: '<code>{inviter}</code> <code>{invites}</code>' }) %>
+    <button class="btn btn-primary">Spremi</button>
+  </div>
+</form>
+<div class="card">
+  <h3>Top pozivači</h3>
+  <% if (!inviteTop.length) { %><p class="muted">Još nema podataka.</p><% } else { %>
+  <table class="table"><thead><tr><th>#</th><th>Član</th><th>Ukupno</th><th>Ušlo</th><th>Izašlo</th></tr></thead><tbody>
+    <% inviteTop.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td class="user"><img src="<%= userAvatar(r.user_id) %>" alt=""><%= userName(r.user_id) %></td><td><b><%= r.total %></b></td><td><%= r.joins %></td><td><%= r.leaves %></td></tr><% }) %>
+  </tbody></table><% } %>
+</div>
+<% } %>
+<%- include('../partials/app-end') %>

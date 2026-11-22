@@ -1,0 +1,43 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Custom komande & autoresponder', icon: 'terminal', sub: 'Komande s prefixom <code>' + settings.prefix + '</code> ili automatski odgovori na ključne riječi bilo gdje u poruci.' }) %>
+
+<div class="card">
+  <h3>Nova komanda ili autoresponder</h3>
+  <form method="post" action="<%= base %>/commands/add">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="grid2">
+      <label>Tip<select name="matchType" id="cc-type">
+        <option value="command">Komanda s prefixom (<%= settings.prefix %>okidač)</option>
+        <option value="contains">Autoresponder — poruka sadrži riječ</option>
+        <option value="exact">Autoresponder — poruka je točno</option>
+        <option value="startswith">Autoresponder — poruka počinje s</option>
+      </select></label>
+      <label>Okidač<input name="trigger" id="cc-trigger" maxlength="100" required placeholder="pravila"></label>
+    </div>
+    <label>Odgovor<textarea name="response" id="cc-response" rows="4" maxlength="2000"></textarea></label>
+    <label>Reakcija emojijem (opcionalno)<input name="reaction" id="cc-reaction" maxlength="64" placeholder="👋"></label>
+    <%- include('../partials/placeholders', { extra: '<code>{args}</code> <code>{channel}</code>' }) %>
+    <%- include('../partials/toggle', { name: 'embed', checked: false, label: 'Odgovori kao embed' }) %>
+    <%- include('../partials/toggle', { name: 'deleteTrigger', checked: false, label: 'Obriši poruku koja je pokrenula komandu' }) %>
+    <button class="btn btn-primary">Spremi komandu</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Postojeće (<%= customCommands.length %>)</h3>
+  <% if (!customCommands.length) { %><p class="muted">Nema custom komandi.</p><% } else { %>
+  <table class="table"><thead><tr><th>Okidač</th><th>Odgovor</th><th>Tip</th><th>Korišteno</th><th></th></tr></thead><tbody>
+    <% customCommands.forEach(c => { %>
+      <tr>
+        <td><code><%= c.match_type === 'command' ? settings.prefix : '' %><%= c.trigger %></code></td>
+        <td class="clip" title="<%= c.response %>"><%= c.response %></td>
+        <td><span class="tag"><%= { command: 'komanda', contains: 'sadrži', exact: 'točno', startswith: 'počinje' }[c.match_type] %></span><%= c.reaction ? ' ' + c.reaction : '' %></td>
+        <td><%= c.uses %></td>
+        <td class="actions">
+          <button type="button" class="btn btn-ghost btn-xs" data-edit-cc data-trigger="<%= c.trigger %>" data-response="<%= c.response === '-' ? '' : c.response %>" data-type="<%= c.match_type %>" data-reaction="<%= c.reaction || '' %>">Uredi</button>
+          <form method="post" action="<%= base %>/commands/<%= c.id %>/delete" data-confirm="Obrisati?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody></table><% } %>
+</div>
+<%- include('../partials/app-end') %>

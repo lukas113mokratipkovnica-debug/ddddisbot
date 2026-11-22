@@ -1,0 +1,38 @@
+<%- include('../partials/app-start') %>
+<% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
+   const STAT = { active: ['Aktivna','status-online'], trialing: ['Probno razdoblje','status-online'], past_due: ['Dospjelo plaćanje','status-starting'], canceled: ['Otkazana','status-error'], refunded: ['Povrat novca','status-error'], disputed: ['Osporeno plaćanje','status-error'] };
+   const suspended = bots.filter(b => b.suspended); %>
+<%- include('../partials/pagehead', { heading: 'Naplata i pretplata', icon: 'card', sub: 'Tvoj paket, pretplata i plaćanja.' }) %>
+
+<% if (suspended.length) { %>
+  <div class="callout callout-warn"><%- ic('pause') %><div><b>Pauzirano botova: <%= suspended.length %>.</b> Pretplata nije aktivna, pa su botovi iznad limita paketa <b><%= plan.name %></b> zaustavljeni. Obnovi pretplatu da ih vratiš.</div></div>
+<% } %>
+
+<div class="two-col">
+  <div class="card" data-spot>
+    <h3>Trenutni paket</h3>
+    <div class="plan-now"><span class="big-num" style="font-size:2.4rem"><%= plan.name %></span><span class="muted"><%= plan.price %> / <%= plan.period %></span></div>
+    <div class="mini-stats">
+      <div><b><%= bots.length %> / <%= plan.maxBots %></b><span>botova</span></div>
+      <% if (subStatus) { %><div><b class="<%= (STAT[subStatus]||['',''])[1] %>" style="font-size:1rem"><%= (STAT[subStatus]||[subStatus])[0] %></b><span>pretplata</span></div><% } %>
+      <% if (planUntil) { %><div><b style="font-size:1rem"><%= new Date(planUntil).toLocaleDateString(numLocale) %></b><span><%= subStatus === 'active' ? 'obnova' : 'vrijedi do' %></span></div><% } %>
+    </div>
+    <div class="row">
+      <% if (billingEnabled && hasCustomer) { %>
+        <form method="post" action="/billing/portal"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-primary"><%- ic('card') %>Upravljaj pretplatom</button></form>
+      <% } %>
+      <a class="btn btn-ghost" href="/pricing"><%- ic('crown') %><%= plan.key === 'business' ? 'Svi paketi' : 'Nadogradi paket' %></a>
+    </div>
+  </div>
+  <div class="card" data-spot>
+    <h3>Kako radi</h3>
+    <ul class="checklist">
+      <li><%- ic('check') %>Plaćaš samo broj botova. Svi moduli su uključeni u svakom paketu.</li>
+      <li><%- ic('check') %>Pretplatu otkazuješ ili mijenjaš bilo kada preko "Upravljaj pretplatom".</li>
+      <li><%- ic('pause') %>Nakon otkazivanja ili povrata novca paket pada na Free, a botovi iznad limita se pauziraju — ne brišu.</li>
+      <li><%- ic('check') %>Čim ponovo platiš, pauzirani botovi se vrate i pokrenu automatski.</li>
+    </ul>
+    <% if (!billingEnabled) { %><p class="hint"><%- ic('zap') %>Online naplata trenutno nije postavljena na ovoj instanci — paket dodjeljuje administrator ručno.</p><% } %>
+  </div>
+</div>
+<%- include('../partials/app-end') %>

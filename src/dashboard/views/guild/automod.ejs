@@ -1,0 +1,74 @@
+<%- include('../partials/app-start') %>
+<% const A = settings.automod; %>
+<%- include('../partials/pagehead', { heading: 'AutoMod', icon: 'bot', sub: 'Članovi s dozvolom <b>Manage Messages</b> su automatski izuzeti.' }) %>
+<form method="post" action="<%= base %>/save/automod">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <%- include('../partials/toggle', { name: 'enabled', checked: A.enabled, label: 'AutoMod uključen' }) %>
+    <label>Trajanje timeouta (minute)<input type="number" name="timeoutMinutes" min="1" max="40320" value="<%= A.timeoutMinutes %>"></label>
+  </div>
+  <div class="rules">
+    <div class="card">
+      <h3>🤬 Zabranjene riječi</h3>
+      <%- include('../partials/toggle', { name: 'badWordsEnabled', checked: A.badWords.enabled, label: 'Uključeno' }) %>
+      <label>Riječi (jedna po redu ili zarezom; <code>*</code> = bilo što, npr. <code>jeb*</code>)<textarea name="badWords" rows="5"><%= A.badWords.words.join('\n') %></textarea></label>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'badWordsAction', value: A.badWords.action }) %></label>
+    </div>
+    <div class="card">
+      <h3>📨 Discord pozivnice</h3>
+      <%- include('../partials/toggle', { name: 'invitesEnabled', checked: A.invites.enabled, label: 'Blokiraj tuđe invite linkove' }) %>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'invitesAction', value: A.invites.action }) %></label>
+    </div>
+    <div class="card">
+      <h3>🔗 Linkovi</h3>
+      <%- include('../partials/toggle', { name: 'linksEnabled', checked: A.links.enabled, label: 'Blokiraj linkove' }) %>
+      <label>Dozvoljene domene<textarea name="linksWhitelist" rows="3"><%= A.links.whitelist.join('\n') %></textarea></label>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'linksAction', value: A.links.action }) %></label>
+    </div>
+    <div class="card">
+      <h3>📣 Masovno tagovanje</h3>
+      <%- include('../partials/toggle', { name: 'mentionsEnabled', checked: A.mentions.enabled, label: 'Uključeno' }) %>
+      <label>Max tagova u poruci<input type="number" name="mentionsLimit" min="2" max="50" value="<%= A.mentions.limit %>"></label>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'mentionsAction', value: A.mentions.action }) %></label>
+    </div>
+    <div class="card">
+      <h3>🔠 Velika slova</h3>
+      <%- include('../partials/toggle', { name: 'capsEnabled', checked: A.caps.enabled, label: 'Uključeno' }) %>
+      <div class="grid2">
+        <label>% velikih slova<input type="number" name="capsPercent" min="30" max="100" value="<%= A.caps.percent %>"></label>
+        <label>Min. duljina<input type="number" name="capsMin" min="5" max="200" value="<%= A.caps.minLength %>"></label>
+      </div>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'capsAction', value: A.caps.action }) %></label>
+    </div>
+    <div class="card">
+      <h3>⚡ Spam</h3>
+      <%- include('../partials/toggle', { name: 'spamEnabled', checked: A.spam.enabled, label: 'Uključeno' }) %>
+      <div class="grid2">
+        <label>Više od X poruka<input type="number" name="spamMessages" min="2" max="30" value="<%= A.spam.messages %>"></label>
+        <label>u Y sekundi<input type="number" name="spamSeconds" min="1" max="60" value="<%= A.spam.seconds %>"></label>
+      </div>
+      <label>Akcija<%- include('../partials/actionSelect', { name: 'spamAction', value: A.spam.action }) %></label>
+    </div>
+  </div>
+  <div class="card">
+    <h3>⚖️ Automatska kazna za upozorenja</h3>
+    <p class="hint">Vrijedi za /warn i AutoMod upozorenja. Okida se na svakih X upozorenja.</p>
+    <%- include('../partials/toggle', { name: 'thresholdEnabled', checked: A.warnThreshold.enabled, label: 'Uključeno' }) %>
+    <div class="grid3">
+      <label>Broj upozorenja<input type="number" name="thresholdCount" min="1" max="50" value="<%= A.warnThreshold.count %>"></label>
+      <label>Kazna<select name="thresholdAction">
+        <% ['timeout','kick','ban'].forEach(a => { %><option value="<%= a %>" <%= A.warnThreshold.action === a ? 'selected' : '' %>><%= a %></option><% }) %>
+      </select></label>
+      <label>Timeout (min)<input type="number" name="thresholdMinutes" min="1" max="40320" value="<%= A.warnThreshold.minutes %>"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Izuzeci</h3>
+    <div class="grid2">
+      <div><b>Ignorirani kanali</b><%- include('../partials/multi', { name: 'ignoredChannels', kind: 'channel', values: A.ignoredChannels }) %></div>
+      <div><b>Ignorirane uloge</b><%- include('../partials/multi', { name: 'ignoredRoles', kind: 'role', values: A.ignoredRoles }) %></div>
+    </div>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<%- include('../partials/app-end') %>

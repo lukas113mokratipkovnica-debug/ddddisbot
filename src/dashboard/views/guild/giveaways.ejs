@@ -1,0 +1,34 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Giveaway', icon: 'gift', sub: 'Pokreni nagradnu igru ili upravljaj postojećima.' }) %>
+<div class="card">
+  <h3>Novi giveaway</h3>
+  <form method="post" action="<%= base %>/giveaways/create">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="grid2">
+      <label>Nagrada<input name="prize" maxlength="200" required placeholder="Discord Nitro"></label>
+      <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
+      <label>Trajanje<input name="duration" required placeholder="1d, 12h, 30m"></label>
+      <label>Broj pobjednika<input type="number" name="winners" min="1" max="50" value="1"></label>
+    </div>
+    <button class="btn btn-primary">🎉 Pokreni</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Giveawayi</h3>
+  <% if (!giveawayList.length) { %><p class="muted">Nema giveawaya.</p><% } else { %>
+  <table class="table"><thead><tr><th>ID</th><th>Nagrada</th><th>Sudionici</th><th>Kraj</th><th>Pobjednici</th><th></th></tr></thead><tbody>
+    <% giveawayList.forEach(g => { %>
+      <tr>
+        <td><%= g.id %></td><td><%= g.prize %></td><td><%= g.entrants.length %></td>
+        <td><%= g.ended ? 'završen' : new Date(g.ends_at).toLocaleString(numLocale) %></td>
+        <td><%= g.winner_ids.map(userName).join(', ') || '—' %></td>
+        <td class="actions">
+          <% if (!g.ended) { %><form method="post" action="<%= base %>/giveaways/<%= g.id %>/end"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Završi</button></form><% } else { %>
+          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/reroll"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Reroll</button></form><% } %>
+          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/delete" data-confirm="Obrisati iz baze?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody></table><% } %>
+</div>
+<%- include('../partials/app-end') %>

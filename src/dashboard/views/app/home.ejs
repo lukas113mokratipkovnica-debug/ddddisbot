@@ -1,0 +1,28 @@
+<%- include('../partials/app-start') %>
+<% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; %>
+<%- include('../partials/pagehead', { heading: 'Moji botovi', sub: `Pozdrav, <b>${user.username}</b> 👋 Ovdje upravljaš svim svojim botovima.`, actions: `<a class="btn btn-primary" href="/app/new">${ic('plus')}Novi bot</a>` }) %>
+
+<div class="usage card">
+  <div><span class="muted small">Paket</span><b><%= plan.name %></b></div>
+  <div class="usage-bar"><div class="row between small"><span>Iskorišteno botova</span><span><b><%= mine.length %></b> / <%= plan.maxBots %></span></div><div class="bar"><i style="width:<%= Math.min(100, mine.length / plan.maxBots * 100) %>%"></i></div></div>
+  <a class="btn btn-ghost btn-sm" href="/pricing">Nadogradi</a>
+</div>
+
+<% if (!mine.length) { %>
+  <div class="empty card">
+    <span class="empty-icon"><%- ic('bot') %></span>
+    <h2>Još nemaš svog bota</h2>
+    <p class="muted">Napravi ga za minutu — odaberi predložak, zalijepi token i gotovo.</p>
+    <a class="btn btn-primary btn-lg" href="/app/new"><%- ic('plus') %>Napravi prvog bota</a>
+  </div>
+<% } else { %>
+  <div class="bot-grid">
+    <% mine.forEach(b => { %><%- include('../partials/botcard', { b }) %><% }) %>
+    <a class="bot-card add" href="/app/new"><%- ic('plus') %><span>Dodaj bota</span></a>
+  </div>
+<% } %>
+
+<h2 class="h2">Službeni bot</h2>
+<p class="muted">Ne želiš svog bota? Dodaj naš All-in-One bot na server i podesi ga ovdje.</p>
+<div class="bot-grid"><%- include('../partials/botcard', { b: official }) %></div>
+<%- include('../partials/app-end') %>

@@ -1,0 +1,27 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Općenito', icon: 'settings', sub: 'Prefix, moderatorska uloga i uključene komande.' }) %>
+<form method="post" action="<%= base %>/save/general">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <h3>Osnovno</h3>
+    <div class="grid2">
+      <label>Prefix za custom komande<input name="prefix" value="<%= settings.prefix %>" maxlength="5"></label>
+      <label>Moderatorska uloga <small class="muted">(info za bota)</small><%- include('../partials/roleSelect', { name: 'modRole', value: settings.modRole, placeholder: '— nijedna —' }) %></label>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Uključene slash komande</h3>
+    <p class="hint">Isključene komande vraćaju poruku "komanda je isključena". Dozvole za pojedine komande možeš dodatno podesiti u Discordu: Server Settings → Integrations.</p>
+    <div class="cmd-grid">
+      <% commands.sort((a,b) => a.module.localeCompare(b.module) || a.name.localeCompare(b.name)).forEach(c => { %>
+        <label class="cmd-item">
+          <input type="checkbox" class="cmd-toggle" data-name="<%= c.name %>" <%= settings.disabledCommands.includes(c.name) ? '' : 'checked' %>>
+          <span><b>/<%= c.name %></b><small><%= c.description %></small></span>
+          <% if (settings.disabledCommands.includes(c.name)) { %><input type="hidden" name="disabledCommands" value="<%= c.name %>"><% } %>
+        </label>
+      <% }) %>
+    </div>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<%- include('../partials/app-end') %>

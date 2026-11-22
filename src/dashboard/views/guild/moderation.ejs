@@ -1,0 +1,22 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Moderacija', icon: 'shield' }) %>
+<p class="muted">Komande: <code>/ban</code> <code>/unban</code> <code>/kick</code> <code>/timeout</code> <code>/untimeout</code> <code>/warn</code> <code>/warnings</code> <code>/delwarn</code> <code>/purge</code> <code>/slowmode</code> <code>/lock</code> <code>/unlock</code> <code>/nick</code> <code>/role</code>. Automatske kazne za upozorenja podešavaš u <a href="<%= base %>/automod">AutoModu</a>.</p>
+<div class="card">
+  <h3>Upozorenja (<%= warningList.length %>)</h3>
+  <input type="search" class="table-filter" data-target="warn-table" placeholder="Filtriraj po korisniku ili razlogu…">
+  <% if (!warningList.length) { %><p class="muted">Nema upozorenja.</p><% } else { %>
+  <table class="table" id="warn-table"><thead><tr><th>ID</th><th>Korisnik</th><th>Moderator</th><th>Razlog</th><th>Datum</th><th></th></tr></thead><tbody>
+    <% warningList.forEach(w => { %>
+      <tr><td><%= w.id %></td><td class="user"><img src="<%= userAvatar(w.user_id) %>" alt=""><%= userName(w.user_id) %></td><td><%= userName(w.mod_id) %></td><td class="clip"><%= w.reason || '—' %></td><td><%= new Date(w.created_at).toLocaleDateString(numLocale) %></td>
+        <td><form method="post" action="<%= base %>/warnings/<%= w.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Obriši</button></form></td></tr>
+    <% }) %>
+  </tbody></table><% } %>
+</div>
+<div class="card">
+  <h3>Mod slučajevi</h3>
+  <% if (!caseList.length) { %><p class="muted">Nema slučajeva.</p><% } else { %>
+  <table class="table"><thead><tr><th>#</th><th>Tip</th><th>Korisnik</th><th>Moderator</th><th>Razlog</th><th>Datum</th></tr></thead><tbody>
+    <% caseList.forEach(c => { %><tr><td><%= c.id %></td><td><span class="tag tag-<%= c.type %>"><%= c.type %></span></td><td><%= userName(c.user_id) %></td><td><%= userName(c.mod_id) %></td><td class="clip"><%= c.reason || '—' %></td><td><%= new Date(c.created_at).toLocaleString(numLocale) %></td></tr><% }) %>
+  </tbody></table><% } %>
+</div>
+<%- include('../partials/app-end') %>

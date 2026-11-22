@@ -1,0 +1,66 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Zajednica', icon: 'users', sub: 'Starboard, prijedlozi, anonimne ispovijesti, igra brojanja i rođendani.' }) %>
+<div class="two-col">
+<% if (modules.has('starboard')) { const S = settings.starboard; %>
+  <form class="card" method="post" action="<%= base %>/save/starboard">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>⭐ Starboard</h3>
+    <%- include('../partials/toggle', { name: 'enabled', checked: S.enabled, label: 'Uključeno' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: S.channel }) %></label>
+    <div class="grid2"><label>Emoji<input name="emoji" value="<%= S.emoji %>" maxlength="64"></label><label>Potrebno reakcija<input type="number" name="threshold" min="1" max="100" value="<%= S.threshold %>"></label></div>
+    <button class="btn btn-primary">Spremi</button>
+  </form>
+<% } %>
+<% if (modules.has('suggestions')) { const S = settings.suggestions; %>
+  <form class="card" method="post" action="<%= base %>/save/suggestions">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>💡 Prijedlozi</h3>
+    <p class="hint">Članovi koriste <code>/suggest</code>. Bot doda ✅/❌ i otvori thread.</p>
+    <%- include('../partials/toggle', { name: 'enabled', checked: S.enabled, label: 'Uključeno' }) %>
+    <label>Kanal za prijedloge<%- include('../partials/channelSelect', { name: 'channel', value: S.channel }) %></label>
+    <button class="btn btn-primary">Spremi</button>
+  </form>
+<% } %>
+<% if (modules.has('confessions')) { const C = settings.confessions; %>
+  <form class="card" method="post" action="<%= base %>/save/confessions">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>🎭 Anonimne ispovijesti</h3>
+    <p class="hint"><code>/confess</code> šalje anonimnu poruku. Log kanal (samo za moderatore) bilježi autora.</p>
+    <%- include('../partials/toggle', { name: 'enabled', checked: C.enabled, label: 'Uključeno' }) %>
+    <label>Javni kanal<%- include('../partials/channelSelect', { name: 'channel', value: C.channel }) %></label>
+    <label>Log kanal (privatni)<%- include('../partials/channelSelect', { name: 'logChannel', value: C.logChannel, placeholder: '— bez loga —' }) %></label>
+    <button class="btn btn-primary">Spremi</button>
+  </form>
+<% } %>
+<% if (modules.has('counting')) { const C = settings.counting; %>
+  <form class="card" method="post" action="<%= base %>/save/counting">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>🔢 Brojanje</h3>
+    <div class="mini-stats"><div><b><%= countState.current %></b><span>trenutno</span></div><div><b><%= countState.high_score %></b><span>rekord</span></div></div>
+    <%- include('../partials/toggle', { name: 'enabled', checked: C.enabled, label: 'Uključeno' }) %>
+    <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: C.channel }) %></label>
+    <%- include('../partials/toggle', { name: 'sameUserTwice', checked: C.sameUserTwice, label: 'Dozvoli istoj osobi dvaput zaredom' }) %>
+    <%- include('../partials/toggle', { name: 'resetOnFail', checked: C.resetOnFail, label: 'Kreni od 1 nakon greške' }) %>
+    <div class="row"><button class="btn btn-primary">Spremi</button><button class="btn btn-ghost" formaction="<%= base %>/counting/reset" data-confirm="Resetirati na 0?">Resetiraj brojač</button></div>
+  </form>
+<% } %>
+<% if (modules.has('birthdays')) { const B = settings.birthdays; %>
+  <form class="card" method="post" action="<%= base %>/save/birthdays">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>🎂 Rođendani</h3>
+    <p class="hint">Članovi postavljaju rođendan s <code>/birthday set</code>. Postavljeno: <b><%= birthdayList.length %></b>.</p>
+    <%- include('../partials/toggle', { name: 'enabled', checked: B.enabled, label: 'Uključeno' }) %>
+    <label>Kanal za čestitke<%- include('../partials/channelSelect', { name: 'channel', value: B.channel }) %></label>
+    <label>Rođendanska uloga (taj dan)<%- include('../partials/roleSelect', { name: 'role', value: B.role, placeholder: '— bez uloge —', assignableOnly: true }) %></label>
+    <label>Poruka<textarea name="message" rows="2"><%= B.message %></textarea></label>
+    <button class="btn btn-primary">Spremi</button>
+  </form>
+<% } %>
+</div>
+<% if (modules.has('confessions') && confessionList.length) { %>
+  <div class="card"><h3>Zadnje ispovijesti</h3>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Autor</th><th>Tekst</th><th>Datum</th></tr></thead><tbody>
+      <% confessionList.forEach(c => { %><tr><td><%= userName(c.user_id) %></td><td class="clip"><%= c.content %></td><td><%= new Date(c.created_at).toLocaleString(numLocale) %></td></tr><% }) %>
+    </tbody></table></div></div>
+<% } %>
+<%- include('../partials/app-end') %>

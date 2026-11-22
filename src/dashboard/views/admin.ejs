@@ -1,0 +1,59 @@
+<%- include('partials/app-start') %>
+<% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; %>
+<%- include('partials/pagehead', { heading: 'Admin panel', icon: 'crown', sub: 'Pregled cijele platforme.' }) %>
+<div class="stat-grid">
+  <div class="card stat"><span class="stat-icon"><%- ic('bot') %></span><span>Botovi</span><strong><%= totals.online %> / <%= bots.length %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Korisnici platforme</span><strong><%= users.length %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Serveri (ukupno)</span><strong><%= totals.guilds %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('activity') %></span><span>RAM / uptime</span><strong><%= ram %> MB · <%= Math.floor(uptime / 3600) %>h</strong></div>
+</div>
+<div class="card">
+  <h3>Botovi</h3>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Bot</th><th>Vlasnik</th><th>Tip</th><th>Status</th><th>Serveri</th><th></th></tr></thead>
+    <tbody>
+      <% bots.forEach(b => { %>
+        <tr>
+          <td class="user"><img src="<%= b.info.avatar || b.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><a href="/bots/<%= b.id %>"><%= b.name %></a></td>
+          <td><%= b.official ? '—' : ownerName(b.owner_id) %></td>
+          <td><%= b.template ? b.template.name : '' %></td>
+          <td><span class="status status-<%= b.info.status %>"><%= b.info.status %></span></td>
+          <td><%= b.info.guilds %></td>
+          <td class="actions">
+            <form method="post" action="/bots/<%= b.id %>/power/<%= b.info.status === 'online' ? 'stop' : 'start' %>"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs"><%= b.info.status === 'online' ? 'Stop' : 'Start' %></button></form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div>
+<div class="card">
+  <h3>Korisnici</h3>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Korisnik</th><th>Botovi</th><th>Registriran</th><th>Paket</th><th></th></tr></thead>
+    <tbody>
+      <% users.forEach(u => { %>
+        <tr>
+          <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blokiran</span><% } %><% if (u.sub_status && u.sub_status !== 'active') { %> <span class="tag tag-warn" data-notr><%= u.sub_status %></span><% } %></td>
+          <td><%= u.bot_count %></td>
+          <td><%= new Date(u.created_at).toLocaleDateString(numLocale) %></td>
+          <td>
+            <form method="post" action="/admin/users/<%= u.id %>/plan" class="row nowrap"><input type="hidden" name="_csrf" value="<%= csrf %>">
+              <select name="plan" class="sm" data-autosubmit><% Object.values(plans).forEach(p => { %><option value="<%= p.key %>" <%= u.plan === p.key ? 'selected' : '' %>><%= p.name %></option><% }) %></select>
+            </form>
+          </td>
+          <td class="actions">
+            <form method="post" action="/admin/users/<%= u.id %>/ban" data-confirm="Sigurno?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="banned" value="<%= u.banned ? '0' : '1' %>"><button class="btn btn-xs <%= u.banned ? 'btn-ghost' : 'btn-danger' %>"><%= u.banned ? 'Odblokiraj' : 'Blokiraj' %></button></form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div>
+<div class="card">
+  <h3><%- ic('history') %> Audit log platforme</h3>
+  <ul class="timeline">
+    <% auditList.forEach(a => { %><li><time><%= new Date(a.created_at).toLocaleString(numLocale) %></time><div class="ev"><b data-notr><%= a.action %></b><small data-notr><%= ownerName(a.user_id) %> · <%= a.ip || '' %><%= a.target ? ' · ' + a.target : '' %></small></div></li><% }) %>
+  </ul>
+</div>
+<%- include('partials/app-end') %>

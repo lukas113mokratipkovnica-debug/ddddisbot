@@ -1,0 +1,33 @@
+<%- include('../partials/app-start') %>
+<%- include('../partials/pagehead', { heading: 'Voice', icon: 'mic', sub: 'Privremeni voice kanali i kanali sa statistikom servera.' }) %>
+<% if (modules.has('tempvoice')) { const T = settings.tempvoice; %>
+<form class="card" method="post" action="<%= base %>/save/tempvoice">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <h3>🔊 Privremeni voice kanali</h3>
+  <p class="hint">Kad član uđe u "hub" kanal, bot mu napravi vlastiti kanal i premjesti ga. Kanal se briše kad se isprazni. Vlasnik ga uređuje s <code>/voice</code>.</p>
+  <%- include('../partials/toggle', { name: 'enabled', checked: T.enabled, label: 'Uključeno' }) %>
+  <div class="grid2">
+    <label>Hub kanal ("Uđi za kreiranje")<%- include('../partials/channelSelect', { name: 'hub', value: T.hub, list: voiceChannels, voice: true, placeholder: '— odaberi voice kanal —' }) %></label>
+    <label>Kategorija za nove kanale<select name="category"><option value="">— ista kao hub —</option><% categories.forEach(c => { %><option value="<%= c.id %>" <%= T.category === c.id ? 'selected' : '' %>>📁 <%= c.name %></option><% }) %></select></label>
+    <label>Ime kanala<input name="nameTemplate" maxlength="90" value="<%= T.nameTemplate %>"></label>
+    <label>Limit korisnika (0 = bez)<input type="number" name="userLimit" min="0" max="99" value="<%= T.userLimit %>"></label>
+  </div>
+  <button class="btn btn-primary">Spremi</button>
+</form>
+<% } %>
+<% if (modules.has('serverstats')) { const S = settings.serverstats; const K = [['members','Članovi'],['humans','Ljudi'],['bots','Botovi'],['boosts','Boostovi']]; %>
+<form class="card" method="post" action="<%= base %>/save/serverstats">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="row between"><h3>📊 Statistika kanali</h3><button class="btn btn-ghost btn-sm" formaction="<%= base %>/serverstats/create">Automatski kreiraj kanale</button></div>
+  <p class="hint">Zaključani voice kanali čije ime pokazuje broj. Osvježava se svakih 10 minuta (Discord limit).</p>
+  <%- include('../partials/toggle', { name: 'enabled', checked: S.enabled, label: 'Uključeno' }) %>
+  <% K.forEach(([k, l]) => { %>
+    <div class="grid2">
+      <label><%= l %> — kanal<%- include('../partials/channelSelect', { name: k, value: S[k], list: voiceChannels, voice: true, placeholder: '— isključeno —' }) %></label>
+      <label>Format imena<input name="<%= k %>Name" maxlength="90" value="<%= S[k + 'Name'] %>"></label>
+    </div>
+  <% }) %>
+  <button class="btn btn-primary">Spremi</button>
+</form>
+<% } %>
+<%- include('../partials/app-end') %>

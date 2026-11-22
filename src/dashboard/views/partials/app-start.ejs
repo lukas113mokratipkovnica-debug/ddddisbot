@@ -1,0 +1,90 @@
+<%- include('head', { bodyClass: 'app' }) %>
+<%
+  const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
+  const hasBot = typeof botRec !== 'undefined' && botRec;
+  const hasGuild = typeof guild !== 'undefined' && guild;
+  const sec = typeof section !== 'undefined' ? section : '';
+  const STATUS = { online: 'Online', offline: 'Offline', starting: 'Pokreće se', reconnecting: 'Spajanje', error: 'Greška', suspended: 'Pauziran' };
+  const GUILD_NAV = [
+    ['overview', 'grid', 'Pregled'], ['general', 'settings', 'Općenito'], ['messages', 'mail', 'Poruke & sticky'],
+    ['welcome', 'hand', 'Dobrodošlica'], ['verification', 'badge', 'Verifikacija'], ['moderation', 'shield', 'Moderacija'],
+    ['automod', 'bot', 'AutoMod'], ['logs', 'scroll', 'Logovi'], ['leveling', 'trending', 'Leveling'], ['economy', 'coins', 'Ekonomija'],
+    ['commands', 'terminal', 'Custom komande'], ['roles', 'layers', 'Button role'], ['tickets', 'ticket', 'Tiketi'], ['giveaways', 'gift', 'Giveaway'],
+    ['community', 'users', 'Zajednica'], ['voice', 'mic', 'Voice'], ['notifications', 'bell', 'Obavijesti'],
+  ];
+%>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side-top"><%- include('logo') %></div>
+    <button class="search-btn" type="button" data-palette-open><%- ic('search') %><span>Traži…</span><span class="kbd">Ctrl K</span></button>
+    <nav class="side-nav">
+      <a href="/app" class="<%= path === '/app' ? 'active' : '' %>"><%- ic('grid') %>Moji botovi</a>
+      <a href="/app/new" class="<%= path === '/app/new' ? 'active' : '' %>"><%- ic('plus') %>Novi bot</a>
+      <a href="/account" class="<%= path === '/account' ? 'active' : '' %>"><%- ic('shield-check') %>Račun i sigurnost</a>
+      <a href="/billing" class="<%= path === '/billing' ? 'active' : '' %>"><%- ic('card') %>Naplata</a>
+      <a href="/catalog"><%- ic('book') %>Katalog</a>
+      <% if (isAdmin) { %><a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><%- ic('crown') %>Admin</a><% } %>
+    </nav>
+
+    <% if (hasBot) { %>
+      <div class="side-section">
+        <a class="side-bot" href="/bots/<%= botRec.id %>">
+          <span class="avatar-wrap"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>" data-bot-dot="<%= botRec.id %>"></i></span>
+          <span><b data-notr><%= botRec.name %></b><small data-bot-status-text="<%= botRec.id %>"><%= STATUS[botInfo.status] || botInfo.status %></small></span>
+        </a>
+        <nav class="side-nav">
+          <a href="/bots/<%= botRec.id %>" class="<%= sec === 'overview' ? 'active' : '' %>"><%- ic('activity') %>Pregled</a>
+          <% if (botManage) { %>
+            <a href="/bots/<%= botRec.id %>/modules" class="<%= sec === 'modules' ? 'active' : '' %>"><%- ic('layers') %>Moduli</a>
+            <a href="/bots/<%= botRec.id %>/settings" class="<%= sec === 'settings' ? 'active' : '' %>"><%- ic('settings') %>Postavke</a>
+            <a href="/bots/<%= botRec.id %>/console" class="<%= sec === 'console' ? 'active' : '' %>"><%- ic('terminal') %>Konzola</a>
+          <% } %>
+        </nav>
+      </div>
+    <% } %>
+
+    <% if (hasGuild) { %>
+      <div class="side-section">
+        <div class="side-guild">
+          <% if (guild.iconURL()) { %><img src="<%= guild.iconURL({ size: 64 }) %>" alt=""><% } else { %><span class="guild-fallback" data-notr><%= guild.name.slice(0, 2) %></span><% } %>
+          <span><b data-notr><%= guild.name %></b><small><%= guild.memberCount %> članova</small></span>
+        </div>
+        <nav class="side-nav">
+          <% GUILD_NAV.filter(([k]) => pageEnabled(k, modules)).forEach(([key, icon, label]) => { %>
+            <a href="<%= base %><%= key === 'overview' ? '' : '/' + key %>" class="<%= page === key ? 'active' : '' %>"><%- ic(icon) %><%= label %></a>
+          <% }) %>
+        </nav>
+      </div>
+    <% } %>
+
+    <div class="side-bottom">
+      <% if (userPlan) { %><a class="plan-chip" href="/billing"><%- ic('crown') %><span>Paket <b><%= userPlan.name %></b></span></a><% } %>
+      <div class="side-user">
+        <a href="/account" class="row nowrap" style="flex:1;min-width:0;color:var(--text)"><img src="<%= user.avatar %>" alt=""><span class="name" data-notr><%= user.username %></span></a>
+        <%- include('prefs', { up: true }) %>
+        <form method="post" action="/logout" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="icon-btn" title="Odjava" aria-label="Odjava"><%- ic('logout') %></button></form>
+      </div>
+    </div>
+  </aside>
+  <div class="side-backdrop" data-close-side></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn menu-btn" type="button" data-open-side aria-label="Meni"><%- ic('menu') %></button>
+      <div class="crumbs">
+        <a href="/app">Botovi</a>
+        <% if (hasBot) { %><span class="sep">/</span><a href="/bots/<%= botRec.id %>" data-notr><%= botRec.name %></a><% } %>
+        <% if (hasGuild) { %><span class="sep">/</span><a href="<%= base %>" data-notr><%= guild.name %></a><% } %>
+      </div>
+      <div class="topbar-actions">
+        <span class="live-dot hide-sm" data-live-indicator>LIVE</span>
+        <button class="icon-btn" type="button" data-palette-open title="Traži (Ctrl K)" aria-label="Traži"><%- ic('search') %></button>
+        <% if (hasBot && botManage) { %>
+          <% if (botInfo.status === 'online') { %>
+            <form method="post" action="/bots/<%= botRec.id %>/power/restart"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-sm" title="Restart"><%- ic('refresh') %><span class="hide-sm">Restart</span></button></form>
+          <% } else { %>
+            <form method="post" action="/bots/<%= botRec.id %>/power/start"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-success btn-sm"><%- ic('power') %>Pokreni</button></form>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+    <div class="content">

@@ -1,0 +1,5 @@
+<label class="switch">
+  <input type="checkbox" name="<%= name %>" <%= checked ? 'checked' : '' %>>
+  <span class="slider"></span>
+  <span class="switch-label"><%= label %><% if (typeof hint !== 'undefined') { %><small><%= hint %></small><% } %></span>
+</label>
