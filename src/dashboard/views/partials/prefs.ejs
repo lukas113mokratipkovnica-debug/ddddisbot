@@ -1,16 +1,16 @@
 <%# language + theme + accent popover; `up` opens upwards (sidebar) %>
 <details class="pop">
-  <summary class="icon-btn" title="Izgled" aria-label="Izgled"><svg class="ic"><use href="#i-sun"/></svg></summary>
+  <summary class="icon-btn" title="Appearance" aria-label="Appearance"><svg class="ic"><use href="#i-sun"/></svg></summary>
   <div class="pop-panel <%= typeof up !== 'undefined' && up ? 'up' : '' %>">
-    <span class="pop-label">Tema</span>
+    <span class="pop-label">Topic</span>
     <div class="seg" data-theme-seg>
-      <button type="button" data-theme-set="auto" title="Automatski"><svg class="ic"><use href="#i-sparkles"/></svg></button>
-      <button type="button" data-theme-set="dark" title="Tamna"><svg class="ic"><use href="#i-moon"/></svg></button>
-      <button type="button" data-theme-set="light" title="Svijetla"><svg class="ic"><use href="#i-sun"/></svg></button>
+      <button type="button" data-theme-set="auto" title="Automatic"><svg class="ic"><use href="#i-sparkles"/></svg></button>
+      <button type="button" data-theme-set="dark" title="Dark"><svg class="ic"><use href="#i-moon"/></svg></button>
+      <button type="button" data-theme-set="light" title="Light"><svg class="ic"><use href="#i-sun"/></svg></button>
     </div>
-    <span class="pop-label">Boja naglaska</span>
+    <span class="pop-label">Accent color</span>
     <div class="hues" data-hues>
-      <% [268, 300, 330, 20, 60, 150, 190, 220, 240, 0, 100, 280].forEach(h => { %><button type="button" data-hue="<%= h %>" style="--hh:<%= h %>" aria-label="Boja <%= h %>"></button><% }) %>
+      <% [268, 300, 330, 20, 60, 150, 190, 220, 240, 0, 100, 280].forEach(h => { %><button type="button" data-hue="<%= h %>" style="--hh:<%= h %>" aria-label="Color <%= h %>"></button><% }) %>
     </div>
   </div>
 </details>

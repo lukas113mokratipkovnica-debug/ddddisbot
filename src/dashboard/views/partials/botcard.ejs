@@ -1,15 +1,15 @@
-<% const STATUS = { online: 'Online', offline: 'Offline', starting: 'Pokreće se', reconnecting: 'Spajanje', error: 'Greška' }; %>
+<% const STATUS = { online: 'Online', offline: 'Offline', starting: 'Starting', reconnecting: 'Connecting', error: 'Error' }; %>
 <a class="bot-card" data-spot href="/bots/<%= b.id %>" style="--c:<%= b.template.color %>">
   <span class="glow"></span>
   <div class="bot-card-top">
     <span class="avatar-wrap lg"><img src="<%= b.info.avatar || b.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= b.info.status %>" data-bot-dot="<%= b.id %>"></i></span>
-    <div class="bot-card-name"><b data-notr><%= b.name %></b><small><span class="tpl-dot"></span><%= b.official ? 'Službeni bot' : b.template.name + ' bot' %></small></div>
+    <div class="bot-card-name"><b data-notr><%= b.name %></b><small><span class="tpl-dot"></span><%= b.official ? 'Official bot' : b.template.name + ' bot' %></small></div>
     <span class="status status-<%= b.info.status %>" data-bot-status="<%= b.id %>"><%= STATUS[b.info.status] || b.info.status %></span>
   </div>
   <div class="bot-card-stats">
-    <div><b data-bot-guilds="<%= b.id %>"><%= b.info.guilds %></b><span>servera</span></div>
-    <div><b><%= b.info.members.toLocaleString(numLocale) %></b><span>korisnika</span></div>
-    <div><b><%= b.modules.length %></b><span>modula</span></div>
+    <div><b data-bot-guilds="<%= b.id %>"><%= b.info.guilds %></b><span>servers</span></div>
+    <div><b><%= b.info.members.toLocaleString(numLocale) %></b><span>users</span></div>
+    <div><b><%= b.modules.length %></b><span>modules</span></div>
   </div>
   <% if (b.info.error) { %><p class="bot-card-err"><%= b.info.error %></p><% } %>
 </a>

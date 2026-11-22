@@ -1,26 +1,26 @@
 <%- include('../partials/app-start') %>
 <% const feeds = settings.notifications.feeds; %>
-<%- include('../partials/pagehead', { heading: 'Obavijesti', icon: 'bell', sub: 'Automatske objave novih YouTube videa i RSS članaka (blogovi, vijesti, Reddit, podcasti…). Provjera svakih 5 minuta.' }) %>
+<%- include('../partials/pagehead', { heading: 'Notifications', icon: 'bell', sub: 'Automatic posts for new YouTube videos and RSS articles (blogs, news, Reddit, podcasts…). Checked every 5 minutes.' }) %>
 <div class="two-col">
   <form class="card" method="post" action="<%= base %>/notifications/add">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
-    <h3>Novi feed</h3>
-    <label>Izvor<select name="type"><option value="youtube">YouTube kanal</option><option value="rss">RSS / Atom feed</option></select></label>
-    <label>YouTube channel ID ili RSS URL<input name="source" required placeholder="UCxxxxxxxxxxxxxxxxxxxxxx ili https://…/feed"></label>
-    <p class="hint">Channel ID nađeš na YouTube → kanal → O kanalu → Podijeli kanal → Kopiraj ID kanala.</p>
-    <label>Kanal za objave<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
-    <label>Poruka<textarea name="message" rows="2">📢 **{author}** je objavio/la: **{title}**
+    <h3>New feed</h3>
+    <label>Source<select name="type"><option value="youtube">YouTube channel</option><option value="rss">RSS / Atom feed</option></select></label>
+    <label>YouTube channel ID or RSS URL<input name="source" required placeholder="UCxxxxxxxxxxxxxxxxxxxxxx or https://…/feed"></label>
+    <p class="hint">Find the channel ID on YouTube → channel → About → Share channel → Copy channel ID.</p>
+    <label>Channel for posts<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
+    <label>Message<textarea name="message" rows="2">📢 **{author}** posted: **{title}**
 {link}</textarea></label>
-    <p class="hint">Varijable: <code>{title}</code> <code>{link}</code> <code>{author}</code>. Možeš dodati <code>@everyone</code> ili tag uloge.</p>
-    <button class="btn btn-primary">Dodaj feed</button>
+    <p class="hint">Variables: <code>{title}</code> <code>{link}</code> <code>{author}</code>. You can add <code>@everyone</code> or a role mention.</p>
+    <button class="btn btn-primary">Add feed</button>
   </form>
   <div class="card">
-    <h3>Aktivni feedovi (<%= feeds.length %>/20)</h3>
-    <% if (!feeds.length) { %><p class="muted">Nema feedova.</p><% } %>
+    <h3>Active feeds (<%= feeds.length %>/20)</h3>
+    <% if (!feeds.length) { %><p class="muted">No feeds.</p><% } %>
     <% feeds.forEach(f => { %>
       <div class="list-item">
-        <div><b><%= f.type === 'youtube' ? '▶️ YouTube' : '📰 RSS' %></b> → #<%= (guild.channels.cache.get(f.channel) || {}).name || 'obrisan' %><small class="muted clip-2"><%= f.source %></small></div>
-        <form method="post" action="<%= base %>/notifications/<%= f.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Obriši</button></form>
+        <div><b><%= f.type === 'youtube' ? '▶️ YouTube' : '📰 RSS' %></b> → #<%= (guild.channels.cache.get(f.channel) || {}).name || 'deleted' %><small class="muted clip-2"><%= f.source %></small></div>
+        <form method="post" action="<%= base %>/notifications/<%= f.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Delete</button></form>
       </div>
     <% }) %>
   </div>

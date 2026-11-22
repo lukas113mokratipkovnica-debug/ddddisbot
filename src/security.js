@@ -17,14 +17,14 @@ function isPrivateIp(ip) {
 
 async function assertPublicUrl(raw) {
   let u;
-  try { u = new URL(raw); } catch { throw new Error('Neispravan URL'); }
-  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Dozvoljeni su samo http(s) linkovi');
+  try { u = new URL(raw); } catch { throw new Error('Invalid URL'); }
+  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Only http(s) links are allowed');
   if (u.port && !['80', '443'].includes(u.port)) throw new Error('Nedozvoljen port');
-  if (u.username || u.password) throw new Error('URL ne smije sadržavati lozinku');
+  if (u.username || u.password) throw new Error('The URL must not contain a password');
   const host = u.hostname.replace(/^\[|\]$/g, '');
-  if (/^(localhost|.*\.local|.*\.internal)$/i.test(host)) throw new Error('Interni hostovi nisu dozvoljeni');
-  const addrs = net.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => { throw new Error('Host ne postoji'); });
-  if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) throw new Error('Privatne mreže nisu dozvoljene');
+  if (/^(localhost|.*\.local|.*\.internal)$/i.test(host)) throw new Error('Internal hosts are not allowed');
+  const addrs = net.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true }).catch(() => { throw new Error('Host doesn\'t exist'); });
+  if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) throw new Error('Private networks are not allowed');
   return u;
 }
 
@@ -36,19 +36,19 @@ async function safeFetch(url, { maxBytes = 2_000_000, timeout = 15_000, headers 
     const res = await fetch(u, { redirect: 'manual', headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BotPlatform/2.0)', ...headers }, signal: AbortSignal.timeout(timeout) });
     if (res.status >= 300 && res.status < 400 && res.headers.get('location')) { current = new URL(res.headers.get('location'), u).toString(); continue; }
     const len = Number(res.headers.get('content-length') || 0);
-    if (len > maxBytes) throw new Error('Datoteka je prevelika');
+    if (len > maxBytes) throw new Error('The file is too large');
     const reader = res.body?.getReader();
     const chunks = []; let size = 0;
     while (reader) {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.length;
-      if (size > maxBytes) { reader.cancel().catch(() => {}); throw new Error('Datoteka je prevelika'); }
+      if (size > maxBytes) { reader.cancel().catch(() => {}); throw new Error('The file is too large'); }
       chunks.push(value);
     }
     return { ok: res.ok, status: res.status, headers: res.headers, buffer: Buffer.concat(chunks), text() { return this.buffer.toString('utf8'); } };
   }
-  throw new Error('Previše preusmjeravanja');
+  throw new Error('Too many redirects');
 }
 
 // ---------------------------------------------------------------- rate limiting (in-memory, fixed window)
@@ -63,7 +63,7 @@ function hit(key, max, windowMs) {
   return { allowed: b.count <= max, remaining: Math.max(0, max - b.count), reset: b.reset };
 }
 
-function rateLimit(name, { max, windowMs, key = (req) => req.ip, message = 'Previše zahtjeva. Pričekaj malo pa pokušaj ponovo.' }) {
+function rateLimit(name, { max, windowMs, key = (req) => req.ip, message = 'Too many requests. Wait a moment and try again.' }) {
   return (req, res, next) => {
     const r = hit(`${name}:${key(req)}`, max, windowMs);
     res.setHeader('RateLimit-Remaining', r.remaining);

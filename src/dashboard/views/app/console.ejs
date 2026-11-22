@@ -1,7 +1,7 @@
 <%- include('../partials/app-start') %>
-<%- include('../partials/pagehead', { heading: 'Konzola', icon: 'terminal', sub: 'Zadnjih 200 događaja ovog bota, uživo.' }) %>
+<%- include('../partials/pagehead', { heading: 'Console', icon: 'terminal', sub: 'The last 200 events of this bot, live.' }) %>
 <div class="console card" id="console" data-console="<%= botRec.id %>" data-max="200">
   <% logs.forEach(l => { %><div class="log-line log-<%= l.level %>"><time><%= new Date(l.t).toLocaleTimeString(numLocale) %></time><b><%= l.level %></b><span><%= l.msg %></span></div><% }) %>
-  <% if (!logs.length) { %><div class="muted">Nema zapisa.</div><% } %>
+  <% if (!logs.length) { %><div class="muted">No entries.</div><% } %>
 </div>
 <%- include('../partials/app-end') %>

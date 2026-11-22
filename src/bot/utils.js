@@ -1,10 +1,8 @@
 const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const config = require('../config');
-const i18n = require('../i18n');
 
 function fillPlaceholders(text, { member, user, guild, extra = {} } = {}) {
   if (!text) return '';
-  text = i18n.t('en', text); // translate untouched default templates to English
   const u = user || member?.user;
   const g = guild || member?.guild;
   const map = {
@@ -45,13 +43,13 @@ async function logModAction(guild, type, target, moderator, reason, extra = '') 
   const id = guild.client.db.cases.add(guild.id, type, target.id, moderator.id, reason || null);
   const e = new EmbedBuilder()
     .setColor(CASE_COLORS[type] || config.color)
-    .setTitle(`Slučaj #${id} • ${type.toUpperCase()}`)
+    .setTitle(`Case #${id} • ${type.toUpperCase()}`)
     .addFields(
-      { name: 'Korisnik', value: `<@${target.id}> (${target.id})`, inline: true },
+      { name: 'Member', value: `<@${target.id}> (${target.id})`, inline: true },
       { name: 'Moderator', value: `<@${moderator.id}>`, inline: true },
-      { name: 'Razlog', value: reason || 'Nije naveden' },
+      { name: 'Reason', value: reason || 'Not provided' },
     );
-  if (extra) e.addFields({ name: 'Detalji', value: extra });
+  if (extra) e.addFields({ name: 'Details', value: extra });
   await sendLog(guild, 'modActions', e);
   return id;
 }
@@ -59,13 +57,13 @@ async function logModAction(guild, type, target, moderator, reason, extra = '') 
 /** Checks whether `mod` may act on `target` (role hierarchy, owner, self). Returns error string or null. */
 function canModerate(mod, target, me) {
   if (!target) return null;
-  if (target.id === mod.id) return 'Ne možeš to napraviti samom sebi.';
-  if (target.id === mod.guild.ownerId) return 'Ne možeš moderirati vlasnika servera.';
-  if (target.id === me.id) return 'Ne možeš to napraviti meni.';
+  if (target.id === mod.id) return 'You can\'t do that to yourself.';
+  if (target.id === mod.guild.ownerId) return 'You can\'t moderate the server owner.';
+  if (target.id === me.id) return 'You can\'t do that to me.';
   if (mod.id !== mod.guild.ownerId && target.roles.highest.position >= mod.roles.highest.position)
-    return 'Taj korisnik ima jednaku ili višu ulogu od tebe.';
+    return 'That member has an equal or higher role than you.';
   if (target.roles.highest.position >= me.roles.highest.position)
-    return 'Moja uloga je niža od uloge tog korisnika — pomakni moju ulogu iznad.';
+    return 'My role is below that member\'s role — move my role higher.';
   return null;
 }
 

@@ -6,48 +6,48 @@
   <span class="avatar-wrap xl"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>" data-bot-dot="<%= botRec.id %>"></i></span>
   <div class="bot-hero-info">
     <h1 data-notr><%= botRec.name %></h1>
-    <div class="bot-hero-meta"><span class="status status-<%= botInfo.status %>" data-bot-status="<%= botRec.id %>"><%= botInfo.status %></span><span class="tag"><%- ic(tpl.icon) %><%= botRec.official ? 'Službeni bot' : tpl.name + ' bot' %></span><% if (botInfo.tag) { %><span class="muted small"><%= botInfo.tag %></span><% } %></div>
+    <div class="bot-hero-meta"><span class="status status-<%= botInfo.status %>" data-bot-status="<%= botRec.id %>"><%= botInfo.status %></span><span class="tag"><%- ic(tpl.icon) %><%= botRec.official ? 'Official bot' : tpl.name + ' bot' %></span><% if (botInfo.tag) { %><span class="muted small"><%= botInfo.tag %></span><% } %></div>
   </div>
   <div class="bot-hero-actions">
-    <a class="btn btn-primary" href="<%= botInvite %>" target="_blank" rel="noopener"><%- ic('plus') %>Dodaj na server</a>
+    <a class="btn btn-primary" href="<%= botInvite %>" target="_blank" rel="noopener"><%- ic('plus') %>Add to server</a>
     <% if (botManage && botInfo.status === 'online') { %>
-      <form method="post" action="/bots/<%= botRec.id %>/power/stop" data-confirm="Zaustaviti bota?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost"><%- ic('power') %>Zaustavi</button></form>
+      <form method="post" action="/bots/<%= botRec.id %>/power/stop" data-confirm="Stop the bot?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost"><%- ic('power') %>Stop</button></form>
     <% } %>
   </div>
 </div>
-<% if (botInfo.suspended) { %><div class="callout callout-warn"><%- ic('pause') %><div><b>Bot je pauziran.</b> Pretplata nije aktivna pa je ovaj bot zaustavljen. <a href="/billing">Obnovi pretplatu</a> da ga vratiš.</div></div><% } %>
-<% if (botInfo.error) { %><div class="callout callout-error"><%- ic('zap') %><div><b>Bot se ne može pokrenuti.</b> <%= botInfo.error %></div><% if (botManage) { %><a class="btn btn-sm btn-ghost" href="/bots/<%= botRec.id %>/settings">Postavke</a><% } %></div><% } %>
+<% if (botInfo.suspended) { %><div class="callout callout-warn"><%- ic('pause') %><div><b>The bot is paused.</b> The subscription isn't active, so this bot has been stopped. <a href="/billing">Renew subscription</a> to bring it back.</div></div><% } %>
+<% if (botInfo.error) { %><div class="callout callout-error"><%- ic('zap') %><div><b>The bot can't start.</b> <%= botInfo.error %></div><% if (botManage) { %><a class="btn btn-sm btn-ghost" href="/bots/<%= botRec.id %>/settings">Settings</a><% } %></div><% } %>
 
 <div class="stat-grid">
-  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Serveri</span><strong data-bot-guilds="<%= botRec.id %>"><%= botInfo.guilds %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Korisnici</span><strong data-bot-members="<%= botRec.id %>"><%= botInfo.members.toLocaleString(numLocale) %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('message') %></span><span>Poruke (7 dana)</span><strong><%= totals.messages.toLocaleString(numLocale) %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('terminal') %></span><span>Komande (7 dana)</span><strong><%= totals.commands.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Servers</span><strong data-bot-guilds="<%= botRec.id %>"><%= botInfo.guilds %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Users</span><strong data-bot-members="<%= botRec.id %>"><%= botInfo.members.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('message') %></span><span>Messages (7 days)</span><strong><%= totals.messages.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('terminal') %></span><span>Commands (7 days)</span><strong><%= totals.commands.toLocaleString(numLocale) %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('activity') %></span><span>Ping</span><strong data-bot-ping="<%= botRec.id %>"><%= botInfo.ping != null ? botInfo.ping + ' ms' : '—' %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('clock') %></span><span>Uptime</span><strong><%= botInfo.uptime ? fmtUp(botInfo.uptime) : '—' %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('layers') %></span><span>Moduli</span><strong><%= botRec.modules.length %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('zap') %></span><span>Slash komande</span><strong><%= botInfo.commands %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('layers') %></span><span>Modules</span><strong><%= botRec.modules.length %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('zap') %></span><span>Slash commands</span><strong><%= botInfo.commands %></strong></div>
 </div>
 
-<div class="section-title"><h2>Serveri</h2><span class="muted small">Klikni server za postavke modula</span></div>
+<div class="section-title"><h2>Servers</h2><span class="muted small">Click a server to configure modules</span></div>
 <% if (botInfo.status !== 'online') { %>
-  <div class="empty card"><span class="empty-icon"><%- ic('power') %></span><h3>Bot je offline</h3><p class="muted">Pokreni bota da vidiš i podesiš servere.</p></div>
+  <div class="empty card"><span class="empty-icon"><%- ic('power') %></span><h3>Bot is offline</h3><p class="muted">Start the bot to see and configure servers.</p></div>
 <% } else if (!servers.length) { %>
-  <div class="empty card"><span class="empty-icon"><%- ic('server') %></span><h3>Bot još nije ni na jednom serveru</h3><p class="muted">Dodaj ga na svoj server pa se vrati ovdje.</p><a class="btn btn-primary" href="<%= botInvite %>" target="_blank" rel="noopener"><%- ic('plus') %>Dodaj na server</a></div>
+  <div class="empty card"><span class="empty-icon"><%- ic('server') %></span><h3>The bot isn't on any server yet</h3><p class="muted">Add it to your server and come back here.</p><a class="btn btn-primary" href="<%= botInvite %>" target="_blank" rel="noopener"><%- ic('plus') %>Add to server</a></div>
 <% } else { %>
   <div class="server-grid">
     <% servers.forEach(s => { %>
       <a class="server-card <%= s.hasBot ? '' : 'nobot' %>" href="<%= s.hasBot ? '/bots/' + botRec.id + '/g/' + s.id : s.invite %>" <%- s.hasBot ? '' : 'target="_blank" rel="noopener"' %>>
         <% if (s.icon) { %><img src="<%= s.icon %>" alt=""><% } else { %><span class="guild-fallback lg"><%= s.name.slice(0, 2) %></span><% } %>
-        <div><b data-notr><%= s.name %></b><small><%= s.hasBot ? (s.members || 0).toLocaleString(numLocale) + ' članova' : 'Bot nije na serveru' %></small></div>
-        <span class="btn btn-sm <%= s.hasBot ? 'btn-ghost' : 'btn-primary' %>"><%= s.hasBot ? 'Upravljaj' : 'Pozovi' %></span>
+        <div><b data-notr><%= s.name %></b><small><%= s.hasBot ? (s.members || 0).toLocaleString(numLocale) + ' members' : "Bot isn't on the server" %></small></div>
+        <span class="btn btn-sm <%= s.hasBot ? 'btn-ghost' : 'btn-primary' %>"><%= s.hasBot ? 'Manage' : 'Pozovi' %></span>
       </a>
     <% }) %>
   </div>
 <% } %>
 
 <% if (botManage && logs.length) { %>
-  <div class="section-title"><h2>Zadnja aktivnost</h2><a class="small" href="/bots/<%= botRec.id %>/console">Cijela konzola →</a></div>
+  <div class="section-title"><h2>Recent activity</h2><a class="small" href="/bots/<%= botRec.id %>/console">Full console →</a></div>
   <div class="card log-mini" data-console="<%= botRec.id %>" data-max="6" data-mini><% logs.forEach(l => { %><div class="log-line log-<%= l.level %>"><time><%= new Date(l.t).toLocaleTimeString(numLocale) %></time><span><%= l.msg %></span></div><% }) %></div>
 <% } %>
 

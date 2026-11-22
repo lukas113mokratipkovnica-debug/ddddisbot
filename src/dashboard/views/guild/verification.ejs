@@ -1,30 +1,30 @@
 <%- include('../partials/app-start') %>
 <% const V = settings.verification; %>
-<%- include('../partials/pagehead', { heading: 'Verifikacija', icon: 'badge', sub: 'Novi članovi moraju kliknuti dugme (i upisati kod) prije nego dobiju pristup serveru.' }) %>
+<%- include('../partials/pagehead', { heading: 'Verification', icon: 'badge', sub: 'New members must click a button (and type a code) before they get access to the server.' }) %>
 <form method="post" action="<%= base %>/save/verification">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
-    <%- include('../partials/toggle', { name: 'enabled', checked: V.enabled, label: 'Verifikacija uključena' }) %>
-    <%- include('../partials/toggle', { name: 'captcha', checked: V.captcha, label: 'Captcha kod', hint: 'Korisnik mora prepisati nasumični kod — zaustavlja većinu botova.' }) %>
+    <%- include('../partials/toggle', { name: 'enabled', checked: V.enabled, label: 'Verification enabled' }) %>
+    <%- include('../partials/toggle', { name: 'captcha', checked: V.captcha, label: 'Captcha code', hint: 'The member must type a random code — stops most bots.' }) %>
     <div class="grid2">
-      <label>Uloga nakon verifikacije<%- include('../partials/roleSelect', { name: 'role', value: V.role, assignableOnly: true }) %></label>
-      <label>Ukloni ulogu (opcionalno)<%- include('../partials/roleSelect', { name: 'removeRole', value: V.removeRole, placeholder: '— ništa —', assignableOnly: true }) %></label>
+      <label>Role after verification<%- include('../partials/roleSelect', { name: 'role', value: V.role, assignableOnly: true }) %></label>
+      <label>Remove role (optional)<%- include('../partials/roleSelect', { name: 'removeRole', value: V.removeRole, placeholder: '— nothing —', assignableOnly: true }) %></label>
     </div>
   </div>
   <div class="card">
-    <h3>Izgled panela</h3>
-    <label>Naslov<input name="title" maxlength="256" value="<%= V.title %>"></label>
-    <label>Poruka<textarea name="message" rows="3"><%= V.message %></textarea></label>
+    <h3>Panel appearance</h3>
+    <label>Title<input name="title" maxlength="256" value="<%= V.title %>"></label>
+    <label>Message<textarea name="message" rows="3"><%= V.message %></textarea></label>
   </div>
   <%- include('../partials/saveBar') %>
 </form>
 <div class="card">
-  <h3>Pošalji panel</h3>
-  <p class="hint">Savjet: zaključaj sve kanale za <code>@everyone</code>, a otvori ih verificiranoj ulozi. Panel stavi u kanal koji vidi samo <code>@everyone</code>.</p>
+  <h3>Send panel</h3>
+  <p class="hint">Tip: lock all channels for <code>@everyone</code>, and open them for the verified role. Put the panel in a channel visible only to <code>@everyone</code>.</p>
   <form method="post" action="<%= base %>/verification/panel" class="row">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %>
-    <button class="btn btn-primary">Pošalji panel</button>
+    <button class="btn btn-primary">Send panel</button>
   </form>
 </div>
 <%- include('../partials/app-end') %>

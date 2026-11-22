@@ -10,7 +10,7 @@ async function postPanel(channel) {
   const s = getSettings(channel.guild.id).tickets;
   const embed = new EmbedBuilder().setColor(config.color).setTitle(s.panelTitle).setDescription(s.panelDescription);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket:open').setLabel('Otvori tiket').setEmoji('🎫').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('ticket:open').setLabel('Open ticket').setEmoji('🎫').setStyle(ButtonStyle.Primary),
   );
   return channel.send({ embeds: [embed], components: [row] });
 }
@@ -20,9 +20,9 @@ function isStaff(member, s) {
 }
 
 async function showOpenModal(interaction) {
-  const modal = new ModalBuilder().setCustomId('ticket:modal').setTitle('Novi tiket').addComponents(
+  const modal = new ModalBuilder().setCustomId('ticket:modal').setTitle('New ticket').addComponents(
     new ActionRowBuilder().addComponents(
-      new TextInputBuilder().setCustomId('topic').setLabel('Ukratko opiši problem').setStyle(TextInputStyle.Paragraph)
+      new TextInputBuilder().setCustomId('topic').setLabel('Briefly describe the problem').setStyle(TextInputStyle.Paragraph)
         .setRequired(false).setMaxLength(500),
     ),
   );
@@ -33,11 +33,11 @@ async function openTicket(interaction, topic = '') {
   const { getSettings, updateSettings, tickets } = interaction.client.db;
   const { guild, member } = interaction;
   const s = getSettings(guild.id).tickets;
-  if (!s.enabled) return interaction.reply({ embeds: [fail('Tiketi su isključeni na ovom serveru.')], flags: MessageFlags.Ephemeral });
+  if (!s.enabled) return interaction.reply({ embeds: [fail('Tickets are disabled on this server.')], flags: MessageFlags.Ephemeral });
 
   const open = tickets.openByUser(guild.id, member.id).filter((t) => guild.channels.cache.has(t.channel_id));
   if (open.length >= Math.max(1, s.maxOpen)) {
-    return interaction.reply({ embeds: [fail(`Već imaš otvoren tiket: <#${open[0].channel_id}>`)], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [fail(`You already have an open ticket: <#${open[0].channel_id}>`)], flags: MessageFlags.Ephemeral });
   }
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -64,27 +64,27 @@ async function openTicket(interaction, topic = '') {
       permissionOverwrites: overwrites,
     });
   } catch (e) {
-    return interaction.editReply({ embeds: [fail(`Ne mogu napraviti kanal: ${e.message}`)] });
+    return interaction.editReply({ embeds: [fail(`I can't create the channel: ${e.message}`)] });
   }
   tickets.create(guild.id, channel.id, member.id, number, topic || null);
 
-  const embed = new EmbedBuilder().setColor(config.color).setTitle(`Tiket #${number}`)
+  const embed = new EmbedBuilder().setColor(config.color).setTitle(`Ticket #${number}`)
     .setDescription(fillPlaceholders(s.welcomeMessage, { member }));
-  if (topic) embed.addFields({ name: 'Tema', value: topic });
+  if (topic) embed.addFields({ name: 'Topic', value: topic });
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket:close').setLabel('Zatvori').setEmoji('🔒').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('ticket:claim').setLabel('Preuzmi').setEmoji('🙋').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket:close').setLabel('Close').setEmoji('🔒').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('ticket:claim').setLabel('Claim').setEmoji('🙋').setStyle(ButtonStyle.Secondary),
   );
   const pings = [`<@${member.id}>`, ...s.supportRoles.map((r) => `<@&${r}>`)].join(' ');
   await channel.send({ content: pings, embeds: [embed], components: [row] });
-  await interaction.editReply({ embeds: [ok(`Tiket otvoren: ${channel}`)] });
+  await interaction.editReply({ embeds: [ok(`Ticket opened: ${channel}`)] });
 }
 
 async function claimTicket(interaction) {
   const { getSettings, updateSettings, tickets } = interaction.client.db;
   const s = getSettings(interaction.guild.id).tickets;
-  if (!isStaff(interaction.member, s)) return interaction.reply({ embeds: [fail('Samo tim može preuzeti tiket.')], flags: MessageFlags.Ephemeral });
-  return interaction.reply({ embeds: [ok(`${interaction.user} je preuzeo/la ovaj tiket.`)] });
+  if (!isStaff(interaction.member, s)) return interaction.reply({ embeds: [fail('Only the team can claim a ticket.')], flags: MessageFlags.Ephemeral });
+  return interaction.reply({ embeds: [ok(`${interaction.user} claimed this ticket.`)] });
 }
 
 async function buildTranscript(channel) {
@@ -111,19 +111,19 @@ async function closeTicket(interaction, reason = '') {
   const { getSettings, updateSettings, tickets } = interaction.client.db;
   const { guild, channel } = interaction;
   const t = tickets.byChannel(channel.id);
-  if (!t || t.status !== 'open') return interaction.reply({ embeds: [fail('Ovo nije otvoreni tiket.')], flags: MessageFlags.Ephemeral });
+  if (!t || t.status !== 'open') return interaction.reply({ embeds: [fail('This is not an open ticket.')], flags: MessageFlags.Ephemeral });
   const s = getSettings(guild.id).tickets;
   if (interaction.user.id !== t.user_id && !isStaff(interaction.member, s)) {
-    return interaction.reply({ embeds: [fail('Nemaš dozvolu zatvoriti ovaj tiket.')], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [fail('You don\'t have permission to close this ticket.')], flags: MessageFlags.Ephemeral });
   }
-  await interaction.reply({ embeds: [ok('Tiket se zatvara za 5 sekundi…')] });
+  await interaction.reply({ embeds: [ok('The ticket closes in 5 seconds…')] });
   tickets.close(t.id, interaction.user.id);
 
   const transcript = await buildTranscript(channel);
-  const logEmbed = new EmbedBuilder().setColor(0xed4245).setTitle(`Tiket #${t.number} zatvoren`).addFields(
-    { name: 'Otvorio', value: `<@${t.user_id}>`, inline: true },
-    { name: 'Zatvorio', value: `<@${interaction.user.id}>`, inline: true },
-    { name: 'Razlog', value: reason || 'Nije naveden' },
+  const logEmbed = new EmbedBuilder().setColor(0xed4245).setTitle(`Ticket #${t.number} closed`).addFields(
+    { name: 'Opened by', value: `<@${t.user_id}>`, inline: true },
+    { name: 'Closed by', value: `<@${interaction.user.id}>`, inline: true },
+    { name: 'Reason', value: reason || 'Not provided' },
   ).setTimestamp();
 
   const logCh = s.logChannel && guild.channels.cache.get(s.logChannel);
@@ -133,7 +133,7 @@ async function closeTicket(interaction, reason = '') {
   const opener = await guild.client.users.fetch(t.user_id).catch(() => null);
   if (opener) {
     const t2 = await buildTranscript(channel).catch(() => null);
-    await opener.send({ content: `Tvoj tiket **#${t.number}** na **${guild.name}** je zatvoren.`, files: t2 ? [t2] : [] }).catch(() => {});
+    await opener.send({ content: `Your ticket **#${t.number}** on **${guild.name}** was closed.`, files: t2 ? [t2] : [] }).catch(() => {});
   }
   setTimeout(() => channel.delete(`Tiket zatvorio ${interaction.user.tag}`).catch(() => {}), 5000);
 }

@@ -2,14 +2,14 @@
   <div class="wrap footer-grid">
     <div>
       <%- include('logo') %>
-      <p class="muted">Discord botovi bez kodiranja. Odaberi, poveži, podesi — gotovo.</p>
+      <p class="muted">Discord bots without code. Pick, connect, configure — done.</p>
     </div>
-    <div><h4>Platforma</h4><a href="/catalog">Katalog botova</a><a href="/pricing">Cijene</a><a href="/app">Dashboard</a></div>
-    <div><h4>Resursi</h4><a href="/#faq">Česta pitanja</a><a href="/status">Status sustava</a><a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">Developer Portal</a></div>
-    <div><h4>Podrška</h4><a href="/status">Status sustava</a><% if (supportUrl) { %><a href="<%= supportUrl %>" target="_blank" rel="noopener noreferrer">Podrška</a><% } %></div>
+    <div><h4>Platform</h4><a href="/catalog">Bot catalog</a><a href="/pricing">Pricing</a><a href="/app">Dashboard</a></div>
+    <div><h4>Resources</h4><a href="/#faq">FAQ</a><a href="/status">System status</a><a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">Developer Portal</a></div>
+    <div><h4>Support</h4><a href="/status">System status</a><% if (supportUrl) { %><a href="<%= supportUrl %>" target="_blank" rel="noopener noreferrer">Support</a><% } %></div>
   </div>
   <div class="wrap footer-bottom muted">
-    <span>© <%= new Date().getFullYear() %> <span data-notr><%= brand %></span>. Nije povezano s Discord Inc.</span>
-    <a class="status-dot-link" href="/status"><i class="dot dot-online"></i>Svi sustavi rade</a>
+    <span>© <%= new Date().getFullYear() %> <span data-notr><%= brand %></span>. Not affiliated with Discord Inc.</span>
+    <a class="status-dot-link" href="/status"><i class="dot dot-online"></i>All systems operational</a>
   </div>
 </footer>

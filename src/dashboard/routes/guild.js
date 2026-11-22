@@ -62,9 +62,9 @@ function render(req, res, page) {
 
 router.get(G, guard, (req, res) => render(req, res, 'overview'));
 router.get(`${G}/:page`, guard, (req, res) => {
-  if (!PAGES[req.params.page]) return res.status(404).render('error', { title: '404', message: 'Stranica ne postoji.' });
+  if (!PAGES[req.params.page]) return res.status(404).render('error', { title: '404', message: 'This page doesn\'t exist.' });
   if (!pageEnabled(req.params.page, req.client.modules)) {
-    flash(req, 'error', 'Taj modul nije uključen za ovog bota. Uključi ga u "Moduli".');
+    flash(req, 'error', 'That module isn\'t enabled for this bot. Enable it in "Modules".');
     return res.redirect(res.locals.base);
   }
   render(req, res, req.params.page);
@@ -132,7 +132,7 @@ const SECTIONS = {
   }],
   tickets: ['tickets', (b, s) => {
     s.tickets = { ...s.tickets, enabled: bool(b.enabled), category: sf(b.category), supportRoles: ids(b.supportRoles), logChannel: sf(b.logChannel),
-      panelTitle: str(b.panelTitle, 256) || '🎫 Podrška', panelDescription: str(b.panelDescription, 4000), welcomeMessage: str(b.welcomeMessage, 2000), maxOpen: num(b.maxOpen, 1, 10, 1) };
+      panelTitle: str(b.panelTitle, 256) || '🎫 Support', panelDescription: str(b.panelDescription, 4000), welcomeMessage: str(b.welcomeMessage, 2000), maxOpen: num(b.maxOpen, 1, 10, 1) };
   }],
   starboard: ['community', (b, s) => { s.starboard = { enabled: bool(b.enabled), channel: sf(b.channel), emoji: str(b.emoji, 64).trim() || '⭐', threshold: num(b.threshold, 1, 100, 3) }; }],
   suggestions: ['community', (b, s) => { s.suggestions = { enabled: bool(b.enabled), channel: sf(b.channel) }; }],
@@ -151,7 +151,7 @@ router.post(`${G}/save/:section`, post, (req, res) => {
   if (!sec) return res.status(400).send('Nepoznata sekcija');
   req.db.updateSettings(req.guild.id, (s) => sec[1](req.body, s));
   audit(req, 'guild.settings', `${req.botRec.id}/${req.guild.id}`, { section: req.params.section });
-  flash(req, 'success', 'Postavke spremljene ✓');
+  flash(req, 'success', 'Settings saved ✓');
   back(req, res, sec[0]);
 });
 
@@ -162,11 +162,11 @@ router.post(`${G}/commands/add`, post, (req, res) => {
   if (matchType === 'command') trigger = trigger.replace(/\s+/g, '-').slice(0, 32);
   const response = str(req.body.response, 2000);
   const reaction = str(req.body.reaction, 64).trim() || null;
-  if (!trigger || (!response && !reaction)) flash(req, 'error', 'Okidač i odgovor (ili reakcija) su obavezni.');
-  else { req.db.customCommands.upsert(req.guild.id, trigger, response || '-', bool(req.body.embed), bool(req.body.deleteTrigger), matchType, reaction); flash(req, 'success', `"${trigger}" spremljeno.`); }
+  if (!trigger || (!response && !reaction)) flash(req, 'error', 'A trigger and a response (or reaction) are required.');
+  else { req.db.customCommands.upsert(req.guild.id, trigger, response || '-', bool(req.body.embed), bool(req.body.deleteTrigger), matchType, reaction); flash(req, 'success', `"${trigger}" saved.`); }
   back(req, res, 'commands');
 });
-router.post(`${G}/commands/:cid/delete`, post, (req, res) => { req.db.customCommands.remove(req.guild.id, Number(req.params.cid)); flash(req, 'success', 'Obrisano.'); back(req, res, 'commands'); });
+router.post(`${G}/commands/:cid/delete`, post, (req, res) => { req.db.customCommands.remove(req.guild.id, Number(req.params.cid)); flash(req, 'success', 'Deleted.'); back(req, res, 'commands'); });
 
 // ------------------------------------------------------------------ role panels
 router.post(`${G}/roles/create`, post, async (req, res) => {
@@ -174,28 +174,28 @@ router.post(`${G}/roles/create`, post, async (req, res) => {
   const roleIds = list(b.role); const labels = list(b.label); const emojis = list(b.emoji); const styles = list(b.style); const descs = list(b.rdesc);
   const roles = [];
   roleIds.forEach((r, k) => { if (r && req.guild.roles.cache.has(r)) roles.push({ role: r, label: str(labels[k], 80), emoji: str(emojis[k], 64).trim(), style: str(styles[k], 12), description: str(descs[k], 100) }); });
-  if (!roles.length || !b.channel) { flash(req, 'error', 'Odaberi kanal i barem jednu ulogu.'); return back(req, res, 'roles'); }
-  const id = req.db.rolePanels.create(req.guild.id, sf(b.channel), str(b.title, 256) || 'Odaberi uloge', str(b.description, 2000), bool(b.unique), roles.slice(0, 25));
-  try { await rolePanels.publish(req.client, id, req.guild.id); flash(req, 'success', 'Panel objavljen.'); } catch (e) { req.db.rolePanels.remove(req.guild.id, id); flash(req, 'error', `Greška pri objavi: ${e.message}`); }
+  if (!roles.length || !b.channel) { flash(req, 'error', 'Choose a channel and at least one role.'); return back(req, res, 'roles'); }
+  const id = req.db.rolePanels.create(req.guild.id, sf(b.channel), str(b.title, 256) || 'Choose roles', str(b.description, 2000), bool(b.unique), roles.slice(0, 25));
+  try { await rolePanels.publish(req.client, id, req.guild.id); flash(req, 'success', 'Panel published.'); } catch (e) { req.db.rolePanels.remove(req.guild.id, id); flash(req, 'error', `Publish error: ${e.message}`); }
   back(req, res, 'roles');
 });
 router.post(`${G}/roles/:pid/republish`, post, async (req, res) => {
-  try { await rolePanels.publish(req.client, Number(req.params.pid), req.guild.id); flash(req, 'success', 'Panel osvježen.'); } catch (e) { flash(req, 'error', e.message); }
+  try { await rolePanels.publish(req.client, Number(req.params.pid), req.guild.id); flash(req, 'success', 'Panel refreshed.'); } catch (e) { flash(req, 'error', e.message); }
   back(req, res, 'roles');
 });
 router.post(`${G}/roles/:pid/delete`, post, async (req, res) => {
   const p = req.db.rolePanels.get(req.guild.id, Number(req.params.pid));
   if (p?.message_id) await req.guild.channels.cache.get(p.channel_id)?.messages.delete(p.message_id).catch(() => {});
   req.db.rolePanels.remove(req.guild.id, Number(req.params.pid));
-  flash(req, 'success', 'Panel obrisan.');
+  flash(req, 'success', 'Panel deleted.');
   back(req, res, 'roles');
 });
 
 // ------------------------------------------------------------------ panels (tickets / verification)
 const panelRoute = (name, page, fn) => router.post(`${G}/${name}/panel`, post, async (req, res) => {
   const ch = req.guild.channels.cache.get(req.body.channel);
-  if (!ch?.isTextBased()) flash(req, 'error', 'Odaberi kanal.');
-  else { try { await fn(ch); flash(req, 'success', `Panel poslan u #${ch.name}.`); } catch (e) { flash(req, 'error', e.message); } }
+  if (!ch?.isTextBased()) flash(req, 'error', 'Choose a channel.');
+  else { try { await fn(ch); flash(req, 'success', `Panel sent to #${ch.name}.`); } catch (e) { flash(req, 'error', e.message); } }
   back(req, res, page);
 });
 panelRoute('tickets', 'tickets', tickets.postPanel);
@@ -206,8 +206,8 @@ router.post(`${G}/giveaways/create`, post, async (req, res) => {
   const ch = req.guild.channels.cache.get(req.body.channel);
   const ms = parseDuration(req.body.duration);
   const prize = str(req.body.prize, 200).trim();
-  if (!ch?.isTextBased() || !ms || ms < 10_000 || !prize) flash(req, 'error', 'Provjeri kanal, nagradu i trajanje (npr. 1h, 2d).');
-  else { try { await giveaways.start(ch, prize, ms, num(req.body.winners, 1, 50, 1), req.session.user.id); flash(req, 'success', 'Giveaway pokrenut 🎉'); } catch (e) { flash(req, 'error', e.message); } }
+  if (!ch?.isTextBased() || !ms || ms < 10_000 || !prize) flash(req, 'error', 'Check the channel, prize and duration (e.g. 1h, 2d).');
+  else { try { await giveaways.start(ch, prize, ms, num(req.body.winners, 1, 50, 1), req.session.user.id); flash(req, 'success', 'Giveaway started 🎉'); } catch (e) { flash(req, 'error', e.message); } }
   back(req, res, 'giveaways');
 });
 router.post(`${G}/giveaways/:gid/:act`, post, async (req, res) => {
@@ -216,18 +216,18 @@ router.post(`${G}/giveaways/:gid/:act`, post, async (req, res) => {
     if (req.params.act === 'end' && !g.ended) await giveaways.end(req.client, g.id);
     if (req.params.act === 'reroll' && g.ended) await giveaways.end(req.client, g.id, { reroll: true });
     if (req.params.act === 'delete') req.db.giveaways.remove(req.guild.id, g.id);
-    flash(req, 'success', 'Gotovo.');
+    flash(req, 'success', 'Done.');
   }
   back(req, res, 'giveaways');
 });
 
 // ------------------------------------------------------------------ misc admin actions
-router.post(`${G}/warnings/:wid/delete`, post, (req, res) => { req.db.warnings.remove(req.guild.id, Number(req.params.wid)); flash(req, 'success', 'Upozorenje obrisano.'); back(req, res, 'moderation'); });
-router.post(`${G}/leveling/reset`, post, (req, res) => { const n = req.db.levels.reset(req.guild.id, req.body.userId || undefined); flash(req, 'success', `Resetirano (${n}).`); back(req, res, 'leveling'); });
-router.post(`${G}/economy/reset`, post, (req, res) => { const n = req.db.economy.reset(req.guild.id, req.body.userId || undefined); flash(req, 'success', `Resetirano (${n}).`); back(req, res, 'economy'); });
-router.post(`${G}/counting/reset`, post, (req, res) => { req.db.counting.set(req.guild.id, 0, null); flash(req, 'success', 'Brojanje resetirano na 0.'); back(req, res, 'community'); });
+router.post(`${G}/warnings/:wid/delete`, post, (req, res) => { req.db.warnings.remove(req.guild.id, Number(req.params.wid)); flash(req, 'success', 'Warning deleted.'); back(req, res, 'moderation'); });
+router.post(`${G}/leveling/reset`, post, (req, res) => { const n = req.db.levels.reset(req.guild.id, req.body.userId || undefined); flash(req, 'success', `Reset (${n}).`); back(req, res, 'leveling'); });
+router.post(`${G}/economy/reset`, post, (req, res) => { const n = req.db.economy.reset(req.guild.id, req.body.userId || undefined); flash(req, 'success', `Reset (${n}).`); back(req, res, 'economy'); });
+router.post(`${G}/counting/reset`, post, (req, res) => { req.db.counting.set(req.guild.id, 0, null); flash(req, 'success', 'Counting reset to 0.'); back(req, res, 'community'); });
 router.post(`${G}/serverstats/create`, post, async (req, res) => {
-  try { await createStatChannels(req.guild); flash(req, 'success', 'Statistika kanali kreirani.'); } catch (e) { flash(req, 'error', e.message); }
+  try { await createStatChannels(req.guild); flash(req, 'success', 'Stats channels created.'); } catch (e) { flash(req, 'error', e.message); }
   back(req, res, 'voice');
 });
 router.post(`${G}/sticky/:cid/delete`, post, async (req, res) => {
@@ -236,17 +236,17 @@ router.post(`${G}/sticky/:cid/delete`, post, async (req, res) => {
     if (st.last_message_id) await req.guild.channels.cache.get(st.channel_id)?.messages.delete(st.last_message_id).catch(() => {});
     req.db.sticky.remove(st.channel_id);
   }
-  flash(req, 'success', 'Sticky poruka uklonjena.');
+  flash(req, 'success', 'Sticky message removed.');
   back(req, res, 'messages');
 });
 router.post(`${G}/sticky/add`, post, async (req, res) => {
   const ch = req.guild.channels.cache.get(req.body.channel);
   const text = str(req.body.content, 1800).trim();
-  if (!ch?.isTextBased() || !text) { flash(req, 'error', 'Odaberi kanal i upiši tekst.'); return back(req, res, 'messages'); }
+  if (!ch?.isTextBased() || !text) { flash(req, 'error', 'Choose a channel and enter text.'); return back(req, res, 'messages'); }
   req.db.sticky.set(ch.id, req.guild.id, text);
   const msg = await ch.send({ embeds: [new EmbedBuilder().setColor(0x7c5cff).setDescription(`📌 ${text}`)] }).catch(() => null);
   if (msg) req.db.sticky.setMessage(ch.id, msg.id);
-  flash(req, 'success', `Sticky poruka postavljena u #${ch.name}.`);
+  flash(req, 'success', `Sticky message set in #${ch.name}.`);
   back(req, res, 'messages');
 });
 
@@ -260,19 +260,19 @@ router.post(`${G}/notifications/add`, post, (req, res) => {
   }
   const ch = req.guild.channels.cache.get(req.body.channel);
   if (!source || !ch || (type === 'rss' && !/^https?:\/\//.test(source))) {
-    flash(req, 'error', type === 'youtube' ? 'Treba YouTube channel ID (počinje s UC…, 24 znaka) ili link na kanal s tim ID-em.' : 'Upiši ispravan RSS URL.');
+    flash(req, 'error', type === 'youtube' ? 'A YouTube channel ID is required (starts with UC…, 24 characters) or a channel link containing it.' : 'Enter a valid RSS URL.');
     return back(req, res, 'notifications');
   }
   req.db.updateSettings(req.guild.id, (s) => {
     if (s.notifications.feeds.length >= 20) return;
-    s.notifications.feeds.push({ id: crypto.randomBytes(5).toString('hex'), type, source, channel: ch.id, message: str(req.body.message, 500) || '📢 **{author}** je objavio/la: **{title}**\n{link}' });
+    s.notifications.feeds.push({ id: crypto.randomBytes(5).toString('hex'), type, source, channel: ch.id, message: str(req.body.message, 500) || '📢 **{author}** posted: **{title}**\n{link}' });
   });
-  flash(req, 'success', 'Feed dodan. Prva provjera je za par minuta (stare objave se preskaču).');
+  flash(req, 'success', 'Feed added. The first check runs in a few minutes (old posts are skipped).');
   back(req, res, 'notifications');
 });
 router.post(`${G}/notifications/:fid/delete`, post, (req, res) => {
   req.db.updateSettings(req.guild.id, (s) => { s.notifications.feeds = s.notifications.feeds.filter((f) => f.id !== req.params.fid); });
-  flash(req, 'success', 'Feed obrisan.');
+  flash(req, 'success', 'Feed deleted.');
   back(req, res, 'notifications');
 });
 
@@ -280,7 +280,7 @@ router.post(`${G}/notifications/:fid/delete`, post, (req, res) => {
 router.post(`${G}/messages/send`, post, async (req, res) => {
   const b = req.body;
   const ch = req.guild.channels.cache.get(b.channel);
-  if (!ch?.isTextBased()) { flash(req, 'error', 'Odaberi kanal.'); return back(req, res, 'messages'); }
+  if (!ch?.isTextBased()) { flash(req, 'error', 'Choose a channel.'); return back(req, res, 'messages'); }
   const payload = {};
   if (str(b.content).trim()) payload.content = str(b.content, 2000);
   if (bool(b.useEmbed)) {
@@ -294,8 +294,8 @@ router.post(`${G}/messages/send`, post, async (req, res) => {
     if (bool(b.timestamp)) e.setTimestamp();
     if (e.data.title || e.data.description || e.data.image) payload.embeds = [e];
   }
-  if (!payload.content && !payload.embeds) { flash(req, 'error', 'Poruka je prazna.'); return back(req, res, 'messages'); }
-  try { await ch.send(payload); flash(req, 'success', `Poruka poslana u #${ch.name}.`); } catch (e) { flash(req, 'error', e.message); }
+  if (!payload.content && !payload.embeds) { flash(req, 'error', 'The message is empty.'); return back(req, res, 'messages'); }
+  try { await ch.send(payload); flash(req, 'success', `Message sent to #${ch.name}.`); } catch (e) { flash(req, 'error', e.message); }
   back(req, res, 'messages');
 });
 

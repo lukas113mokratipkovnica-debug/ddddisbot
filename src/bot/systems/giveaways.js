@@ -6,20 +6,26 @@ function gwEmbed(g, ended = false) {
   const e = new EmbedBuilder()
     .setColor(ended ? 0x2b2d31 : 0xeb459e)
     .setTitle(`🎉 ${g.prize}`)
-    .setFooter({ text: `${g.winners} pobjednik(a) • ID ${g.id}` })
+    .setFooter({ text: `${g.winners} winner(s) • ID ${g.id}` })
     .setTimestamp(g.ends_at);
   if (ended) {
-    const w = g.winner_ids.length ? g.winner_ids.map((id) => `<@${id}>`).join(', ') : 'Nema dovoljno sudionika.';
-    e.setDescription(`Završeno!\n**Pobjednici:** ${w}\n**Organizator:** <@${g.host_id}>\n**Sudionika:** ${g.entrants.length}`);
+    const w = g.winner_ids.length ? g.winner_ids.map((id) => `<@${id}>`).join(', ') : 'Not enough entrants.';
+    e.setDescription(`Ended!
+**Winners:** ${w}
+**Host:** <@${g.host_id}>
+**Entrants:** ${g.entrants.length}`);
   } else {
-    e.setDescription(`Klikni 🎉 da se prijaviš!\n**Završava:** <t:${ts}:R> (<t:${ts}:f>)\n**Organizator:** <@${g.host_id}>\n**Sudionika:** ${g.entrants.length}`);
+    e.setDescription(`Click 🎉 to enter!
+**Ends:** <t:${ts}:R> (<t:${ts}:f>)
+**Host:** <@${g.host_id}>
+**Entrants:** ${g.entrants.length}`);
   }
   return e;
 }
 
 function gwRow(g, ended = false) {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`gw:join:${g.id}`).setEmoji('🎉').setLabel(ended ? 'Završeno' : 'Sudjeluj')
+    new ButtonBuilder().setCustomId(`gw:join:${g.id}`).setEmoji('🎉').setLabel(ended ? 'Ended' : 'Enter')
       .setStyle(ButtonStyle.Success).setDisabled(ended),
   );
 }
@@ -52,8 +58,8 @@ async function end(client, id, { reroll = false } = {}) {
   const msg = g.message_id ? await channel.messages.fetch(g.message_id).catch(() => null) : null;
   if (msg) await msg.edit({ embeds: [gwEmbed(done, true)], components: [gwRow(done, true)] }).catch(() => {});
   const text = winners.length
-    ? `🎉 ${reroll ? 'Novi pobjednik' : 'Čestitamo'} ${winners.map((w) => `<@${w}>`).join(', ')}! Osvojili ste **${g.prize}**!`
-    : `Giveaway za **${g.prize}** je završio, ali nema dovoljno sudionika. 😢`;
+    ? `🎉 ${reroll ? 'New winner' : 'Congratulations'} ${winners.map((w) => `<@${w}>`).join(', ')}! You won **${g.prize}**!`
+    : `The giveaway for **${g.prize}** ended, but there weren't enough entrants. 😢`;
   await channel.send({ content: text, reply: msg ? { messageReference: msg.id, failIfNotExists: false } : undefined }).catch(() => {});
   return done;
 }
@@ -61,16 +67,16 @@ async function end(client, id, { reroll = false } = {}) {
 async function handleJoin(interaction, id) {
   const { giveaways } = interaction.client.db;
   const g = giveaways.get(Number(id));
-  if (!g || g.ended) return interaction.reply({ embeds: [fail('Ovaj giveaway je završen.')], flags: MessageFlags.Ephemeral });
+  if (!g || g.ended) return interaction.reply({ embeds: [fail('This giveaway has ended.')], flags: MessageFlags.Ephemeral });
   const uid = interaction.user.id;
   let entrants = g.entrants;
   let msg;
   if (entrants.includes(uid)) {
     entrants = entrants.filter((e) => e !== uid);
-    msg = 'Odjavio/la si se iz giveawaya.';
+    msg = 'You left the giveaway.';
   } else {
     entrants.push(uid);
-    msg = 'Prijavljen/a si! Sretno 🍀';
+    msg = 'You\'re in! Good luck 🍀';
   }
   giveaways.setEntrants(g.id, entrants);
   await interaction.update({ embeds: [gwEmbed({ ...g, entrants })], components: [gwRow(g)] });

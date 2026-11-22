@@ -4,20 +4,20 @@ const crypto = require('crypto');
 const required = ['DISCORD_TOKEN', 'CLIENT_ID', 'CLIENT_SECRET'];
 const missing = required.filter((k) => !process.env[k]);
 if (missing.length) {
-  console.error(`[config] Nedostaju varijable u .env: ${missing.join(', ')}`);
+  console.error(`[config] Missing variables in .env: ${missing.join(', ')}`);
   process.exit(1);
 }
 
 const sessionSecret = process.env.SESSION_SECRET || 'change-me';
 const production = process.env.NODE_ENV === 'production';
 if (sessionSecret === 'change-me' || sessionSecret.length < 32) {
-  const msg = '[config] SESSION_SECRET mora biti nasumičan string od barem 32 znaka.';
-  if (production) { console.error(msg); process.exit(1); } else console.warn(`${msg} (u produkciji se platforma neće pokrenuti)`);
+  const msg = '[config] SESSION_SECRET must be a random string of at least 32 characters.';
+  if (production) { console.error(msg); process.exit(1); } else console.warn(`${msg} (the platform will not start in production)`);
 }
-if (!process.env.ENCRYPTION_KEY) console.warn('[config] ENCRYPTION_KEY nije postavljen — tokeni se šifriraju ključem izvedenim iz SESSION_SECRET.');
+if (!process.env.ENCRYPTION_KEY) console.warn('[config] ENCRYPTION_KEY is not set — tokens are encrypted with a key derived from SESSION_SECRET.');
 
 module.exports = {
-  brand: process.env.BRAND_NAME || 'Botnica',
+  brand: process.env.BRAND_NAME || 'ServerPulse',
   production,
   trustProxy: process.env.TRUST_PROXY ?? (production ? '1' : '0'),
   token: process.env.DISCORD_TOKEN,
@@ -37,7 +37,7 @@ module.exports = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
   currency: process.env.CURRENCY || 'eur',
-  // --- AI podrška (Anthropic / Claude) ---
+  // --- AI support (Anthropic / Claude) ---
   aiKey: process.env.ANTHROPIC_API_KEY || '',
   aiModel: process.env.AI_MODEL || 'claude-opus-5-5',
 };

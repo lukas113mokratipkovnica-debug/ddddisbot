@@ -6,28 +6,28 @@
   <div class="wrap hero-grid">
     <div>
       <span class="pill"><b><%- ic('sparkles') %>New</b><span><%= stats.modules %> modules · <%= stats.commands %> commands · hosting included</span></span>
-      <h1>Tvoj Discord bot.<span class="line2 grad">Spreman prije kave.</span></h1>
+      <h1>Your Discord bot.<span class="line2 grad">Ready before your coffee.</span></h1>
       <p class="lead">Pick a ready-made bot, paste the token and it runs 24/7. Moderation, leveling, economy, tickets, giveaways and 20 more modules. Everything is configured with a click, no coding.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="<%= user ? '/app/new' : '/login' %>"><%- ic('zap') %>Napravi bota besplatno</a>
-        <a class="btn btn-ghost btn-lg" href="/catalog">Pogledaj botove <%- ic('arrow-right') %></a>
+        <a class="btn btn-primary btn-lg" href="<%= user ? '/app/new' : '/login' %>"><%- ic('zap') %>Create a bot for free</a>
+        <a class="btn btn-ghost btn-lg" href="/catalog">Browse bots <%- ic('arrow-right') %></a>
       </div>
       <div class="hero-proof">
-        <div><b data-count="<%= stats.bots %>"><%= stats.bots %></b><span>botova</span></div>
-        <div><b data-count="<%= stats.guilds %>"><%= stats.guilds %></b><span>servera</span></div>
-        <div><b data-count="<%= stats.members %>"><%= stats.members %></b><span>korisnika</span></div>
+        <div><b data-count="<%= stats.bots %>"><%= stats.bots %></b><span>bots</span></div>
+        <div><b data-count="<%= stats.guilds %>"><%= stats.guilds %></b><span>servers</span></div>
+        <div><b data-count="<%= stats.members %>"><%= stats.members %></b><span>users</span></div>
       </div>
     </div>
     <div class="term" aria-hidden="true">
       <div class="term-bar"><i></i><i></i><i></i><span>deploy.log</span></div>
       <div class="term-body">
-        <div class="term-line" style="animation-delay:.2s"><span class="p">❯</span> odabran predložak <span class="k">Moderator</span></div>
-        <div class="term-line" style="animation-delay:.7s"><span class="d">  provjera tokena…</span> <span class="ok">✓ ispravan</span></div>
-        <div class="term-line" style="animation-delay:1.2s"><span class="d">  intenti…</span> <span class="ok">✓ uključeni</span></div>
-        <div class="term-line" style="animation-delay:1.7s"><span class="d">  šifriranje tokena</span> <span class="ok">✓ AES-256-GCM</span></div>
-        <div class="term-line" style="animation-delay:2.2s"><span class="d">  registracija komandi</span> <span class="ok">✓ 21</span></div>
-        <div class="term-line" style="animation-delay:2.7s"><span class="p">❯</span> <span class="ok">bot je online</span> <span class="d">· 0.8s</span></div>
-        <div class="term-msg"><span class="av"></span><div><b>Tvoj Bot</b><span class="badge">BOT</span><div class="term-embed">✅ Korisnik je verificiran. Dobrodošao/la na server! 🎉</div></div></div>
+        <div class="term-line" style="animation-delay:.2s"><span class="p">❯</span> template selected <span class="k">Moderator</span></div>
+        <div class="term-line" style="animation-delay:.7s"><span class="d">  checking token…</span> <span class="ok">✓ valid</span></div>
+        <div class="term-line" style="animation-delay:1.2s"><span class="d">  intents…</span> <span class="ok">✓ enabled</span></div>
+        <div class="term-line" style="animation-delay:1.7s"><span class="d">  encrypting token</span> <span class="ok">✓ AES-256-GCM</span></div>
+        <div class="term-line" style="animation-delay:2.2s"><span class="d">  registering commands</span> <span class="ok">✓ 21</span></div>
+        <div class="term-line" style="animation-delay:2.7s"><span class="p">❯</span> <span class="ok">bot is online</span> <span class="d">· 0.8s</span></div>
+        <div class="term-msg"><span class="av"></span><div><b>Your Bot</b><span class="badge">BOT</span><div class="term-embed">✅ Member verified. Welcome to the server! 🎉</div></div></div>
       </div>
     </div>
   </div>
@@ -39,18 +39,18 @@
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Zašto mi</span><h2>Sve što bot treba.<br><span class="grad">Ništa što ti ne treba.</span></h2></div>
+    <div class="section-head"><span class="eyebrow">Why us</span><h2>Everything a bot needs.<br><span class="grad">Nothing you don't.</span></h2></div>
     <div class="bento">
       <div class="b-wide" data-spot>
         <span class="bento-icon"><%- ic('layers') %></span>
-        <h3>25 modula, jedan klik</h3>
-        <p>Uključi samo ono što ti treba. Slash komande se same registriraju i nestaju. Bez restarta i bez koda.</p>
+        <h3>25 modules, one click</h3>
+        <p>Enable only what you need. Slash commands register and disappear on their own. No restarts, no code.</p>
         <div class="chip-row"><% mods.slice(0, 12).forEach(([k, m]) => { %><span><%- ic(m.icon) %><%= m.name %></span><% }) %><span>+<%= mods.length - 12 %></span></div>
       </div>
       <div class="b-small" data-spot style="--c: oklch(72% .17 152)">
         <span class="bento-icon"><%- ic('activity') %></span>
         <h3>Online 24/7</h3>
-        <p>Hostamo mi. Automatski restart, konzola i status uživo.</p>
+        <p>We host it. Automatic restarts, a console and live status.</p>
         <div class="mini-bars"><% [30,55,40,70,50,85,65,95,75,100,80,90].forEach((h, i) => { %><i style="height:<%= h %>%;animation-delay:<%= i * 60 %>ms"></i><% }) %></div>
       </div>
       <div class="b-small" data-spot style="--c: oklch(80% .14 200)">
@@ -61,24 +61,24 @@
       </div>
       <div class="b-small" data-spot style="--c: oklch(72% .17 152)">
         <span class="lock-art"><%- ic('shield-check') %></span>
-        <h3>Sigurnost bez kompromisa</h3>
-        <p>Šifrirani tokeni, CSP, zaštita od CSRF-a i SSRF-a, rate limiting, audit log i upravljanje sesijama.</p>
+        <h3>Security without compromise</h3>
+        <p>Encrypted tokens, CSP, CSRF and SSRF protection, rate limiting, an audit log and session management.</p>
       </div>
       <div class="b-small" data-spot>
         <span class="bento-icon"><%- ic('search') %></span>
         <h3>Ctrl + K</h3>
-        <p>Skoči na bilo kojeg bota, server ili postavku u sekundi.</p>
+        <p>Jump to any bot, server or setting in a second.</p>
         <div class="chip-row"><span class="kbd">Ctrl</span><span class="kbd">K</span></div>
       </div>
       <div class="b-mid" data-spot style="--c: oklch(80% .15 80)">
         <span class="bento-icon"><%- ic('coins') %></span>
-        <h3>Ekonomija, leveling, giveaway</h3>
-        <p>Sve što drži zajednicu aktivnom: XP i nagradne uloge, novac i shop, nagradne igre, brojanje, rođendani.</p>
+        <h3>Economy, leveling, giveaways</h3>
+        <p>Everything that keeps a community active: XP and reward roles, money and a shop, giveaways, counting, birthdays.</p>
       </div>
       <div class="b-mid" data-spot style="--c: oklch(66% .21 25)">
         <span class="bento-icon"><%- ic('shield') %></span>
-        <h3>Moderacija koja ne spava</h3>
-        <p>AutoMod za psovke, linkove, spam i raid. Verifikacija s captchom i automatske kazne nakon X upozorenja.</p>
+        <h3>Moderation that never sleeps</h3>
+        <p>AutoMod for swearing, links, spam and raids. Captcha verification and automatic punishments after X warnings.</p>
       </div>
     </div>
   </div>
@@ -86,7 +86,7 @@
 
 <section class="section" id="botovi">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Botovi</span><h2>Odaberi bota koji ti treba</h2><p class="muted">Svaki bot je gotov predložak. Kasnije uključiš bilo koji modul, jer jedan bot može sve.</p></div>
+    <div class="section-head"><span class="eyebrow">Bots</span><h2>Choose the bot you need</h2><p class="muted">Every bot is a ready-made template. Enable any module later — one bot can do it all.</p></div>
     <div class="tpl-grid">
       <% tpl.forEach(([key, t]) => { %>
         <a class="tpl-card" data-spot href="<%= user ? '/app/new?template=' + key : '/login' %>" style="--c:<%= t.color %>">
@@ -94,7 +94,7 @@
           <h3><%= t.name %> bot</h3>
           <p><%= t.desc %></p>
           <div class="tpl-mods"><% t.modules.slice(0, 4).forEach(m => { %><span><%= MODULES[m].name %></span><% }) %><% if (t.modules.length > 4) { %><span>+<%= t.modules.length - 4 %></span><% } %></div>
-          <span class="tpl-go">Odaberi <%- ic('arrow-right') %></span>
+          <span class="tpl-go">Choose <%- ic('arrow-right') %></span>
         </a>
       <% }) %>
     </div>
@@ -103,10 +103,10 @@
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head center"><span class="eyebrow">Kako radi</span><h2>Tri koraka do tvog bota</h2></div>
+    <div class="section-head center"><span class="eyebrow">How it works</span><h2>Three steps to your bot</h2></div>
     <div class="steps">
-      <div class="step" data-spot><span class="step-icon"><%- ic('key') %></span><h3>Napravi aplikaciju</h3><p>U Discord Developer Portalu napravi aplikaciju, uključi dva intenta i kopiraj token. Vodimo te korak po korak.</p></div>
-      <div class="step" data-spot><span class="step-icon"><%- ic('bot') %></span><h3>Odaberi bota</h3><p>Zalijepi token, odaberi predložak i bot je odmah online. Hostamo ga mi, bez servera i bez koda.</p></div>
+      <div class="step" data-spot><span class="step-icon"><%- ic('key') %></span><h3>Create an application</h3><p>Create an application in the Discord Developer Portal, enable two intents and copy the token. We guide you step by step.</p></div>
+      <div class="step" data-spot><span class="step-icon"><%- ic('bot') %></span><h3>Choose a bot</h3><p>Paste the token, pick a template and the bot is online right away. We host it — no servers, no code.</p></div>
       <div class="step" data-spot><span class="step-icon"><%- ic('settings') %></span><h3>Configure everything with a click</h3><p>Enable modules, set channels, messages and roles, separately for every server.</p></div>
     </div>
   </div>
@@ -114,7 +114,7 @@
 
 <section class="section" id="moduli">
   <div class="wrap">
-    <div class="section-head"><span class="eyebrow">Moduli</span><h2><%= stats.modules %> modula, jedan dashboard</h2><p class="muted">Uključi samo ono što ti treba. Slash komande se ažuriraju automatski.</p></div>
+    <div class="section-head"><span class="eyebrow">Modules</span><h2><%= stats.modules %> modules, one dashboard</h2><p class="muted">Enable only what you need. Slash commands update automatically.</p></div>
     <div class="mod-grid">
       <% mods.forEach(([key, m]) => { %>
         <div class="mod-card" data-spot><span class="mod-icon"><%- ic(m.icon) %></span><div><h4><%= m.name %></h4><p><%= m.desc %></p></div></div>
@@ -125,22 +125,22 @@
 
 <section class="section" id="cijene">
   <div class="wrap">
-    <div class="section-head center"><span class="eyebrow">Cijene</span><h2>Počni besplatno. Raste s tobom.</h2></div>
+    <div class="section-head center"><span class="eyebrow">Pricing</span><h2>Start free. Grows with you.</h2></div>
     <%- include('partials/plans') %>
   </div>
 </section>
 
 <section class="section" id="faq">
   <div class="wrap narrow">
-    <div class="section-head center"><span class="eyebrow">FAQ</span><h2>Česta pitanja</h2></div>
+    <div class="section-head center"><span class="eyebrow">FAQ</span><h2>FAQ</h2></div>
     <%- include('partials/faq') %>
   </div>
 </section>
 
 <section class="cta-band">
   <div class="cta-inner">
-    <div><h2>Spreman/na za svog bota?</h2><p>Besplatno. Bez kartice. Online za minutu.</p></div>
-    <a class="btn btn-light btn-lg" href="<%= user ? '/app/new' : '/login' %>">Započni besplatno <%- ic('arrow-right') %></a>
+    <div><h2>Ready for your own bot?</h2><p>Free. No card. Online in a minute.</p></div>
+    <a class="btn btn-light btn-lg" href="<%= user ? '/app/new' : '/login' %>">Start for free <%- ic('arrow-right') %></a>
   </div>
 </section>
 <%- include('partials/site-footer') %>

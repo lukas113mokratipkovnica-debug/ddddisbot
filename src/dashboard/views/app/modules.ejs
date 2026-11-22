@@ -2,14 +2,14 @@
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
    const groups = {}; Object.entries(MODULES).forEach(([k, m]) => (groups[m.group] ||= []).push([k, m]));
    const on = new Set(botRec.modules); %>
-<%- include('../partials/pagehead', { heading: 'Moduli', icon: 'layers', sub: 'Uključi ili isključi funkcije bota. Slash komande se automatski ažuriraju na svim serverima.' }) %>
+<%- include('../partials/pagehead', { heading: 'Modules', icon: 'layers', sub: 'Turn bot features on or off. Slash commands update automatically on all servers.' }) %>
 <form method="post" action="/bots/<%= botRec.id %>/modules">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="mod-toolbar">
-    <span class="muted small"><b id="modCount"><%= on.size %></b> od <%= Object.keys(MODULES).length %> uključeno</span>
+    <span class="muted small"><b id="modCount"><%= on.size %></b> of <%= Object.keys(MODULES).length %> enabled</span>
     <div class="row">
-      <button type="button" class="btn btn-ghost btn-sm" data-mods="all">Uključi sve</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-mods="none">Isključi sve</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mods="all">Enable all</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mods="none">Disable all</button>
       <% Object.entries(TEMPLATES).slice(1, 6).forEach(([k, t]) => { %><button type="button" class="btn btn-ghost btn-sm hide-sm" data-mods="<%= t.modules.join(',') %>"><%= t.name %></button><% }) %>
     </div>
   </div>
@@ -20,7 +20,7 @@
         <label class="mod-toggle">
           <input type="checkbox" name="modules" value="<%= k %>" <%= on.has(k) ? 'checked' : '' %>>
           <span class="mod-icon"><%- ic(m.icon) %></span>
-          <span class="mod-toggle-text"><b><%= m.name %></b><small><%= m.desc %></small><% if (counts[k]) { %><em><%= counts[k] %> komand<%= counts[k] === 1 ? 'a' : 'i' %></em><% } %></span>
+          <span class="mod-toggle-text"><b><%= m.name %></b><small><%= m.desc %></small><% if (counts[k]) { %><em><%= counts[k] %> komand<%= counts[k] === 1 ? 'a' : 'and' %></em><% } %></span>
           <span class="slider"></span>
         </label>
       <% }) %>

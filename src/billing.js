@@ -25,9 +25,9 @@ async function applyPlan(userId, planKey, { until = null, audit = null } = {}) {
 }
 
 async function createCheckout(user, planKey, { reqIp } = {}) {
-  if (!stripe) throw new Error('Naplata nije postavljena.');
+  if (!stripe) throw new Error('Billing isn\'t set up.');
   const plan = plans[planKey];
-  if (!plan || !plan.priceId) throw new Error('Taj paket nije dostupan za kupnju.');
+  if (!plan || !plan.priceId) throw new Error('That plan isn\'t available for purchase.');
 
   // reuse or create the Stripe customer
   let customerId = platform.users.get(user.id)?.stripe_customer;
@@ -53,15 +53,15 @@ async function createCheckout(user, planKey, { reqIp } = {}) {
 }
 
 async function createPortal(user) {
-  if (!stripe) throw new Error('Naplata nije postavljena.');
+  if (!stripe) throw new Error('Billing isn\'t set up.');
   const customerId = platform.users.get(user.id)?.stripe_customer;
-  if (!customerId) throw new Error('Nemaš aktivnu pretplatu.');
+  if (!customerId) throw new Error('You don\'t have an active subscription.');
   const portal = await stripe.billingPortal.sessions.create({ customer: customerId, return_url: `${config.dashboardUrl}/billing` });
   return portal.url;
 }
 
 function verifyWebhook(rawBody, signature) {
-  if (!config.stripeWebhookSecret) throw new Error('STRIPE_WEBHOOK_SECRET nije postavljen.');
+  if (!config.stripeWebhookSecret) throw new Error('STRIPE_WEBHOOK_SECRET is not set.');
   return stripe.webhooks.constructEvent(rawBody, signature, config.stripeWebhookSecret);
 }
 

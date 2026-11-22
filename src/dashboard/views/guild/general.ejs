@@ -1,17 +1,17 @@
 <%- include('../partials/app-start') %>
-<%- include('../partials/pagehead', { heading: 'Općenito', icon: 'settings', sub: 'Prefix, moderatorska uloga i uključene komande.' }) %>
+<%- include('../partials/pagehead', { heading: 'General', icon: 'settings', sub: 'Prefix, moderator role and enabled commands.' }) %>
 <form method="post" action="<%= base %>/save/general">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
-    <h3>Osnovno</h3>
+    <h3>Basics</h3>
     <div class="grid2">
-      <label>Prefix za custom komande<input name="prefix" value="<%= settings.prefix %>" maxlength="5"></label>
-      <label>Moderatorska uloga <small class="muted">(info za bota)</small><%- include('../partials/roleSelect', { name: 'modRole', value: settings.modRole, placeholder: '— nijedna —' }) %></label>
+      <label>Prefix for custom commands<input name="prefix" value="<%= settings.prefix %>" maxlength="5"></label>
+      <label>Moderator role <small class="muted">(info for the bot)</small><%- include('../partials/roleSelect', { name: 'modRole', value: settings.modRole, placeholder: '— none —' }) %></label>
     </div>
   </div>
   <div class="card">
-    <h3>Uključene slash komande</h3>
-    <p class="hint">Isključene komande vraćaju poruku "komanda je isključena". Dozvole za pojedine komande možeš dodatno podesiti u Discordu: Server Settings → Integrations.</p>
+    <h3>Enabled slash commands</h3>
+    <p class="hint">Disabled commands reply with "this command is disabled". You can fine-tune command permissions in Discord: Server Settings → Integrations.</p>
     <div class="cmd-grid">
       <% commands.sort((a,b) => a.module.localeCompare(b.module) || a.name.localeCompare(b.name)).forEach(c => { %>
         <label class="cmd-item">

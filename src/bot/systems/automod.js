@@ -14,14 +14,14 @@ function detect(message, A) {
       const word = w.trim().toLowerCase();
       if (!word) return false;
       if (word.includes('*')) {
-        const re = new RegExp(word.split('*').map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*'), 'i');
+        const re = new RegExp(word.split('*').map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*'), 'and');
         return re.test(lower);
       }
       return new RegExp(`(^|[^\\p{L}\\p{N}])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}\\p{N}])`, 'iu').test(lower);
     });
-    if (hit) return { rule: 'Zabranjena riječ', action: A.badWords.action };
+    if (hit) return { rule: 'Banned word', action: A.badWords.action };
   }
-  if (A.invites.enabled && INVITE_RE.test(content)) return { rule: 'Discord pozivnica', action: A.invites.action };
+  if (A.invites.enabled && INVITE_RE.test(content)) return { rule: 'Discord invite', action: A.invites.action };
   if (A.links.enabled) {
     const hosts = [...content.matchAll(LINK_RE)].map((m) => m[1].toLowerCase().replace(/^www\./, ''));
     const bad = hosts.find((h) => !A.links.whitelist.some((w) => h === w.toLowerCase() || h.endsWith(`.${w.toLowerCase()}`)));
@@ -29,13 +29,13 @@ function detect(message, A) {
   }
   if (A.mentions.enabled) {
     const count = message.mentions.users.size + message.mentions.roles.size + (message.mentions.everyone ? 1 : 0);
-    if (count >= A.mentions.limit) return { rule: `Masovno tagovanje (${count})`, action: A.mentions.action };
+    if (count >= A.mentions.limit) return { rule: `Mass mentions (${count})`, action: A.mentions.action };
   }
   if (A.caps.enabled && content.length >= A.caps.minLength) {
     const letters = content.replace(/[^a-zA-ZČĆŽŠĐčćžšđ]/g, '');
     if (letters.length >= A.caps.minLength) {
       const upper = letters.replace(/[^A-ZČĆŽŠĐ]/g, '').length;
-      if ((upper / letters.length) * 100 >= A.caps.percent) return { rule: 'Previše velikih slova', action: A.caps.action };
+      if ((upper / letters.length) * 100 >= A.caps.percent) return { rule: 'Too many capital letters', action: A.caps.action };
     }
   }
   if (A.spam.enabled) {
@@ -59,7 +59,7 @@ async function punish(message, hit, A) {
   const reason = `[AutoMod] ${hit.rule}`;
 
   const notice = await message.channel
-    .send({ content: `<@${member.id}>, poruka je uklonjena: **${hit.rule}**.`, allowedMentions: { users: [member.id] } })
+    .send({ content: `<@${member.id}>, your message was removed: **${hit.rule}**.`, allowedMentions: { users: [member.id] } })
     .catch(() => null);
   if (notice) setTimeout(() => notice.delete().catch(() => {}), 6000);
 
@@ -69,7 +69,8 @@ async function punish(message, hit, A) {
       await member.timeout(A.timeoutMinutes * 60_000, reason).catch(() => {});
     }
     await logModAction(guild, hit.action === 'warn' ? 'warn' : 'timeout', member.user, me.user, reason,
-      `Kanal: <#${message.channel.id}>\nPoruka: ${truncate(message.content, 900) || '*prazno*'}`);
+      `Channel: <#${message.channel.id}>
+Message: ${truncate(message.content, 900) || '*empty*'}`);
 
     if (hit.action === 'warn' && A.warnThreshold.enabled) {
       const count = message.client.db.warnings.count(guild.id, member.id);
@@ -78,19 +79,19 @@ async function punish(message, hit, A) {
       }
     }
   } else {
-    await sendLog(guild, 'modActions', new EmbedBuilder().setColor(0xeb459e).setTitle('AutoMod • poruka obrisana')
+    await sendLog(guild, 'modActions', new EmbedBuilder().setColor(0xeb459e).setTitle('AutoMod • message deleted')
       .addFields(
-        { name: 'Korisnik', value: `<@${member.id}>`, inline: true },
-        { name: 'Pravilo', value: hit.rule, inline: true },
-        { name: 'Kanal', value: `<#${message.channel.id}>`, inline: true },
-        { name: 'Poruka', value: truncate(message.content, 1000) || '*prazno*' },
+        { name: 'Member', value: `<@${member.id}>`, inline: true },
+        { name: 'Rule', value: hit.rule, inline: true },
+        { name: 'Channel', value: `<#${message.channel.id}>`, inline: true },
+        { name: 'Message', value: truncate(message.content, 1000) || '*empty*' },
       ));
   }
 }
 
 async function thresholdPunish(member, T, count) {
   const me = member.guild.members.me;
-  const reason = `Automatska kazna: ${count} upozorenja`;
+  const reason = `Automatic punishment: ${count} warnings`;
   try {
     if (T.action === 'timeout' && member.moderatable) await member.timeout(T.minutes * 60_000, reason);
     else if (T.action === 'kick' && member.kickable) await member.kick(reason);

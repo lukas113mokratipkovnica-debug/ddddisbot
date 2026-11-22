@@ -8,7 +8,7 @@ function buildPanel(panel, guild) {
   const embed = new EmbedBuilder().setColor(config.color).setTitle(panel.title);
   const lines = panel.roles.map((r) => `${r.emoji ? `${r.emoji} ` : ''}<@&${r.role}>${r.description ? ` — ${r.description}` : ''}`);
   embed.setDescription([panel.description, '', ...lines].filter((x) => x !== undefined && x !== null).join('\n').trim());
-  if (panel.unique_mode) embed.setFooter({ text: 'Možeš imati samo jednu ulogu s ovog panela.' });
+  if (panel.unique_mode) embed.setFooter({ text: 'You can only have one role from this panel.' });
 
   const rows = [];
   panel.roles.slice(0, 25).forEach((r, i) => {
@@ -16,7 +16,7 @@ function buildPanel(panel, guild) {
     const role = guild.roles.cache.get(r.role);
     const btn = new ButtonBuilder()
       .setCustomId(`rr:${panel.id}:${r.role}`)
-      .setLabel((r.label || role?.name || 'Uloga').slice(0, 80))
+      .setLabel((r.label || role?.name || 'Role').slice(0, 80))
       .setStyle(STYLES[r.style] || ButtonStyle.Secondary);
     if (r.emoji) { try { btn.setEmoji(r.emoji); } catch { /* invalid emoji */ } }
     rows[rows.length - 1].addComponents(btn);
@@ -27,10 +27,10 @@ function buildPanel(panel, guild) {
 async function publish(client, panelId, guildId) {
   const { rolePanels } = client.db;
   const panel = rolePanels.get(guildId, panelId);
-  if (!panel) throw new Error('Panel ne postoji');
+  if (!panel) throw new Error('Panel doesn\'t exist');
   const guild = client.guilds.cache.get(guildId);
   const channel = guild?.channels.cache.get(panel.channel_id);
-  if (!channel?.isTextBased()) throw new Error('Kanal ne postoji');
+  if (!channel?.isTextBased()) throw new Error('Channel doesn\'t exist');
   const payload = buildPanel(panel, guild);
   if (panel.message_id) {
     const existing = await channel.messages.fetch(panel.message_id).catch(() => null);
@@ -46,23 +46,23 @@ async function handleButton(interaction, panelId, roleId) {
   const { guild, member } = interaction;
   const panel = rolePanels.get(guild.id, Number(panelId));
   const role = guild.roles.cache.get(roleId);
-  if (!panel || !role) return interaction.reply({ embeds: [fail('Ova uloga više ne postoji.')], flags: MessageFlags.Ephemeral });
+  if (!panel || !role) return interaction.reply({ embeds: [fail('This role no longer exists.')], flags: MessageFlags.Ephemeral });
   if (role.position >= guild.members.me.roles.highest.position) {
-    return interaction.reply({ embeds: [fail('Ne mogu dodijeliti tu ulogu (moja uloga je niža).')], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [fail('I can\'t assign that role (my role is lower).')], flags: MessageFlags.Ephemeral });
   }
   try {
     if (member.roles.cache.has(roleId)) {
-      await member.roles.remove(roleId, 'Button role');
-      return interaction.reply({ content: `➖ Uklonjena uloga ${role}`, flags: MessageFlags.Ephemeral });
+      await member.roles.remove(roleId, 'Button roles');
+      return interaction.reply({ content: `➖ Role removed: ${role}`, flags: MessageFlags.Ephemeral });
     }
     if (panel.unique_mode) {
       const others = panel.roles.map((r) => r.role).filter((id) => id !== roleId && member.roles.cache.has(id));
       if (others.length) await member.roles.remove(others, 'Button role (unique)');
     }
-    await member.roles.add(roleId, 'Button role');
-    return interaction.reply({ content: `➕ Dodana uloga ${role}`, flags: MessageFlags.Ephemeral });
+    await member.roles.add(roleId, 'Button roles');
+    return interaction.reply({ content: `➕ Role added: ${role}`, flags: MessageFlags.Ephemeral });
   } catch (e) {
-    return interaction.reply({ embeds: [fail(`Greška: ${e.message}`)], flags: MessageFlags.Ephemeral });
+    return interaction.reply({ embeds: [fail(`Error: ${e.message}`)], flags: MessageFlags.Ephemeral });
   }
 }
 

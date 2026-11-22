@@ -6,7 +6,6 @@ const session = require('express-session');
 const config = require('../config');
 const platform = require('../platform');
 const plans = require('../plans');
-const i18n = require('../i18n');
 const manager = require('../bot/manager');
 const { MODULES, TEMPLATES } = require('../modules');
 const { ALL_COMMANDS } = require('../bot/createClient');
@@ -58,7 +57,7 @@ function startDashboard() {
   app.post('/billing/webhook', express.raw({ type: 'application/json', limit: '1mb' }), async (req, res) => {
     if (!billing.enabled()) return res.status(503).end();
     let event;
-    try { event = billing.verifyWebhook(req.body, req.get('stripe-signature')); } catch (e) { return res.status(400).send(`Webhook greška: ${e.message}`); }
+    try { event = billing.verifyWebhook(req.body, req.get('stripe-signature')); } catch (e) { return res.status(400).send(`Webhook error: ${e.message}`); }
     res.json({ received: true }); // ack fast; process after
     billing.handleEvent(event).then((d) => console.log(`[billing] ${event.type}: ${d}`)).catch((e) => console.error('[billing] handler error', e.message));
   });
@@ -70,13 +69,12 @@ function startDashboard() {
   }));
   app.use((req, res, next) => { if (req.method === 'POST') return rateLimit('post', { max: 90, windowMs: 60_000, key: (r) => r.session.user?.id || r.ip })(req, res, next); next(); });
 
-  // ------------------------------------------------------------------ locals + i18n
+  // ------------------------------------------------------------------ request locals
   app.use((req, res, next) => {
     req.session.csrf ||= crypto.randomBytes(32).toString('hex');
-    const lang = 'en'; // English is the only user-facing language
-    req.lang = lang;
+    req.lang = 'en';
     Object.assign(res.locals, {
-      lang, langs: i18n.LANGS, numLocale: i18n.LANGS[lang].locale, t: (s, v) => i18n.t(lang, s, v),
+      lang: 'en', numLocale: 'en-GB', t: (s) => s,
       user: req.session.user || null, isAdmin: isAdmin(req.session.user), csrf: req.session.csrf, brand: config.brand,
       supportUrl: config.supportUrl, flash: req.session.flash || null, path: req.path, url: req.originalUrl,
       MODULES, TEMPLATES, plans, mainInvite: inviteUrl(config.clientId),
@@ -86,12 +84,6 @@ function startDashboard() {
     const main = manager.mainClient();
     res.locals.brandLogo = main?.isReady() ? main.user.displayAvatarURL({ size: 128 }) : null;
     delete req.session.flash;
-    // every rendered page is translated to English in one pass (code is written in Croatian internally)
-    const render = res.render.bind(res);
-    res.render = (view, opts = {}) => render(view, opts, (err, html) => {
-      if (err) return next(err);
-      res.type('html').send(i18n.translateHtml(lang, html));
-    });
     next();
   });
 
@@ -105,13 +97,13 @@ function startDashboard() {
     }
     return { guilds, members, online, bots: ids.length, users: platform.users.count(), commands: ALL_COMMANDS.size, modules: Object.keys(MODULES).length };
   };
-  app.get('/', (req, res) => res.render('index', { title: 'Discord botovi bez kodiranja', stats: platformStats() }));
+  app.get('/', (req, res) => res.render('index', { title: 'Discord bots without code', stats: platformStats() }));
   app.get('/catalog', (req, res) => {
     const byModule = {};
     for (const c of ALL_COMMANDS.values()) (byModule[c.module] ||= []).push({ name: c.data.name, description: c.data.description });
-    res.render('catalog', { title: 'Katalog botova', byModule });
+    res.render('catalog', { title: 'Bot catalog', byModule });
   });
-  app.get('/pricing', (req, res) => res.render('pricing', { title: 'Cijene' }));
+  app.get('/pricing', (req, res) => res.render('pricing', { title: 'Pricing' }));
   app.get('/status', (req, res) => {
     const main = manager.info(manager.MAIN_ID);
     res.render('status', { title: 'Status', stats: platformStats(), main, samples: manager.statusSamples(), uptime: process.uptime() });
@@ -139,13 +131,13 @@ function startDashboard() {
         body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, grant_type: 'authorization_code', code, redirect_uri: REDIRECT }),
       });
       const token = await tokenRes.json();
-      if (!token.access_token) throw new Error('Discord je odbio prijavu. Pokušaj ponovo.');
+      if (!token.access_token) throw new Error('Discord rejected the sign-in. Please try again.');
       const headers = { Authorization: `Bearer ${token.access_token}` };
       const [user, guilds] = await Promise.all([
         fetch(`${API}/users/@me`, { headers }).then((r) => r.json()),
         fetch(`${API}/users/@me/guilds`, { headers }).then((r) => r.json()),
       ]);
-      if (!user?.id) throw new Error('Discord nije vratio korisnika.');
+      if (!user?.id) throw new Error('Discord did not return a user.');
       const manageable = (Array.isArray(guilds) ? guilds : []).filter((g) => g.owner || (BigInt(g.permissions) & (MANAGE_GUILD | ADMIN)) !== 0n)
         .map((g) => ({ id: g.id, name: g.name, icon: g.icon }));
       const profile = {
@@ -153,7 +145,7 @@ function startDashboard() {
         avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png',
       };
       platform.users.upsert(profile);
-      if (platform.users.get(user.id)?.banned) return res.status(403).render('error', { title: 'Račun blokiran', message: 'Tvoj račun je blokiran na ovoj platformi.' });
+      if (platform.users.get(user.id)?.banned) return res.status(403).render('error', { title: 'Account blocked', message: 'Your account is blocked on this platform.' });
       const returnTo = typeof req.session.returnTo === 'string' && req.session.returnTo.startsWith('/') && !req.session.returnTo.startsWith('//') ? req.session.returnTo : '/app';
       const lang = req.session.lang;
       req.session.regenerate((err) => { // new session id on login prevents session fixation
@@ -166,7 +158,7 @@ function startDashboard() {
       });
     } catch (e) {
       console.error('[dashboard] login error', e.message);
-      res.status(500).render('error', { title: 'Greška pri prijavi', message: e.message });
+      res.status(500).render('error', { title: 'Sign-in error', message: e.message });
     }
   });
   app.post('/logout', (req, res) => {
@@ -182,11 +174,11 @@ function startDashboard() {
   app.use(require('./routes/guild'));
   app.use(require('./routes/admin'));
 
-  app.use((req, res) => res.status(404).render('error', { title: '404', message: 'Stranica ne postoji.' }));
+  app.use((req, res) => res.status(404).render('error', { title: '404', message: 'This page doesn\'t exist.' }));
   app.use((err, req, res, _next) => {
     console.error('[dashboard]', err);
     if (res.headersSent) return;
-    res.status(500).render('error', { title: 'Greška', message: config.production ? 'Nešto je pošlo po zlu. Pokušaj ponovo.' : err.message });
+    res.status(500).render('error', { title: 'Error', message: config.production ? 'Something went wrong. Please try again.' : err.message });
   });
 
   return app.listen(config.port, () => console.log(`[dashboard] ${config.brand} radi na ${config.dashboardUrl} (port ${config.port})`));

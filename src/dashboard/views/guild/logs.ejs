@@ -1,16 +1,16 @@
 <%- include('../partials/app-start') %>
-<%- include('../partials/pagehead', { heading: 'Logovi', icon: 'scroll', sub: 'Sve što se događa na serveru, u jednom kanalu.' }) %>
+<%- include('../partials/pagehead', { heading: 'Logs', icon: 'scroll', sub: 'Everything that happens on the server, in one channel.' }) %>
 <form method="post" action="<%= base %>/save/logs">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
-    <%- include('../partials/toggle', { name: 'enabled', checked: settings.logs.enabled, label: 'Logovi uključeni' }) %>
-    <label>Log kanal<%- include('../partials/channelSelect', { name: 'channel', value: settings.logs.channel }) %></label>
+    <%- include('../partials/toggle', { name: 'enabled', checked: settings.logs.enabled, label: 'Logging enabled' }) %>
+    <label>Log channel<%- include('../partials/channelSelect', { name: 'channel', value: settings.logs.channel }) %></label>
   </div>
   <div class="card">
-    <h3>Što logirati</h3>
+    <h3>What to log</h3>
     <div class="grid2">
-      <% [['messageDelete','Obrisane poruke'],['messageEdit','Uređene poruke'],['memberJoin','Ulasci članova'],['memberLeave','Izlasci članova'],
-          ['memberUpdate','Promjene uloga / nadimaka / timeout'],['modActions','Moderatorske akcije & AutoMod'],['voice','Voice ulasci/izlasci'],['channels','Kreiranje/brisanje kanala']
+      <% [['messageDelete','Deleted messages'],['messageEdit','Edited messages'],['memberJoin','Member joins'],['memberLeave','Member leaves'],
+          ['memberUpdate','Role / nickname / timeout changes'],['modActions','Moderator actions & AutoMod'],['voice','Voice joins/leaves'],['channels','Channel creation/deletion']
         ].forEach(([k,l]) => { %>
         <%- include('../partials/toggle', { name: k, checked: settings.logs[k], label: l }) %>
       <% }) %>

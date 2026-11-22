@@ -3,22 +3,22 @@
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
    const allOk = main.status === 'online';
    const bars = Array.from({ length: 96 }, (_, i) => samples[samples.length - 96 + i] || null); %>
-<section class="page-hero"><div class="wrap narrow"><span class="eyebrow">Status</span><h1>Status sustava</h1></div></section>
+<section class="page-hero"><div class="wrap narrow"><span class="eyebrow">Status</span><h1>System status</h1></div></section>
 <section class="section tight"><div class="wrap narrow">
-  <div class="status-hero <%= allOk ? 'ok' : 'bad' %>"><span class="pulse"></span><div><b><%= allOk ? 'Svi sustavi rade normalno' : 'Djelomični prekid rada' %></b><div class="muted small">Ažurirano: <%= new Date().toLocaleString(numLocale) %></div></div></div>
+  <div class="status-hero <%= allOk ? 'ok' : 'bad' %>"><span class="pulse"></span><div><b><%= allOk ? 'All systems operational' : 'Partial outage' %></b><div class="muted small">Updated: <%= new Date().toLocaleString(numLocale) %></div></div></div>
   <div class="card">
-    <div class="row between"><h3>Dostupnost — zadnja 24 sata</h3><span class="muted small">1 traka = 15 min</span></div>
+    <div class="row between"><h3>Availability — last 24 hours</h3><span class="muted small">1 bar = 15 min</span></div>
     <div class="uptime-bars">
       <% bars.forEach(s => { const cls = !s ? 'none' : (s.main && s.online >= s.expected) ? '' : s.main ? 'part' : 'down'; %><i class="<%= cls %>" title="<%= s ? new Date(s.t).toLocaleTimeString(numLocale) + ' · ' + s.online + '/' + s.expected : '' %>"></i><% }) %>
     </div>
-    <div class="row between small muted"><span>prije 24 h</span><span>sada</span></div>
+    <div class="row between small muted"><span>24 h ago</span><span>now</span></div>
   </div>
   <div class="card">
     <div class="component"><span class="row"><%- ic('globe') %>Web dashboard</span><span class="status status-online">online</span></div>
-    <div class="component"><span class="row"><%- ic('bot') %>Službeni bot</span><span class="status status-<%= main.status %>"><%= main.status %></span></div>
-    <div class="component"><span class="row"><%- ic('server') %>Botovi korisnika</span><span class="muted"><b><%= stats.online %></b> / <%= stats.bots %> online</span></div>
+    <div class="component"><span class="row"><%- ic('bot') %>Official bot</span><span class="status status-<%= main.status %>"><%= main.status %></span></div>
+    <div class="component"><span class="row"><%- ic('server') %>Customer bots</span><span class="muted"><b><%= stats.online %></b> / <%= stats.bots %> online</span></div>
     <div class="component"><span class="row"><%- ic('activity') %>Gateway ping</span><span class="muted"><%= main.ping != null ? main.ping + ' ms' : '—' %></span></div>
-    <div class="component"><span class="row"><%- ic('clock') %>Uptime platforme</span><span class="muted"><%= Math.floor(uptime / 3600) %> h <%= Math.floor(uptime % 3600 / 60) %> min</span></div>
+    <div class="component"><span class="row"><%- ic('clock') %>Platform uptime</span><span class="muted"><%= Math.floor(uptime / 3600) %> h <%= Math.floor(uptime % 3600 / 60) %> min</span></div>
   </div>
 </div></section>
 <%- include('partials/site-footer') %>

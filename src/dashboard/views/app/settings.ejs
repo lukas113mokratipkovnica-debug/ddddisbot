@@ -1,27 +1,27 @@
 <%- include('../partials/app-start') %>
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; const p = botRec.presence || {}; %>
-<%- include('../partials/pagehead', { heading: 'Postavke bota', icon: 'settings' }) %>
+<%- include('../partials/pagehead', { heading: 'Bot settings', icon: 'settings' }) %>
 <div class="two-col">
   <form class="card" method="post" action="/bots/<%= botRec.id %>/presence">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <h3>Status</h3>
     <div class="grid2">
-      <label>Status<select name="status"><% [['online','🟢 Online'],['idle','🌙 Odsutan'],['dnd','⛔ Ne ometaj'],['invisible','⚫ Nevidljiv']].forEach(([v,l]) => { %><option value="<%= v %>" <%= (p.status || 'online') === v ? 'selected' : '' %>><%= l %></option><% }) %></select></label>
-      <label>Aktivnost<select name="type"><% [['watching','Gleda'],['playing','Igra'],['listening','Sluša'],['competing','Natječe se'],['custom','Prilagođeno']].forEach(([v,l]) => { %><option value="<%= v %>" <%= (p.type || 'watching') === v ? 'selected' : '' %>><%= l %></option><% }) %></select></label>
+      <label>Status<select name="status"><% [['online','🟢 Online'],['idle','🌙 Idle'],['dnd','⛔ Do not disturb'],['invisible','⚫ Invisible']].forEach(([v,l]) => { %><option value="<%= v %>" <%= (p.status || 'online') === v ? 'selected' : '' %>><%= l %></option><% }) %></select></label>
+      <label>Activity<select name="type"><% [['watching','Watching'],['playing','Playing'],['listening','Listening'],['competing','Competing'],['custom','Custom']].forEach(([v,l]) => { %><option value="<%= v %>" <%= (p.type || 'watching') === v ? 'selected' : '' %>><%= l %></option><% }) %></select></label>
     </div>
-    <label>Tekst<input name="text" maxlength="120" value="<%= p.text || '' %>" placeholder="{servers} servera • /help"></label>
+    <label>Text<input name="text" maxlength="120" value="<%= p.text || '' %>" placeholder="{servers} servers • /help"></label>
     <p class="hint">Varijable: <code>{servers}</code> <code>{members}</code></p>
-    <button class="btn btn-primary">Spremi status</button>
+    <button class="btn btn-primary">Save status</button>
   </form>
 
   <form class="card" method="post" action="/bots/<%= botRec.id %>/profile">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
-    <h3>Profil</h3>
+    <h3>Profile</h3>
     <div class="profile-preview"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><b><%= botRec.name %></b></div>
-    <label>Ime bota<input name="username" maxlength="32" value="<%= botRec.name %>"></label>
-    <label>Novi avatar (URL slike)<input name="avatar" type="url" placeholder="https://…/slika.png"></label>
-    <p class="hint">Discord dopušta promjenu imena otprilike dvaput na sat.</p>
-    <button class="btn btn-primary" <%= botInfo.status !== 'online' ? 'disabled' : '' %>>Spremi profil</button>
+    <label>Bot name<input name="username" maxlength="32" value="<%= botRec.name %>"></label>
+    <label>New avatar (image URL)<input name="avatar" type="url" placeholder="https://…/slika.png"></label>
+    <p class="hint">Discord allows changing the name about twice per hour.</p>
+    <button class="btn btn-primary" <%= botInfo.status !== 'online' ? 'disabled' : '' %>>Save profile</button>
   </form>
 </div>
 
@@ -30,23 +30,23 @@
   <form class="card" method="post" action="/bots/<%= botRec.id %>/token">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <h3>Token</h3>
-    <p class="muted small">Ako si resetirao/la token u Developer Portalu, ovdje unesi novi.</p>
-    <label>Novi token<div class="input-icon"><%- ic('key') %><input type="password" name="token" required autocomplete="off"></div></label>
-    <button class="btn btn-primary">Ažuriraj token</button>
+    <p class="muted small">If you reset the token in the Developer Portal, enter the new one here.</p>
+    <label>New token<div class="input-icon"><%- ic('key') %><input type="password" name="token" required autocomplete="off"></div></label>
+    <button class="btn btn-primary">Update token</button>
   </form>
   <form class="card" method="post" action="/bots/<%= botRec.id %>/autostart">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <h3>Pokretanje</h3>
     <%- include('../partials/toggle', { name: 'autostart', checked: botRec.autostart, label: 'Automatski pokreni nakon restarta platforme' }) %>
-    <button class="btn btn-ghost">Spremi</button>
+    <button class="btn btn-ghost">Save</button>
   </form>
 </div>
 
 <form class="card danger-zone" method="post" action="/bots/<%= botRec.id %>/delete">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <h3><%- ic('trash') %>Opasna zona</h3>
-  <p class="muted">Brisanjem se bot gasi i trajno brišu sve postavke, XP, novac i statistika za sve servere. Sama Discord aplikacija ostaje.</p>
-  <div class="row"><input name="confirm" placeholder="Upiši: <%= botRec.name %>" autocomplete="off"><button class="btn btn-danger">Obriši bota</button></div>
+  <p class="muted">Deleting stops the bot and permanently erases all settings, XP, money and statistics for every server. The Discord application itself stays.</p>
+  <div class="row"><input name="confirm" placeholder="Type: <%= botRec.name %>" autocomplete="off"><button class="btn btn-danger">Delete bot</button></div>
 </form>
 <% } %>
 <%- include('../partials/app-end') %>

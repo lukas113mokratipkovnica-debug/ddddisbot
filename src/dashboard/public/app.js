@@ -294,9 +294,9 @@
         const r = await fetch('/api/support/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf, history }) });
         const data = await r.json();
         typing.remove();
-        add('bot', data.reply || (data.error ? 'Greška: ' + data.error : 'Greška.'));
+        add('bot', data.reply || (data.error ? 'Error: ' + data.error : 'Error.'));
         if (data.reply) history.push({ role: 'assistant', content: data.reply });
-      } catch (err) { typing.remove(); add('bot', 'Veza nije uspjela. Pokušaj ponovo.'); }
+      } catch (err) { typing.remove(); add('bot', 'Connection failed. Try again.'); }
       busy = false; input.focus();
     });
   }

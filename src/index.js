@@ -9,7 +9,7 @@ manager.startAll();
 require('./billing').startExpiryTicker();
 
 const shutdown = async () => {
-  console.log('Gašenje svih botova…');
+  console.log('Shutting down all bots…');
   await manager.stopAll();
   process.exit(0);
 };
