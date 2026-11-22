@@ -1,0 +1,43 @@
+<%- include('../partials/guildStart') %>
+<h1>Button role</h1>
+<p class="muted">Napravi panel s dugmadima — klik daje/uzima ulogu.</p>
+<div class="card">
+  <h3>Novi panel</h3>
+  <form method="post" action="/dashboard/<%= guild.id %>/roles/create">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="grid2">
+      <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %></label>
+      <label>Naslov<input name="title" maxlength="256" value="Odaberi svoje uloge"></label>
+    </div>
+    <label>Opis<textarea name="description" rows="2" maxlength="2000">Klikni na dugme da dobiješ ili makneš ulogu.</textarea></label>
+    <%- include('../partials/toggle', { name: 'unique', checked: false, label: 'Samo jedna uloga s ovog panela (npr. boje)' }) %>
+    <div id="panel-roles">
+      <div class="row role-row">
+        <%- include('../partials/roleSelect', { name: 'role', value: '', assignableOnly: true }) %>
+        <input name="label" placeholder="Tekst dugmeta" maxlength="80">
+        <input name="emoji" placeholder="Emoji" maxlength="64" class="w-sm">
+        <select name="style" class="w-sm"><option value="secondary">Sivo</option><option value="primary">Plavo</option><option value="success">Zeleno</option><option value="danger">Crveno</option></select>
+        <input name="rdesc" placeholder="Opis (opcionalno)" maxlength="100">
+        <button type="button" class="btn btn-ghost btn-sm" data-remove-row>✕</button>
+      </div>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" data-add-row="panel-roles">+ Dodaj ulogu</button>
+    <div><button class="btn btn-primary">Objavi panel</button></div>
+  </form>
+</div>
+<div class="card">
+  <h3>Postojeći paneli</h3>
+  <% if (!panels.length) { %><p class="muted">Nema panela.</p><% } %>
+  <% panels.forEach(p => { %>
+    <div class="panel-item">
+      <div><b><%= p.title %></b> <small class="muted">#<%= (guild.channels.cache.get(p.channel_id) || {}).name || 'obrisan kanal' %><%= p.unique_mode ? ' • jedna uloga' : '' %></small>
+        <div class="chips"><% p.roles.forEach(r => { const role = roles.find(x => x.id === r.role); %><span class="chip"><%= r.emoji %> <%= r.label || (role ? role.name : 'obrisana') %></span><% }) %></div>
+      </div>
+      <div class="actions">
+        <form method="post" action="/dashboard/<%= guild.id %>/roles/<%= p.id %>/republish"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Osvježi</button></form>
+        <form method="post" action="/dashboard/<%= guild.id %>/roles/<%= p.id %>/delete" onsubmit="return confirm('Obrisati panel i poruku?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+      </div>
+    </div>
+  <% }) %>
+</div>
+<%- include('../partials/guildEnd') %>

@@ -1,0 +1,23 @@
+<%- include('head') %>
+<%
+  const nav = [
+    ['overview', '📊', 'Pregled'], ['general', '⚙️', 'Općenito'], ['welcome', '👋', 'Dobrodošlica & Autorole'],
+    ['moderation', '🛡️', 'Moderacija'], ['automod', '🤖', 'AutoMod'], ['logs', '📜', 'Logovi'],
+    ['leveling', '📈', 'Leveling'], ['commands', '💬', 'Custom komande'], ['roles', '🎭', 'Button role'],
+    ['tickets', '🎫', 'Tiketi'], ['giveaways', '🎉', 'Giveaway'], ['starboard', '⭐', 'Starboard'], ['messages', '✉️', 'Pošalji poruku'],
+  ];
+%>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="guild-head">
+      <% if (guild.iconURL()) { %><img src="<%= guild.iconURL({ size: 128 }) %>" alt=""><% } else { %><div class="guild-fallback"><%= guild.name.slice(0,2) %></div><% } %>
+      <div><strong><%= guild.name %></strong><small><%= guild.memberCount %> članova</small></div>
+    </div>
+    <nav>
+      <% nav.forEach(([key, icon, label]) => { %>
+        <a href="/dashboard/<%= guild.id %><%= key === 'overview' ? '' : '/' + key %>" class="<%= page === key ? 'active' : '' %>"><span><%= icon %></span><%= label %></a>
+      <% }) %>
+    </nav>
+  </aside>
+  <main class="content">
+    <button class="btn btn-ghost btn-sm menu-toggle" type="button" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ Meni</button>

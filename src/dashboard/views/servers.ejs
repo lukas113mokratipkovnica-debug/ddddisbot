@@ -1,0 +1,16 @@
+<%- include('partials/head') %>
+<div class="container">
+  <h1>Odaberi server</h1>
+  <p class="muted">Prikazani su serveri na kojima imaš dozvolu <b>Manage Server</b>.</p>
+  <div class="server-grid">
+    <% servers.forEach(s => { %>
+      <a class="card server <%= s.hasBot ? '' : 'nobot' %>" href="<%= s.hasBot ? '/dashboard/' + s.id : s.invite %>" <%= s.hasBot ? '' : 'target=_blank rel=noopener' %>>
+        <% if (s.iconUrl) { %><img src="<%= s.iconUrl %>" alt=""><% } else { %><div class="guild-fallback big"><%= s.name.slice(0,2) %></div><% } %>
+        <strong><%= s.name %></strong>
+        <span class="btn btn-sm <%= s.hasBot ? 'btn-primary' : 'btn-ghost' %>"><%= s.hasBot ? 'Upravljaj' : 'Pozovi bota' %></span>
+      </a>
+    <% }) %>
+    <% if (!servers.length) { %><p class="muted">Nema servera. Odjavi se i prijavi ponovo ako si upravo dobio/la dozvole.</p><% } %>
+  </div>
+</div>
+<%- include('partials/foot') %>

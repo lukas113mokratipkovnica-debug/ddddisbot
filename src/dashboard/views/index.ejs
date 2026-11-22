@@ -1,0 +1,31 @@
+<%- include('partials/head') %>
+<section class="hero">
+  <% if (bot) { %><img class="hero-avatar" src="<%= bot.displayAvatarURL({ size: 256 }) %>" alt=""><% } %>
+  <h1><%= bot ? bot.username : 'Bot' %></h1>
+  <p class="lead">Sve-u-jednom bot za tvoj Discord server — moderacija, AutoMod, leveling, tiketi, giveaway, dobrodošlica, logovi, button role i custom komande. Sve podešavaš ovdje, bez kucanja komandi.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary btn-lg" href="<%= user ? '/dashboard' : '/login' %>">Otvori dashboard</a>
+    <a class="btn btn-ghost btn-lg" href="<%= inviteUrl %>" target="_blank" rel="noopener">Dodaj na server</a>
+  </div>
+  <div class="hero-stats">
+    <div><strong><%= guildCount %></strong><span>servera</span></div>
+    <div><strong><%= userCount %></strong><span>korisnika</span></div>
+    <div><strong><%= commandCount %></strong><span>slash komandi</span></div>
+  </div>
+</section>
+<section class="features">
+  <% [
+    ['🛡️','Moderacija','ban, kick, timeout, warn, purge, lock, slowmode — sve s logom slučajeva.'],
+    ['🤖','AutoMod','Psovke, linkovi, invite, spam, caps, masovni tagovi + automatska kazna nakon X upozorenja.'],
+    ['📈','Leveling','XP za poruke, rang, leaderboard, nagradne uloge po levelu.'],
+    ['🎫','Tiketi','Panel s dugmetom, privatni kanali, transkript u log.'],
+    ['🎉','Giveaway','Pokretanje iz Discorda ili s dashboarda, reroll, auto kraj.'],
+    ['🎭','Button role','Paneli s dugmadima za samostalno uzimanje uloga.'],
+    ['👋','Dobrodošlica','Poruke ulaska/izlaska, DM, autorole za ljude i botove.'],
+    ['📜','Logovi','Brisanje/uređivanje poruka, ulazi, izlazi, uloge, voice, kanali.'],
+    ['💬','Custom komande','Vlastite komande s prefixom i varijablama.'],
+  ].forEach(([i,t,d]) => { %>
+    <div class="card feature"><div class="feature-icon"><%= i %></div><h3><%= t %></h3><p><%= d %></p></div>
+  <% }) %>
+</section>
+<%- include('partials/foot') %>

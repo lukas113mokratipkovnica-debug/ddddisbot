@@ -1,0 +1,58 @@
+<%- include('../partials/guildStart') %>
+<h1>Pregled</h1>
+<div class="stat-grid">
+  <% [['Članovi', counts.members], ['Kanali', counts.channels], ['Uloge', counts.roles], ['Upozorenja', counts.warnings],
+      ['Mod slučajevi', counts.cases], ['Otvoreni tiketi', counts.openTickets], ['Rangirani članovi', counts.ranked], ['Custom komande', counts.customCommands]
+    ].forEach(([l, v]) => { %>
+    <div class="card stat"><span><%= l %></span><strong><%= v.toLocaleString('hr-HR') %></strong></div>
+  <% }) %>
+</div>
+
+<%
+  const W = 700, H = 200, pad = 28;
+  const series = [['messages', 'Poruke', 'var(--accent)'], ['joins', 'Ulasci', 'var(--ok)'], ['leaves', 'Izlasci', 'var(--danger)']];
+  const maxMsg = Math.max(1, ...stats.map(d => d.messages));
+  const maxJL = Math.max(1, ...stats.map(d => Math.max(d.joins, d.leaves)));
+  const bw = (W - pad * 2) / stats.length;
+%>
+<div class="two-col">
+  <div class="card">
+    <h3>Poruke (14 dana)</h3>
+    <svg viewBox="0 0 <%= W %> <%= H %>" class="chart" role="img" aria-label="Poruke po danu">
+      <% stats.forEach((d, i) => { const h = (d.messages / maxMsg) * (H - pad * 2); %>
+        <rect x="<%= pad + i * bw + 3 %>" y="<%= H - pad - h %>" width="<%= Math.max(2, bw - 6) %>" height="<%= h %>" rx="3" fill="var(--accent)"><title><%= d.day %>: <%= d.messages %></title></rect>
+        <% if (i % 2 === 0) { %><text x="<%= pad + i * bw + bw / 2 %>" y="<%= H - 8 %>" text-anchor="middle"><%= d.day.slice(5) %></text><% } %>
+      <% }) %>
+      <text x="<%= pad %>" y="16"><%= maxMsg %></text>
+    </svg>
+  </div>
+  <div class="card">
+    <h3>Ulasci / izlasci (14 dana)</h3>
+    <svg viewBox="0 0 <%= W %> <%= H %>" class="chart" role="img" aria-label="Ulasci i izlasci">
+      <% stats.forEach((d, i) => { const hj = (d.joins / maxJL) * (H - pad * 2); const hl = (d.leaves / maxJL) * (H - pad * 2); const half = Math.max(1, (bw - 6) / 2); %>
+        <rect x="<%= pad + i * bw + 3 %>" y="<%= H - pad - hj %>" width="<%= half %>" height="<%= hj %>" rx="2" fill="var(--ok)"><title><%= d.day %> ulasci: <%= d.joins %></title></rect>
+        <rect x="<%= pad + i * bw + 3 + half %>" y="<%= H - pad - hl %>" width="<%= half %>" height="<%= hl %>" rx="2" fill="var(--danger)"><title><%= d.day %> izlasci: <%= d.leaves %></title></rect>
+        <% if (i % 2 === 0) { %><text x="<%= pad + i * bw + bw / 2 %>" y="<%= H - 8 %>" text-anchor="middle"><%= d.day.slice(5) %></text><% } %>
+      <% }) %>
+      <text x="<%= pad %>" y="16"><%= maxJL %></text>
+    </svg>
+    <div class="legend"><span><i style="background:var(--ok)"></i>Ulasci</span><span><i style="background:var(--danger)"></i>Izlasci</span></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h3>Zadnji mod slučajevi</h3>
+    <% if (!recentCases.length) { %><p class="muted">Još nema slučajeva.</p><% } else { %>
+    <table class="table"><thead><tr><th>#</th><th>Tip</th><th>Korisnik</th><th>Razlog</th></tr></thead><tbody>
+      <% recentCases.forEach(c => { %><tr><td><%= c.id %></td><td><span class="tag tag-<%= c.type %>"><%= c.type %></span></td><td><%= userName(c.user_id) %></td><td class="clip"><%= c.reason || '—' %></td></tr><% }) %>
+    </tbody></table><% } %>
+  </div>
+  <div class="card">
+    <h3>Top 5 (XP)</h3>
+    <% if (!top.length) { %><p class="muted">Još nema XP podataka.</p><% } else { %>
+    <ol class="toplist"><% top.forEach(r => { %><li><img src="<%= userAvatar(r.user_id) %>" alt=""><span><%= userName(r.user_id) %></span><b>Lv <%= r.level %></b><small><%= r.xp %> XP</small></li><% }) %></ol>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/guildEnd') %>

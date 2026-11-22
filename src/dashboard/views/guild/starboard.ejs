@@ -1,0 +1,17 @@
+<%- include('../partials/guildStart') %>
+<% const S = settings.starboard; %>
+<h1>Starboard</h1>
+<p class="muted">Poruke koje skupe dovoljno reakcija automatski se objave u starboard kanal.</p>
+<form method="post" action="/dashboard/<%= guild.id %>/save/starboard">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <%- include('../partials/toggle', { name: 'enabled', checked: S.enabled, label: 'Starboard uključen' }) %>
+    <div class="grid3">
+      <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: S.channel }) %></label>
+      <label>Emoji<input name="emoji" value="<%= S.emoji %>" maxlength="64"></label>
+      <label>Potrebno reakcija<input type="number" name="threshold" min="1" max="100" value="<%= S.threshold %>"></label>
+    </div>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<%- include('../partials/guildEnd') %>

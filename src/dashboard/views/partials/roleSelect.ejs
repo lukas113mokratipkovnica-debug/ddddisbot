@@ -1,0 +1,6 @@
+<select name="<%= name %>">
+  <option value=""><%= typeof placeholder !== 'undefined' ? placeholder : '— odaberi ulogu —' %></option>
+  <% roles.filter(r => !r.managed).forEach(r => { %>
+    <option value="<%= r.id %>" <%= value === r.id ? 'selected' : '' %> <%= typeof assignableOnly !== 'undefined' && assignableOnly && !r.assignable ? 'disabled' : '' %>>@<%= r.name %><%= !r.assignable ? ' (iznad bota)' : '' %></option>
+  <% }) %>
+</select>

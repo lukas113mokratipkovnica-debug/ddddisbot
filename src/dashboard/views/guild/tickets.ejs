@@ -1,0 +1,40 @@
+<%- include('../partials/guildStart') %>
+<% const T = settings.tickets; %>
+<h1>Tiketi</h1>
+<form method="post" action="/dashboard/<%= guild.id %>/save/tickets">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <%- include('../partials/toggle', { name: 'enabled', checked: T.enabled, label: 'Tiketi uključeni' }) %>
+    <div class="grid3">
+      <label>Kategorija za tikete<select name="category"><option value="">— bez kategorije —</option><% categories.forEach(c => { %><option value="<%= c.id %>" <%= T.category === c.id ? 'selected' : '' %>>📁 <%= c.name %></option><% }) %></select></label>
+      <label>Kanal za transkripte<%- include('../partials/channelSelect', { name: 'logChannel', value: T.logChannel, placeholder: '— koristi log kanal —' }) %></label>
+      <label>Max otvorenih po korisniku<input type="number" name="maxOpen" min="1" max="10" value="<%= T.maxOpen %>"></label>
+    </div>
+    <b>Support uloge (vide sve tikete)</b>
+    <%- include('../partials/multi', { name: 'supportRoles', kind: 'role', values: T.supportRoles }) %>
+  </div>
+  <div class="card">
+    <h3>Izgled</h3>
+    <label>Naslov panela<input name="panelTitle" maxlength="256" value="<%= T.panelTitle %>"></label>
+    <label>Opis panela<textarea name="panelDescription" rows="3"><%= T.panelDescription %></textarea></label>
+    <label>Poruka u novom tiketu<textarea name="welcomeMessage" rows="2"><%= T.welcomeMessage %></textarea></label>
+    <%- include('../partials/placeholders') %>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<div class="card">
+  <h3>Pošalji panel</h3>
+  <form method="post" action="/dashboard/<%= guild.id %>/tickets/panel" class="row">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <%- include('../partials/channelSelect', { name: 'channel', value: '', required: true }) %>
+    <button class="btn btn-primary">Pošalji</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Zadnji tiketi</h3>
+  <% if (!ticketList.length) { %><p class="muted">Nema tiketa.</p><% } else { %>
+  <table class="table"><thead><tr><th>#</th><th>Korisnik</th><th>Tema</th><th>Status</th><th>Otvoren</th></tr></thead><tbody>
+    <% ticketList.forEach(t => { %><tr><td><%= t.number %></td><td class="user"><img src="<%= userAvatar(t.user_id) %>" alt=""><%= userName(t.user_id) %></td><td class="clip"><%= t.topic || '—' %></td><td><span class="tag tag-<%= t.status === 'open' ? 'unban' : 'ban' %>"><%= t.status === 'open' ? 'otvoren' : 'zatvoren' %></span></td><td><%= new Date(t.created_at).toLocaleString('hr-HR') %></td></tr><% }) %>
+  </tbody></table><% } %>
+</div>
+<%- include('../partials/guildEnd') %>

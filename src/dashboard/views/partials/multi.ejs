@@ -1,0 +1,16 @@
+<%
+  const items = kind === 'role' ? roles.filter(r => !r.managed) : kind === 'category' ? categories : channels;
+  const sel = new Set(values || []);
+%>
+<div class="multi" data-multi>
+  <input type="search" class="multi-filter" placeholder="Traži…">
+  <div class="multi-list">
+    <% items.forEach(it => { %>
+      <label class="multi-item">
+        <input type="checkbox" name="<%= name %>" value="<%= it.id %>" <%= sel.has(it.id) ? 'checked' : '' %>>
+        <% if (kind === 'role') { %><span class="dot" style="background:<%= it.color === '#000000' ? '#99aab5' : it.color %>"></span>@<%= it.name %><% } else if (kind === 'category') { %>📁 <%= it.name %><% } else { %>#<%= it.name %><% if (it.parent) { %> <small><%= it.parent %></small><% } %><% } %>
+      </label>
+    <% }) %>
+    <% if (!items.length) { %><em class="muted">Nema stavki.</em><% } %>
+  </div>
+</div>

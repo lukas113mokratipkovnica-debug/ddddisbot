@@ -1,0 +1,21 @@
+<%- include('../partials/guildStart') %>
+<h1>Logovi</h1>
+<form method="post" action="/dashboard/<%= guild.id %>/save/logs">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card">
+    <%- include('../partials/toggle', { name: 'enabled', checked: settings.logs.enabled, label: 'Logovi uključeni' }) %>
+    <label>Log kanal<%- include('../partials/channelSelect', { name: 'channel', value: settings.logs.channel }) %></label>
+  </div>
+  <div class="card">
+    <h3>Što logirati</h3>
+    <div class="grid2">
+      <% [['messageDelete','Obrisane poruke'],['messageEdit','Uređene poruke'],['memberJoin','Ulasci članova'],['memberLeave','Izlasci članova'],
+          ['memberUpdate','Promjene uloga / nadimaka / timeout'],['modActions','Moderatorske akcije & AutoMod'],['voice','Voice ulasci/izlasci'],['channels','Kreiranje/brisanje kanala']
+        ].forEach(([k,l]) => { %>
+        <%- include('../partials/toggle', { name: k, checked: settings.logs[k], label: l }) %>
+      <% }) %>
+    </div>
+  </div>
+  <%- include('../partials/saveBar') %>
+</form>
+<%- include('../partials/guildEnd') %>

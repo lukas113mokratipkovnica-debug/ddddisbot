@@ -1,0 +1,34 @@
+<%- include('../partials/guildStart') %>
+<h1>Custom komande</h1>
+<p class="muted">Članovi ih pokreću s prefixom <code><%= settings.prefix %></code> (npr. <code><%= settings.prefix %>pravila</code>). Isti okidač prepisuje postojeću komandu.</p>
+<div class="card">
+  <h3>Nova / uredi komandu</h3>
+  <form method="post" action="/dashboard/<%= guild.id %>/commands/add">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label>Okidač (bez prefixa)<input name="trigger" id="cc-trigger" maxlength="32" required placeholder="pravila"></label>
+    <label>Odgovor<textarea name="response" id="cc-response" rows="4" maxlength="2000" required></textarea></label>
+    <%- include('../partials/placeholders', { extra: '<code>{args}</code> <code>{channel}</code>' }) %>
+    <%- include('../partials/toggle', { name: 'embed', checked: false, label: 'Odgovori kao embed' }) %>
+    <%- include('../partials/toggle', { name: 'deleteTrigger', checked: false, label: 'Obriši poruku koja je pokrenula komandu' }) %>
+    <button class="btn btn-primary">Spremi komandu</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Postojeće (<%= customCommands.length %>)</h3>
+  <% if (!customCommands.length) { %><p class="muted">Nema custom komandi.</p><% } else { %>
+  <table class="table"><thead><tr><th>Okidač</th><th>Odgovor</th><th>Tip</th><th>Korišteno</th><th></th></tr></thead><tbody>
+    <% customCommands.forEach(c => { %>
+      <tr>
+        <td><code><%= settings.prefix %><%= c.trigger %></code></td>
+        <td class="clip" title="<%= c.response %>"><%= c.response %></td>
+        <td><%= c.embed ? 'embed' : 'tekst' %></td>
+        <td><%= c.uses %></td>
+        <td class="actions">
+          <button type="button" class="btn btn-ghost btn-xs" data-edit-cc data-trigger="<%= c.trigger %>" data-response="<%= c.response %>">Uredi</button>
+          <form method="post" action="/dashboard/<%= guild.id %>/commands/<%= c.id %>/delete" onsubmit="return confirm('Obrisati?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody></table><% } %>
+</div>
+<%- include('../partials/guildEnd') %>
