@@ -43,6 +43,7 @@ async function start(id) {
   if (!rec) throw new Error('Bot ne postoji');
   const e = entry(id);
   if (e.client) await stop(id);
+  if (id !== MAIN_ID && platform.bots.get(id)?.suspended) throw new Error('Bot je pauziran (pretplata nije aktivna). Obnovi pretplatu da ga ponovo pokreneš.');
   const token = id === MAIN_ID ? config.token : platform.bots.token(id);
   e.status = 'starting'; e.error = null;
   log(id, 'info', 'Pokretanje…');
@@ -98,8 +99,9 @@ function info(id) {
   const e = entry(id);
   const c = e.client;
   const ready = c?.isReady();
+  const suspended = id !== MAIN_ID && Boolean(platform.bots.get(id)?.suspended);
   return {
-    status: e.status, error: e.error, startedAt: e.startedAt,
+    suspended, status: suspended && e.status !== 'online' ? 'suspended' : e.status, error: e.error, startedAt: e.startedAt,
     uptime: e.startedAt ? Date.now() - e.startedAt : 0,
     guilds: ready ? c.guilds.cache.size : 0,
     members: ready ? c.guilds.cache.reduce((a, g) => a + g.memberCount, 0) : 0,
@@ -135,6 +137,30 @@ async function startAll() {
   }
 }
 
+// Entitlement enforcement: keep the oldest `maxBots` running, suspend (stop) the rest.
+// Used by billing on refund/chargeback/cancellation and on upgrade to restore.
+async function enforcePlan(userId) {
+  const plan = platform.users.plan(userId);
+  const list = platform.bots.byOwner(userId).sort((a, b) => a.created_at - b.created_at);
+  const out = { suspended: [], restored: [], max: plan.maxBots };
+  for (let i = 0; i < list.length; i++) {
+    const b = list[i];
+    const over = i >= plan.maxBots;
+    if (over && !b.suspended) {
+      platform.bots.setSuspended(b.id, true);
+      await stop(b.id);
+      events.emit('status', b.id);
+      out.suspended.push(b.id);
+    } else if (!over && b.suspended) {
+      platform.bots.setSuspended(b.id, false);
+      events.emit('status', b.id);
+      if (b.autostart) await start(b.id).catch(() => {});
+      out.restored.push(b.id);
+    }
+  }
+  return out;
+}
+
 async function remove(id) {
   await stop(id);
   instances.delete(id);
@@ -142,4 +168,4 @@ async function remove(id) {
 
 async function stopAll() { await Promise.all([...instances.keys()].map(stop)); }
 
-module.exports = { events, statusSamples, MAIN_ID, start, stop, restart, setModules, setPresence, info, client, logs, mainClient, startAll, stopAll, remove, recordFor };
+module.exports = { events, statusSamples, enforcePlan, MAIN_ID, start, stop, restart, setModules, setPresence, info, client, logs, mainClient, startAll, stopAll, remove, recordFor };

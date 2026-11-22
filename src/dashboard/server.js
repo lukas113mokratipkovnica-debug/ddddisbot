@@ -10,6 +10,7 @@ const manager = require('../bot/manager');
 const { MODULES, TEMPLATES } = require('../modules');
 const { ALL_COMMANDS } = require('../bot/createClient');
 const { rateLimit } = require('../security');
+const billing = require('../billing');
 const SqliteStore = require('./sessionStore');
 const { isAdmin, inviteUrl, audit } = require('./helpers');
 
@@ -51,6 +52,13 @@ function startDashboard() {
   app.disable('x-powered-by');
   app.use(securityHeaders);
   app.use('/static', express.static(path.join(__dirname, 'public'), { maxAge: config.production ? '7d' : 0 }));
+  app.post('/billing/webhook', express.raw({ type: 'application/json', limit: '1mb' }), async (req, res) => {
+    if (!billing.enabled()) return res.status(503).end();
+    let event;
+    try { event = billing.verifyWebhook(req.body, req.get('stripe-signature')); } catch (e) { return res.status(400).send(`Webhook greška: ${e.message}`); }
+    res.json({ received: true }); // ack fast; process after
+    billing.handleEvent(event).then((d) => console.log(`[billing] ${event.type}: ${d}`)).catch((e) => console.error('[billing] handler error', e.message));
+  });
   app.use(rateLimit('global', { max: 600, windowMs: 60_000 }));
   app.use(express.urlencoded({ extended: true, limit: '200kb', parameterLimit: 2000 }));
   app.use(session({
@@ -73,6 +81,7 @@ function startDashboard() {
       supportUrl: config.supportUrl, flash: req.session.flash || null, path: req.path, url: req.originalUrl,
       MODULES, TEMPLATES, plans, mainInvite: inviteUrl(config.clientId),
       userPlan: req.session.user ? platform.users.plan(req.session.user.id) : null,
+      billingEnabled: billing.enabled(),
     });
     const main = manager.mainClient();
     res.locals.brandLogo = main?.isReady() ? main.user.displayAvatarURL({ size: 128 }) : null;
@@ -174,6 +183,8 @@ function startDashboard() {
   });
   app.get('/logout', (req, res) => res.redirect('/app')); // logging out requires POST (CSRF-safe)
 
+  app.use(require('./routes/billing'));
+  app.use(require('./routes/support'));
   app.use(require('./routes/app'));
   app.use(require('./routes/account'));
   app.use(require('./routes/guild'));

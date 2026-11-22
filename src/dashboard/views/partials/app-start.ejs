@@ -4,7 +4,7 @@
   const hasBot = typeof botRec !== 'undefined' && botRec;
   const hasGuild = typeof guild !== 'undefined' && guild;
   const sec = typeof section !== 'undefined' ? section : '';
-  const STATUS = { online: 'Online', offline: 'Offline', starting: 'Pokreće se', reconnecting: 'Spajanje', error: 'Greška' };
+  const STATUS = { online: 'Online', offline: 'Offline', starting: 'Pokreće se', reconnecting: 'Spajanje', error: 'Greška', suspended: 'Pauziran' };
   const GUILD_NAV = [
     ['overview', 'grid', 'Pregled'], ['general', 'settings', 'Općenito'], ['messages', 'mail', 'Poruke & sticky'],
     ['welcome', 'hand', 'Dobrodošlica'], ['verification', 'badge', 'Verifikacija'], ['moderation', 'shield', 'Moderacija'],
@@ -21,6 +21,7 @@
       <a href="/app" class="<%= path === '/app' ? 'active' : '' %>"><%- ic('grid') %>Moji botovi</a>
       <a href="/app/new" class="<%= path === '/app/new' ? 'active' : '' %>"><%- ic('plus') %>Novi bot</a>
       <a href="/account" class="<%= path === '/account' ? 'active' : '' %>"><%- ic('shield-check') %>Račun i sigurnost</a>
+      <a href="/billing" class="<%= path === '/billing' ? 'active' : '' %>"><%- ic('card') %>Naplata</a>
       <a href="/catalog"><%- ic('book') %>Katalog</a>
       <% if (isAdmin) { %><a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><%- ic('crown') %>Admin</a><% } %>
     </nav>
@@ -57,7 +58,7 @@
     <% } %>
 
     <div class="side-bottom">
-      <% if (userPlan) { %><a class="plan-chip" href="/pricing"><%- ic('crown') %><span>Paket <b><%= userPlan.name %></b></span></a><% } %>
+      <% if (userPlan) { %><a class="plan-chip" href="/billing"><%- ic('crown') %><span>Paket <b><%= userPlan.name %></b></span></a><% } %>
       <div class="side-user">
         <a href="/account" class="row nowrap" style="flex:1;min-width:0;color:var(--text)"><img src="<%= user.avatar %>" alt=""><span class="name" data-notr><%= user.username %></span></a>
         <%- include('prefs', { up: true }) %>

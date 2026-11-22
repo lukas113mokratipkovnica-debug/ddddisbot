@@ -258,4 +258,46 @@
     pal.addEventListener('click', (e) => { if (e.target === pal) close(); });
     $$('[data-palette-open]').forEach((b) => b.addEventListener('click', open));
   }
+
+  // ---------------------------------------------------------------- AI support widget
+  const sup = $('#sup');
+  if (sup) {
+    const panel = $('.sup-panel', sup);
+    const body = $('[data-sup-body]', sup);
+    const form = $('[data-sup-form]', sup);
+    const input = $('input', form);
+    const csrf = sup.dataset.csrf;
+    const history = [];
+    let busy = false;
+    const openSup = () => { sup.classList.add('open'); panel.hidden = false; input.focus(); };
+    const closeSup = () => { sup.classList.remove('open'); panel.hidden = true; };
+    $$('[data-sup-open]', sup).forEach((b) => b.addEventListener('click', openSup));
+    $$('[data-sup-close]', sup).forEach((b) => b.addEventListener('click', closeSup));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sup.classList.contains('open')) closeSup(); });
+    const add = (role, text) => {
+      const el = document.createElement('div');
+      el.className = 'sup-msg ' + (role === 'user' ? 'me' : 'bot');
+      el.textContent = text;
+      body.appendChild(el); body.scrollTop = body.scrollHeight;
+      return el;
+    };
+    fetch('/api/support/meta').then((r) => r.json()).then((m) => { const b = $('[data-sup-badge]', sup); if (b) b.textContent = m.ai ? 'AI' : 'FAQ'; }).catch(() => {});
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q || busy) return;
+      busy = true; input.value = '';
+      add('user', q);
+      history.push({ role: 'user', content: q });
+      const typing = add('bot', '…'); typing.classList.add('typing');
+      try {
+        const r = await fetch('/api/support/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ _csrf: csrf, history }) });
+        const data = await r.json();
+        typing.remove();
+        add('bot', data.reply || (data.error ? 'Greška: ' + data.error : 'Greška.'));
+        if (data.reply) history.push({ role: 'assistant', content: data.reply });
+      } catch (err) { typing.remove(); add('bot', 'Veza nije uspjela. Pokušaj ponovo.'); }
+      busy = false; input.focus();
+    });
+  }
 })();

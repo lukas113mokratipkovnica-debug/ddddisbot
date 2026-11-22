@@ -10,6 +10,9 @@ const dataDir = path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 const db = new Database(path.join(dataDir, 'platform.db'));
 db.pragma('journal_mode = WAL');
+for (const [table, col, def] of [['users', 'stripe_customer', 'TEXT'], ['users', 'subscription', 'TEXT'], ['users', 'sub_status', 'TEXT'], ['users', 'plan_until', 'INTEGER'], ['bots', 'suspended', 'INTEGER NOT NULL DEFAULT 0']]) {
+  try { db.prepare(`SELECT ${col} FROM ${table} LIMIT 1`).get(); } catch { try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`); } catch { /* table not yet created */ } }
+}
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
@@ -19,7 +22,11 @@ CREATE TABLE IF NOT EXISTS users (
   plan TEXT NOT NULL DEFAULT 'free',
   banned INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
-  last_login INTEGER
+  last_login INTEGER,
+  stripe_customer TEXT,
+  subscription TEXT,
+  sub_status TEXT,
+  plan_until INTEGER
 );
 CREATE TABLE IF NOT EXISTS bots (
   id TEXT PRIMARY KEY,
@@ -32,6 +39,7 @@ CREATE TABLE IF NOT EXISTS bots (
   modules TEXT NOT NULL,
   presence TEXT NOT NULL DEFAULT '{}',
   autostart INTEGER NOT NULL DEFAULT 1,
+  suspended INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS audit (
@@ -44,6 +52,7 @@ CREATE TABLE IF NOT EXISTS audit (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit(user_id, id);
+CREATE TABLE IF NOT EXISTS billing_events (id TEXT PRIMARY KEY, type TEXT, user_id TEXT, created_at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions (
   sid TEXT PRIMARY KEY,
@@ -75,6 +84,15 @@ const users = {
   all: () => db.prepare(`SELECT u.*, (SELECT COUNT(*) FROM bots b WHERE b.owner_id = u.id) bot_count FROM users u ORDER BY created_at DESC`).all(),
   setPlan: (id, plan) => db.prepare('UPDATE users SET plan = ? WHERE id = ?').run(plans[plan] ? plan : 'free', id),
   setBanned: (id, banned) => db.prepare('UPDATE users SET banned = ? WHERE id = ?').run(banned ? 1 : 0, id),
+  setBilling: (id, fields) => {
+    const allowed = ['stripe_customer', 'subscription', 'sub_status', 'plan_until', 'plan'];
+    const keys = Object.keys(fields).filter((k) => allowed.includes(k));
+    if (!keys.length) return;
+    db.prepare(`UPDATE users SET ${keys.map((k) => `${k} = ?`).join(', ')} WHERE id = ?`).run(...keys.map((k) => fields[k]), id);
+  },
+  byCustomer: (cust) => db.prepare('SELECT * FROM users WHERE stripe_customer = ?').get(cust),
+  bySubscription: (sub) => db.prepare('SELECT * FROM users WHERE subscription = ?').get(sub),
+  expired: () => db.prepare("SELECT * FROM users WHERE plan != 'free' AND plan_until IS NOT NULL AND plan_until < ?").all(Date.now()),
   plan: (id) => {
     if (config.ownerIds.includes(id)) return { ...plans.business, key: 'owner', name: 'Owner', maxBots: 1000 };
     const u = users.get(id);
@@ -98,12 +116,13 @@ const bots = {
   byOwner: (ownerId) => db.prepare('SELECT * FROM bots WHERE owner_id = ? ORDER BY created_at').all(ownerId).map(parseBot),
   byApplication: (appId) => parseBot(db.prepare('SELECT * FROM bots WHERE application_id = ?').get(appId)),
   all: () => db.prepare('SELECT * FROM bots ORDER BY created_at DESC').all().map(parseBot),
-  autostart: () => db.prepare('SELECT * FROM bots WHERE autostart = 1').all().map(parseBot),
+  autostart: () => db.prepare('SELECT * FROM bots WHERE autostart = 1 AND suspended = 0').all().map(parseBot),
   setModules: (id, modules) => db.prepare('UPDATE bots SET modules = ? WHERE id = ?').run(JSON.stringify(modules), id),
   setPresence: (id, presence) => db.prepare('UPDATE bots SET presence = ? WHERE id = ?').run(JSON.stringify(presence), id),
   setProfile: (id, name, avatar) => db.prepare('UPDATE bots SET name = ?, avatar = ? WHERE id = ?').run(name, avatar, id),
   setToken: (id, token) => db.prepare('UPDATE bots SET token = ? WHERE id = ?').run(encrypt(token), id),
   setAutostart: (id, on) => db.prepare('UPDATE bots SET autostart = ? WHERE id = ?').run(on ? 1 : 0, id),
+  setSuspended: (id, on) => db.prepare('UPDATE bots SET suspended = ? WHERE id = ?').run(on ? 1 : 0, id),
   remove: (id) => db.prepare('DELETE FROM bots WHERE id = ?').run(id),
   count: () => db.prepare('SELECT COUNT(*) c FROM bots').get().c,
 };
@@ -128,4 +147,9 @@ const sessions = {
   destroyUser: (userId, exceptSid) => db.prepare("DELETE FROM sessions WHERE json_extract(sess, '$.user.id') = ? AND sid != ?").run(userId, exceptSid || '').changes,
 };
 
-module.exports = { db, users, bots, kv, audit, sessions };
+const billing = {
+  seen: (id) => Boolean(db.prepare('SELECT 1 FROM billing_events WHERE id = ?').get(id)),
+  record: (id, type, userId) => { try { db.prepare('INSERT INTO billing_events (id, type, user_id, created_at) VALUES (?,?,?,?)').run(id, type, userId, Date.now()); return true; } catch { return false; } },
+};
+
+module.exports = { db, users, bots, kv, audit, sessions, billing };

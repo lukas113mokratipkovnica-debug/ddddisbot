@@ -15,6 +15,7 @@
     <% } %>
   </div>
 </div>
+<% if (botInfo.suspended) { %><div class="callout callout-warn"><%- ic('pause') %><div><b>Bot je pauziran.</b> Pretplata nije aktivna pa je ovaj bot zaustavljen. <a href="/billing">Obnovi pretplatu</a> da ga vratiš.</div></div><% } %>
 <% if (botInfo.error) { %><div class="callout callout-error"><%- ic('zap') %><div><b>Bot se ne može pokrenuti.</b> <%= botInfo.error %></div><% if (botManage) { %><a class="btn btn-sm btn-ghost" href="/bots/<%= botRec.id %>/settings">Postavke</a><% } %></div><% } %>
 
 <div class="stat-grid">

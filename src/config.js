@@ -32,4 +32,14 @@ module.exports = {
   ownerIds: (process.env.OWNER_IDS || '').split(',').map((s) => s.trim()).filter(Boolean),
   supportUrl: process.env.SUPPORT_URL || '',
   color: 0x7c5cff,
+  // --- Naplata (Stripe) ---
+  stripeSecret: process.env.STRIPE_SECRET_KEY || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
+  currency: process.env.CURRENCY || 'eur',
+  // --- AI podrška (Anthropic / Claude) ---
+  aiKey: process.env.ANTHROPIC_API_KEY || '',
+  aiModel: process.env.AI_MODEL || 'claude-opus-5-5',
 };
+module.exports.billingEnabled = Boolean(module.exports.stripeSecret);
+module.exports.aiEnabled = Boolean(module.exports.aiKey);

@@ -5,8 +5,16 @@
       <h3><%= p.name %></h3>
       <div class="plan-price"><b><%= p.price %></b><span>/ <%= p.period %></span></div>
       <ul><% p.features.forEach(f => { %><li><svg class="ic"><use href="#i-check"/></svg><%= f %></li><% }) %></ul>
-      <a class="btn <%= p.highlight ? 'btn-primary' : 'btn-ghost' %> btn-block" href="<%= user ? '/app' : '/login' %>"><%= p.key === 'free' ? 'Započni besplatno' : 'Odaberi ' + p.name %></a>
+      <% if (p.key === 'free') { %>
+        <a class="btn btn-ghost btn-block" href="<%= user ? '/app' : '/login' %>">Započni besplatno</a>
+      <% } else if (!user) { %>
+        <a class="btn <%= p.highlight ? 'btn-primary' : 'btn-ghost' %> btn-block" href="/login">Odaberi <%= p.name %></a>
+      <% } else if (billingEnabled) { %>
+        <form method="post" action="/billing/checkout/<%= p.key %>"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn <%= p.highlight ? 'btn-primary' : 'btn-ghost' %> btn-block" <%= userPlan && userPlan.key === p.key ? 'disabled' : '' %>><svg class="ic"><use href="#i-card"/></svg><%= userPlan && userPlan.key === p.key ? 'Trenutni paket' : 'Pretplati se' %></button></form>
+      <% } else { %>
+        <a class="btn <%= p.highlight ? 'btn-primary' : 'btn-ghost' %> btn-block" href="/billing">Odaberi <%= p.name %></a>
+      <% } %>
     </div>
   <% }) %>
 </div>
-<p class="muted center small">Za nadogradnju paketa javi se administratoru platforme<% if (supportUrl) { %> na <a href="<%= supportUrl %>">podršci</a><% } %>.</p>
+<% if (!billingEnabled) { %><p class="muted center small">Za nadogradnju paketa javi se administratoru platforme<% if (supportUrl) { %> na <a href="<%= supportUrl %>">podršci</a><% } %>.</p><% } else { %><p class="muted center small">Sigurno plaćanje karticom. Otkaži bilo kada.</p><% } %>

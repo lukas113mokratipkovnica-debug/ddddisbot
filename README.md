@@ -4,6 +4,20 @@ Web platforma na kojoj korisnici sami prave svoje Discord botove bez kodiranja: 
 
 Ime usluge mijenjaš u `.env` (`BRAND_NAME`).
 
+## Novo u v4 — platforma radi sama
+
+- **Online naplata (Stripe Checkout):** korisnik na stranici Cijene klikne paket → Stripe Checkout → webhook automatski diže paket. "Upravljaj pretplatom" otvara Stripe Customer Portal (promjena kartice, otkazivanje). Bez ljudske intervencije.
+- **Automatsko gašenje na povrat novca (kill-switch):** Stripe webhook na `charge.refunded`, `charge.dispute.created` (chargeback), `customer.subscription.deleted` (otkazivanje) i istek pretplate automatski snizi paket na Free i **pauzira** botove iznad limita (zaustavi ih, zabrani pokretanje). Ništa se ne briše. Čim korisnik ponovo plati, pauzirani botovi se vrate i pokrenu sami. Sve je zapisano u audit log i vidljivo korisniku na stranici Naplata i na botu. Webhookovi su idempotentni (duplikati se ignoriraju).
+- **AI korisnička podrška:** chat widget (dolje desno, na svim stranicama). Odgovara Claude s bazom znanja o platformi (moduli, paketi, naplata, "zašto je bot offline") i poznaje kontekst prijavljenog korisnika (njegov paket i status botova). Bez API ključa radi rezervni FAQ odgovarač, pa podrška radi i besplatno.
+- **Samostalnost:** istek pretplate provjerava se i bez webhooka (sat vremena), tako da platforma radi i ako Stripe webhook zakaže.
+
+### Postavljanje naplate i AI-a (oboje opcionalno)
+Bez ovih ključeva platforma radi kao i prije (paket dodjeljuje admin ručno, podrška je FAQ).
+- **Stripe:** u `.env` postavi `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, te `STRIPE_PRICE_PRO` i `STRIPE_PRICE_BUSINESS` (Price ID-evi mjesečnih pretplata iz Stripe → Products). Webhook endpoint: `https://tvoja-domena/billing/webhook`. U Stripeu uključi evente: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created`, `invoice.payment_failed`.
+- **AI:** u `.env` postavi `ANTHROPIC_API_KEY`. Za jeftiniju podršku postavi `AI_MODEL=claude-haiku-5-5`.
+
+## Što platforma ima
+
 ## Novo u v3
 - **Višejezičnost (HR / EN):** dashboard (automatski prema pregledniku ili ručni odabir) i botovi (svaki server bira jezik, a novi serveri ga dobiju prema jeziku Discord servera). Slash komande imaju Discordove nativne prijevode: engleski je zadani, a hrvatski se prikazuje korisnicima s hrvatskim Discordom.
 - **Dizajn „Aurora Glass“:** tamna i svijetla tema, korisnik bira boju naglaska (cijelo sučelje se preboji), stakleni slojevi, bento landing stranica, command palette (**Ctrl+K** ili **/**), statusi i konzola uživo preko Server-Sent Events.

@@ -6,6 +6,7 @@ process.on('uncaughtException', (e) => console.error('[uncaughtException]', e));
 
 startDashboard();
 manager.startAll();
+require('./billing').startExpiryTicker();
 
 const shutdown = async () => {
   console.log('Gašenje svih botova…');

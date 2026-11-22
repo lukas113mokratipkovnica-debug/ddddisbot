@@ -34,7 +34,7 @@
     <tbody>
       <% users.forEach(u => { %>
         <tr>
-          <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blokiran</span><% } %></td>
+          <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blokiran</span><% } %><% if (u.sub_status && u.sub_status !== 'active') { %> <span class="tag tag-warn" data-notr><%= u.sub_status %></span><% } %></td>
           <td><%= u.bot_count %></td>
           <td><%= new Date(u.created_at).toLocaleDateString(numLocale) %></td>
           <td>
