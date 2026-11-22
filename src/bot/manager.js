@@ -1,4 +1,5 @@
 // Runs every bot on the platform inside this process and tracks status + a short log per bot.
+const { EventEmitter } = require('events');
 const config = require('../config');
 const platform = require('../platform');
 const { ALL } = require('../modules');
@@ -6,6 +7,8 @@ const { createBotClient } = require('./createClient');
 
 const MAIN_ID = 'main';
 const instances = new Map(); // id -> { client, status, error, startedAt, logs: [] }
+const events = new EventEmitter(); // 'log' (id, entry), 'status' (id)
+events.setMaxListeners(1000);
 
 function entry(id) {
   if (!instances.has(id)) instances.set(id, { client: null, status: 'offline', error: null, startedAt: null, logs: [] });
@@ -16,6 +19,7 @@ function log(id, level, msg) {
   const e = entry(id);
   e.logs.push({ t: Date.now(), level, msg: String(msg).slice(0, 500) });
   if (e.logs.length > 200) e.logs.shift();
+  events.emit('log', id, e.logs[e.logs.length - 1]);
   if (level === 'error') console.error(`[bot:${id}] ${msg}`);
 }
 
@@ -48,14 +52,16 @@ async function start(id) {
     onLog: (level, msg) => log(id, level, msg),
   });
   e.client = client;
-  client.once('clientReady', () => { e.status = 'online'; e.startedAt = Date.now(); });
-  client.on('shardDisconnect', () => { e.status = 'reconnecting'; });
-  client.on('shardResume', () => { e.status = 'online'; });
+  client.once('clientReady', () => { e.status = 'online'; e.startedAt = Date.now(); events.emit('status', id); });
+  client.on('shardDisconnect', () => { e.status = 'reconnecting'; events.emit('status', id); });
+  client.on('shardResume', () => { e.status = 'online'; events.emit('status', id); });
+  client.on('guildCreate', () => events.emit('status', id));
+  client.on('guildDelete', () => events.emit('status', id));
   client.on('error', (err) => log(id, 'error', err.message));
   try {
     await client.login(token);
   } catch (err) {
-    e.status = 'error'; e.error = friendlyError(err); e.client = null;
+    e.status = 'error'; e.error = friendlyError(err); e.client = null; events.emit('status', id);
     log(id, 'error', e.error);
     await client.shutdown().catch(() => {});
     throw new Error(e.error);
@@ -67,6 +73,7 @@ async function stop(id) {
   const e = entry(id);
   if (e.client) { await e.client.shutdown().catch(() => {}); log(id, 'info', 'Zaustavljen'); }
   e.client = null; e.status = 'offline'; e.startedAt = null;
+  events.emit('status', id);
 }
 
 async function restart(id) { await stop(id); return start(id); }
@@ -107,7 +114,20 @@ const client = (id) => entry(id).client;
 const logs = (id) => entry(id).logs;
 const mainClient = () => client(MAIN_ID);
 
+// uptime history for the public status page (one sample per 15 min, last 24h)
+function sampleStatus() {
+  const ids = [MAIN_ID, ...platform.bots.all().map((b) => b.id)];
+  const online = ids.filter((id) => entry(id).status === 'online').length;
+  const expected = [MAIN_ID, ...platform.bots.autostart().map((b) => b.id)].length;
+  const samples = platform.kv.get('status.samples', []);
+  samples.push({ t: Date.now(), online, expected, main: entry(MAIN_ID).status === 'online' });
+  platform.kv.set('status.samples', samples.slice(-96));
+}
+const statusSamples = () => platform.kv.get('status.samples', []);
+
 async function startAll() {
+  setTimeout(sampleStatus, 60_000).unref?.();
+  setInterval(sampleStatus, 15 * 60_000).unref?.();
   await start(MAIN_ID).catch((e) => console.error('[manager] Glavni bot se nije pokrenuo:', e.message));
   for (const b of platform.bots.autostart()) {
     await start(b.id).catch(() => {});
@@ -122,4 +142,4 @@ async function remove(id) {
 
 async function stopAll() { await Promise.all([...instances.keys()].map(stop)); }
 
-module.exports = { MAIN_ID, start, stop, restart, setModules, setPresence, info, client, logs, mainClient, startAll, stopAll, remove, recordFor };
+module.exports = { events, statusSamples, MAIN_ID, start, stop, restart, setModules, setPresence, info, client, logs, mainClient, startAll, stopAll, remove, recordFor };

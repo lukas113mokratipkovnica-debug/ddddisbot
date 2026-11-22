@@ -20,12 +20,12 @@
     <% giveawayList.forEach(g => { %>
       <tr>
         <td><%= g.id %></td><td><%= g.prize %></td><td><%= g.entrants.length %></td>
-        <td><%= g.ended ? 'završen' : new Date(g.ends_at).toLocaleString('hr-HR') %></td>
+        <td><%= g.ended ? 'završen' : new Date(g.ends_at).toLocaleString(numLocale) %></td>
         <td><%= g.winner_ids.map(userName).join(', ') || '—' %></td>
         <td class="actions">
           <% if (!g.ended) { %><form method="post" action="<%= base %>/giveaways/<%= g.id %>/end"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Završi</button></form><% } else { %>
           <form method="post" action="<%= base %>/giveaways/<%= g.id %>/reroll"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Reroll</button></form><% } %>
-          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/delete" onsubmit="return confirm('Obrisati iz baze?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+          <form method="post" action="<%= base %>/giveaways/<%= g.id %>/delete" data-confirm="Obrisati iz baze?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
         </td>
       </tr>
     <% }) %>

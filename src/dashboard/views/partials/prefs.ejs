@@ -1,0 +1,20 @@
+<%# language + theme + accent popover; `up` opens upwards (sidebar) %>
+<details class="pop">
+  <summary class="icon-btn" title="Jezik i izgled" aria-label="Jezik i izgled"><svg class="ic"><use href="#i-globe"/></svg></summary>
+  <div class="pop-panel <%= typeof up !== 'undefined' && up ? 'up' : '' %>">
+    <span class="pop-label">Jezik</span>
+    <% Object.values(langs).forEach(l => { %>
+      <a href="/lang/<%= l.code %>?next=<%= encodeURIComponent(url) %>" class="<%= lang === l.code ? 'on' : '' %>" hreflang="<%= l.code %>"><span class="lang-code"><%= l.short %></span><span data-notr><%= l.name %></span></a>
+    <% }) %>
+    <span class="pop-label">Tema</span>
+    <div class="seg" data-theme-seg>
+      <button type="button" data-theme-set="auto" title="Automatski"><svg class="ic"><use href="#i-sparkles"/></svg></button>
+      <button type="button" data-theme-set="dark" title="Tamna"><svg class="ic"><use href="#i-moon"/></svg></button>
+      <button type="button" data-theme-set="light" title="Svijetla"><svg class="ic"><use href="#i-sun"/></svg></button>
+    </div>
+    <span class="pop-label">Boja naglaska</span>
+    <div class="hues" data-hues>
+      <% [268, 300, 330, 20, 60, 150, 190, 220, 240, 0, 100, 280].forEach(h => { %><button type="button" data-hue="<%= h %>" style="--hh:<%= h %>" aria-label="Boja <%= h %>"></button><% }) %>
+    </div>
+  </div>
+</details>

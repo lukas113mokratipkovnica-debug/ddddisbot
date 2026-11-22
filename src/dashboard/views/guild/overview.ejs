@@ -4,7 +4,7 @@
   <% [['Članovi', counts.members], ['Kanali', counts.channels], ['Uloge', counts.roles], ['Upozorenja', counts.warnings],
       ['Mod slučajevi', counts.cases], ['Otvoreni tiketi', counts.openTickets], ['Rangirani članovi', counts.ranked], ['Custom komande', counts.customCommands]
     ].forEach(([l, v]) => { %>
-    <div class="card stat"><span><%= l %></span><strong><%= v.toLocaleString('hr-HR') %></strong></div>
+    <div class="card stat"><span><%= l %></span><strong><%= v.toLocaleString(numLocale) %></strong></div>
   <% }) %>
 </div>
 

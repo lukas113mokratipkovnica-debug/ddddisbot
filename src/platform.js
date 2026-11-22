@@ -34,6 +34,16 @@ CREATE TABLE IF NOT EXISTS bots (
   autostart INTEGER NOT NULL DEFAULT 1,
   created_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS audit (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT,
+  action TEXT NOT NULL,
+  target TEXT,
+  ip TEXT,
+  meta TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON audit(user_id, id);
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions (
   sid TEXT PRIMARY KEY,
@@ -103,4 +113,19 @@ const kv = {
   set: (key, value) => db.prepare('INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)').run(key, JSON.stringify(value)),
 };
 
-module.exports = { db, users, bots, kv };
+const audit = {
+  log: (userId, action, target = null, ip = null, meta = null) => db.prepare('INSERT INTO audit (user_id, action, target, ip, meta, created_at) VALUES (?,?,?,?,?,?)')
+    .run(userId, action, target, ip, meta ? JSON.stringify(meta).slice(0, 1000) : null, Date.now()),
+  byUser: (userId, limit = 50) => db.prepare('SELECT * FROM audit WHERE user_id = ? ORDER BY id DESC LIMIT ?').all(userId, limit),
+  recent: (limit = 100) => db.prepare('SELECT * FROM audit ORDER BY id DESC LIMIT ?').all(limit),
+};
+setInterval(() => db.prepare('DELETE FROM audit WHERE created_at < ?').run(Date.now() - 90 * 864e5), 6 * 3600_000).unref();
+
+const sessions = {
+  byUser: (userId) => db.prepare("SELECT sid, sess, expires FROM sessions WHERE expires > ? AND json_extract(sess, '$.user.id') = ?").all(Date.now(), userId)
+    .map((r) => ({ sid: r.sid, expires: r.expires, ...JSON.parse(r.sess) })),
+  destroy: (sid) => db.prepare('DELETE FROM sessions WHERE sid = ?').run(sid),
+  destroyUser: (userId, exceptSid) => db.prepare("DELETE FROM sessions WHERE json_extract(sess, '$.user.id') = ? AND sid != ?").run(userId, exceptSid || '').changes,
+};
+
+module.exports = { db, users, bots, kv, audit, sessions };

@@ -43,10 +43,10 @@
 </form>
 <div class="card">
   <div class="row between"><h3>💰 Najbogatiji</h3>
-    <form method="post" action="<%= base %>/economy/reset" onsubmit="return confirm('Resetirati novac SVIH članova?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Resetiraj sve</button></form></div>
+    <form method="post" action="<%= base %>/economy/reset" data-confirm="Resetirati novac SVIH članova?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Resetiraj sve</button></form></div>
   <% if (!richest.length) { %><p class="muted">Još nema podataka.</p><% } else { %>
   <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Član</th><th>Novčanik</th><th>Banka</th><th>Ukupno</th></tr></thead><tbody>
-    <% richest.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td class="user"><img src="<%= userAvatar(r.user_id) %>" alt=""><%= userName(r.user_id) %></td><td><%= r.wallet.toLocaleString('hr-HR') %></td><td><%= r.bank.toLocaleString('hr-HR') %></td><td><b><%= E.emoji %> <%= r.total.toLocaleString('hr-HR') %></b></td></tr><% }) %>
+    <% richest.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td class="user"><img src="<%= userAvatar(r.user_id) %>" alt=""><%= userName(r.user_id) %></td><td><%= r.wallet.toLocaleString(numLocale) %></td><td><%= r.bank.toLocaleString(numLocale) %></td><td><b><%= E.emoji %> <%= r.total.toLocaleString(numLocale) %></b></td></tr><% }) %>
   </tbody></table></div><% } %>
 </div>
 <%- include('../partials/app-end') %>

@@ -36,18 +36,24 @@
         <tr>
           <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blokiran</span><% } %></td>
           <td><%= u.bot_count %></td>
-          <td><%= new Date(u.created_at).toLocaleDateString('hr-HR') %></td>
+          <td><%= new Date(u.created_at).toLocaleDateString(numLocale) %></td>
           <td>
             <form method="post" action="/admin/users/<%= u.id %>/plan" class="row nowrap"><input type="hidden" name="_csrf" value="<%= csrf %>">
-              <select name="plan" class="sm" onchange="this.form.submit()"><% Object.values(plans).forEach(p => { %><option value="<%= p.key %>" <%= u.plan === p.key ? 'selected' : '' %>><%= p.name %></option><% }) %></select>
+              <select name="plan" class="sm" data-autosubmit><% Object.values(plans).forEach(p => { %><option value="<%= p.key %>" <%= u.plan === p.key ? 'selected' : '' %>><%= p.name %></option><% }) %></select>
             </form>
           </td>
           <td class="actions">
-            <form method="post" action="/admin/users/<%= u.id %>/ban" onsubmit="return confirm('Sigurno?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="banned" value="<%= u.banned ? '0' : '1' %>"><button class="btn btn-xs <%= u.banned ? 'btn-ghost' : 'btn-danger' %>"><%= u.banned ? 'Odblokiraj' : 'Blokiraj' %></button></form>
+            <form method="post" action="/admin/users/<%= u.id %>/ban" data-confirm="Sigurno?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="banned" value="<%= u.banned ? '0' : '1' %>"><button class="btn btn-xs <%= u.banned ? 'btn-ghost' : 'btn-danger' %>"><%= u.banned ? 'Odblokiraj' : 'Blokiraj' %></button></form>
           </td>
         </tr>
       <% }) %>
     </tbody>
   </table></div>
+</div>
+<div class="card">
+  <h3><%- ic('history') %> Audit log platforme</h3>
+  <ul class="timeline">
+    <% auditList.forEach(a => { %><li><time><%= new Date(a.created_at).toLocaleString(numLocale) %></time><div class="ev"><b data-notr><%= a.action %></b><small data-notr><%= ownerName(a.user_id) %> · <%= a.ip || '' %><%= a.target ? ' · ' + a.target : '' %></small></div></li><% }) %>
+  </ul>
 </div>
 <%- include('partials/app-end') %>

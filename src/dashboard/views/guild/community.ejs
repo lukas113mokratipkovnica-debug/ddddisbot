@@ -41,7 +41,7 @@
     <label>Kanal<%- include('../partials/channelSelect', { name: 'channel', value: C.channel }) %></label>
     <%- include('../partials/toggle', { name: 'sameUserTwice', checked: C.sameUserTwice, label: 'Dozvoli istoj osobi dvaput zaredom' }) %>
     <%- include('../partials/toggle', { name: 'resetOnFail', checked: C.resetOnFail, label: 'Kreni od 1 nakon greške' }) %>
-    <div class="row"><button class="btn btn-primary">Spremi</button><button class="btn btn-ghost" formaction="<%= base %>/counting/reset" onclick="return confirm('Resetirati na 0?')">Resetiraj brojač</button></div>
+    <div class="row"><button class="btn btn-primary">Spremi</button><button class="btn btn-ghost" formaction="<%= base %>/counting/reset" data-confirm="Resetirati na 0?">Resetiraj brojač</button></div>
   </form>
 <% } %>
 <% if (modules.has('birthdays')) { const B = settings.birthdays; %>
@@ -60,7 +60,7 @@
 <% if (modules.has('confessions') && confessionList.length) { %>
   <div class="card"><h3>Zadnje ispovijesti</h3>
     <div class="table-wrap"><table class="table"><thead><tr><th>Autor</th><th>Tekst</th><th>Datum</th></tr></thead><tbody>
-      <% confessionList.forEach(c => { %><tr><td><%= userName(c.user_id) %></td><td class="clip"><%= c.content %></td><td><%= new Date(c.created_at).toLocaleString('hr-HR') %></td></tr><% }) %>
+      <% confessionList.forEach(c => { %><tr><td><%= userName(c.user_id) %></td><td class="clip"><%= c.content %></td><td><%= new Date(c.created_at).toLocaleString(numLocale) %></td></tr><% }) %>
     </tbody></table></div></div>
 <% } %>
 <%- include('../partials/app-end') %>

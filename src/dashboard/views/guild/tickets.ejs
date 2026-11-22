@@ -34,7 +34,7 @@
   <h3>Zadnji tiketi</h3>
   <% if (!ticketList.length) { %><p class="muted">Nema tiketa.</p><% } else { %>
   <table class="table"><thead><tr><th>#</th><th>Korisnik</th><th>Tema</th><th>Status</th><th>Otvoren</th></tr></thead><tbody>
-    <% ticketList.forEach(t => { %><tr><td><%= t.number %></td><td class="user"><img src="<%= userAvatar(t.user_id) %>" alt=""><%= userName(t.user_id) %></td><td class="clip"><%= t.topic || '—' %></td><td><span class="tag tag-<%= t.status === 'open' ? 'unban' : 'ban' %>"><%= t.status === 'open' ? 'otvoren' : 'zatvoren' %></span></td><td><%= new Date(t.created_at).toLocaleString('hr-HR') %></td></tr><% }) %>
+    <% ticketList.forEach(t => { %><tr><td><%= t.number %></td><td class="user"><img src="<%= userAvatar(t.user_id) %>" alt=""><%= userName(t.user_id) %></td><td class="clip"><%= t.topic || '—' %></td><td><span class="tag tag-<%= t.status === 'open' ? 'unban' : 'ban' %>"><%= t.status === 'open' ? 'otvoren' : 'zatvoren' %></span></td><td><%= new Date(t.created_at).toLocaleString(numLocale) %></td></tr><% }) %>
   </tbody></table><% } %>
 </div>
 <%- include('../partials/app-end') %>

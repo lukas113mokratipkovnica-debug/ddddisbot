@@ -4,7 +4,8 @@
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
     <h3>Osnovno</h3>
-    <div class="grid2">
+    <div class="grid3">
+      <label>Jezik bota na ovom serveru<select name="language"><% Object.values(langs).forEach(l => { %><option value="<%= l.code %>" <%= settings.language === l.code ? 'selected' : '' %> data-notr><%= l.name %></option><% }) %></select></label>
       <label>Prefix za custom komande<input name="prefix" value="<%= settings.prefix %>" maxlength="5"></label>
       <label>Moderatorska uloga <small class="muted">(info za bota)</small><%- include('../partials/roleSelect', { name: 'modRole', value: settings.modRole, placeholder: '— nijedna —' }) %></label>
     </div>

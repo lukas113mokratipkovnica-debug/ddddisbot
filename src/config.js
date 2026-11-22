@@ -9,9 +9,17 @@ if (missing.length) {
 }
 
 const sessionSecret = process.env.SESSION_SECRET || 'change-me';
+const production = process.env.NODE_ENV === 'production';
+if (sessionSecret === 'change-me' || sessionSecret.length < 32) {
+  const msg = '[config] SESSION_SECRET mora biti nasumičan string od barem 32 znaka.';
+  if (production) { console.error(msg); process.exit(1); } else console.warn(`${msg} (u produkciji se platforma neće pokrenuti)`);
+}
+if (!process.env.ENCRYPTION_KEY) console.warn('[config] ENCRYPTION_KEY nije postavljen — tokeni se šifriraju ključem izvedenim iz SESSION_SECRET.');
 
 module.exports = {
   brand: process.env.BRAND_NAME || 'Botnica',
+  production,
+  trustProxy: process.env.TRUST_PROXY ?? (production ? '1' : '0'),
   token: process.env.DISCORD_TOKEN,
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,

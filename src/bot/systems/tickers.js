@@ -1,7 +1,7 @@
 // Periodic jobs per bot: reminders, birthdays, server stats channels, YouTube/RSS feeds.
 const { EmbedBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 const { fillPlaceholders } = require('../utils');
-const config = require('../../config');
+const { safeFetch } = require('../../security');
 
 async function reminders(client) {
   for (const r of client.db.reminders.due()) {
@@ -102,9 +102,9 @@ async function feeds(client) {
   for (const guild of client.guilds.cache.values()) {
     for (const f of client.db.getSettings(guild.id).notifications.feeds) {
       try {
-        const res = await fetch(feedUrl(f), { headers: { 'User-Agent': 'Mozilla/5.0 (DiscordBot feed reader)' }, signal: AbortSignal.timeout(15_000) });
+        const res = await safeFetch(feedUrl(f), { maxBytes: 3_000_000 });
         if (!res.ok) continue;
-        const items = parseFeed(await res.text());
+        const items = parseFeed(res.text());
         if (!items.length) continue;
         const last = client.db.feeds.last(f.id);
         if (last === null) { client.db.feeds.setLast(f.id, items[0].id); continue; } // first run: don't spam old posts

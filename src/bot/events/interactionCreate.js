@@ -1,5 +1,6 @@
 const { Events, MessageFlags } = require('discord.js');
 const { fail } = require('../utils');
+const i18n = require('../../i18n');
 const tickets = require('../systems/tickets');
 const giveaways = require('../systems/giveaways');
 const rolePanels = require('../systems/rolePanels');
@@ -18,6 +19,8 @@ module.exports = {
       return;
     }
     const has = (m) => client.modules.has(m);
+    const lang = client.db.getSettings(i.guild.id).language;
+    if (i.showModal) { const show = i.showModal.bind(i); i.showModal = (modal, opts) => show(i18n.translateModal(lang, modal), opts); }
     try {
       if (i.isChatInputCommand()) {
         const cmd = client.commands.get(i.commandName);

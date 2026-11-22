@@ -2,27 +2,27 @@
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
    const tpl = TEMPLATES[botRec.template] || TEMPLATES.allinone;
    const fmtUp = (ms) => { const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60; return (d ? d + 'd ' : '') + h + 'h ' + m + 'm'; }; %>
-<div class="bot-hero card" style="--c:<%= tpl.color %>">
-  <span class="avatar-wrap xl"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>"></i></span>
+<div class="bot-hero card ring" data-spot style="--c:<%= tpl.color %>">
+  <span class="avatar-wrap xl"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>" data-bot-dot="<%= botRec.id %>"></i></span>
   <div class="bot-hero-info">
-    <h1><%= botRec.name %></h1>
-    <div class="bot-hero-meta"><span class="status status-<%= botInfo.status %>" data-live-status><%= botInfo.status %></span><span class="tag"><%- ic(tpl.icon) %><%= botRec.official ? 'Službeni bot' : tpl.name + ' bot' %></span><% if (botInfo.tag) { %><span class="muted small"><%= botInfo.tag %></span><% } %></div>
+    <h1 data-notr><%= botRec.name %></h1>
+    <div class="bot-hero-meta"><span class="status status-<%= botInfo.status %>" data-bot-status="<%= botRec.id %>"><%= botInfo.status %></span><span class="tag"><%- ic(tpl.icon) %><%= botRec.official ? 'Službeni bot' : tpl.name + ' bot' %></span><% if (botInfo.tag) { %><span class="muted small"><%= botInfo.tag %></span><% } %></div>
   </div>
   <div class="bot-hero-actions">
     <a class="btn btn-primary" href="<%= botInvite %>" target="_blank" rel="noopener"><%- ic('plus') %>Dodaj na server</a>
     <% if (botManage && botInfo.status === 'online') { %>
-      <form method="post" action="/bots/<%= botRec.id %>/power/stop" onsubmit="return confirm('Zaustaviti bota?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost"><%- ic('power') %>Zaustavi</button></form>
+      <form method="post" action="/bots/<%= botRec.id %>/power/stop" data-confirm="Zaustaviti bota?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost"><%- ic('power') %>Zaustavi</button></form>
     <% } %>
   </div>
 </div>
 <% if (botInfo.error) { %><div class="callout callout-error"><%- ic('zap') %><div><b>Bot se ne može pokrenuti.</b> <%= botInfo.error %></div><% if (botManage) { %><a class="btn btn-sm btn-ghost" href="/bots/<%= botRec.id %>/settings">Postavke</a><% } %></div><% } %>
 
 <div class="stat-grid">
-  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Serveri</span><strong data-live="guilds"><%= botInfo.guilds %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Korisnici</span><strong data-live="members"><%= botInfo.members.toLocaleString('hr-HR') %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('message') %></span><span>Poruke (7 dana)</span><strong><%= totals.messages.toLocaleString('hr-HR') %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('terminal') %></span><span>Komande (7 dana)</span><strong><%= totals.commands.toLocaleString('hr-HR') %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('activity') %></span><span>Ping</span><strong data-live="ping"><%= botInfo.ping != null ? botInfo.ping + ' ms' : '—' %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Serveri</span><strong data-bot-guilds="<%= botRec.id %>"><%= botInfo.guilds %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Korisnici</span><strong data-bot-members="<%= botRec.id %>"><%= botInfo.members.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('message') %></span><span>Poruke (7 dana)</span><strong><%= totals.messages.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('terminal') %></span><span>Komande (7 dana)</span><strong><%= totals.commands.toLocaleString(numLocale) %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('activity') %></span><span>Ping</span><strong data-bot-ping="<%= botRec.id %>"><%= botInfo.ping != null ? botInfo.ping + ' ms' : '—' %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('clock') %></span><span>Uptime</span><strong><%= botInfo.uptime ? fmtUp(botInfo.uptime) : '—' %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('layers') %></span><span>Moduli</span><strong><%= botRec.modules.length %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('zap') %></span><span>Slash komande</span><strong><%= botInfo.commands %></strong></div>
@@ -38,7 +38,7 @@
     <% servers.forEach(s => { %>
       <a class="server-card <%= s.hasBot ? '' : 'nobot' %>" href="<%= s.hasBot ? '/bots/' + botRec.id + '/g/' + s.id : s.invite %>" <%- s.hasBot ? '' : 'target="_blank" rel="noopener"' %>>
         <% if (s.icon) { %><img src="<%= s.icon %>" alt=""><% } else { %><span class="guild-fallback lg"><%= s.name.slice(0, 2) %></span><% } %>
-        <div><b><%= s.name %></b><small><%= s.hasBot ? (s.members || 0).toLocaleString('hr-HR') + ' članova' : 'Bot nije na serveru' %></small></div>
+        <div><b data-notr><%= s.name %></b><small><%= s.hasBot ? (s.members || 0).toLocaleString(numLocale) + ' članova' : 'Bot nije na serveru' %></small></div>
         <span class="btn btn-sm <%= s.hasBot ? 'btn-ghost' : 'btn-primary' %>"><%= s.hasBot ? 'Upravljaj' : 'Pozovi' %></span>
       </a>
     <% }) %>
@@ -47,7 +47,7 @@
 
 <% if (botManage && logs.length) { %>
   <div class="section-title"><h2>Zadnja aktivnost</h2><a class="small" href="/bots/<%= botRec.id %>/console">Cijela konzola →</a></div>
-  <div class="card log-mini"><% logs.forEach(l => { %><div class="log-line log-<%= l.level %>"><time><%= new Date(l.t).toLocaleTimeString('hr-HR') %></time><span><%= l.msg %></span></div><% }) %></div>
+  <div class="card log-mini" data-console="<%= botRec.id %>" data-max="6" data-mini><% logs.forEach(l => { %><div class="log-line log-<%= l.level %>"><time><%= new Date(l.t).toLocaleTimeString(numLocale) %></time><span><%= l.msg %></span></div><% }) %></div>
 <% } %>
-<script>window.__botId = '<%= botRec.id %>';</script>
+
 <%- include('../partials/app-end') %>

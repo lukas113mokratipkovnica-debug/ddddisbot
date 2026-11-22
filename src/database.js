@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS confessions (id INTEGER PRIMARY KEY AUTOINCREMENT, gu
 `;
 
 const DEFAULTS = {
+  language: 'hr',
   prefix: '!',
   modRole: '',
   disabledCommands: [],
@@ -105,6 +106,7 @@ function createDatabase(botId) {
     cache.set(guildId, s);
     return s;
   }
+  const hasSettings = (guildId) => Boolean(q('SELECT 1 FROM guild_settings WHERE guild_id = ?').get(guildId));
   function saveSettings(guildId, settings) {
     const merged = mergeDefaults(DEFAULTS, settings);
     q('INSERT INTO guild_settings (guild_id, data) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET data = excluded.data').run(guildId, JSON.stringify(merged));
@@ -302,7 +304,7 @@ function createDatabase(botId) {
   };
 
   const api = {
-    raw: db, getSettings, saveSettings, updateSettings, warnings, cases, levels, customCommands, rolePanels, tickets,
+    raw: db, getSettings, saveSettings, hasSettings, updateSettings, warnings, cases, levels, customCommands, rolePanels, tickets,
     giveaways, stats, economy, counting, birthdays, reminders, afk, sticky, tempVoice, invites, feeds, confessions,
     close: () => { db.close(); instances.delete(botId); },
   };

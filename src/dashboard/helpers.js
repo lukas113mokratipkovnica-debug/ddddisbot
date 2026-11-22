@@ -2,6 +2,7 @@ const { ChannelType, PermissionFlagsBits } = require('discord.js');
 const config = require('../config');
 const manager = require('../bot/manager');
 const platform = require('../platform');
+const { safeEqual, snowflake } = require('../security');
 
 const bool = (v) => v === 'on' || v === 'true' || v === '1';
 const arr = (v) => (v === undefined || v === '' ? [] : Array.isArray(v) ? v.filter(Boolean) : [v]);
@@ -32,9 +33,18 @@ function requireAdmin(req, res, next) {
   if (!isAdmin(req.session.user)) return res.status(403).render('error', { title: 'Nemaš pristup', message: 'Samo administratori platforme.' });
   next();
 }
+const ALLOWED_ORIGIN = new URL(config.dashboardUrl).origin;
 function checkCsrf(req, res, next) {
-  if (req.body?._csrf !== req.session.csrf) return res.status(403).render('error', { title: 'Sesija je istekla', message: 'Osvježi stranicu i pokušaj ponovo.' });
+  // 1) same-origin check (browsers always send Origin on cross-site POSTs), 2) synchronizer token
+  const origin = req.get('origin');
+  if (origin && origin !== ALLOWED_ORIGIN && origin !== `${req.protocol}://${req.get('host')}`) {
+    return res.status(403).render('error', { title: 'Zahtjev odbijen', message: 'Zahtjev nije došao s ove stranice.' });
+  }
+  if (!safeEqual(req.body?._csrf, req.session.csrf)) return res.status(403).render('error', { title: 'Sesija je istekla', message: 'Osvježi stranicu i pokušaj ponovo.' });
   next();
+}
+function audit(req, action, target = null, meta = null) {
+  platform.audit.log(req.session.user?.id || null, action, target, req.ip, meta);
 }
 
 /** Loads bot record + live info. `manage` = user may change modules/settings/token. */
@@ -61,6 +71,7 @@ async function loadGuild(req, res, next) {
   const client = manager.client(req.botRec.id);
   if (!client?.isReady()) return res.status(503).render('error', { title: 'Bot nije online', message: 'Pokreni bota da bi upravljao serverima.' });
   const guild = client.guilds.cache.get(req.params.guildId);
+  if (!snowflake(req.params.guildId)) return res.status(404).render('error', { title: '404', message: 'Server ne postoji.' });
   if (!guild) return res.redirect(inviteUrl(req.botRec.application_id, req.params.guildId));
   const uid = req.session.user.id;
   let allowed = req.botManage || guild.ownerId === uid;
@@ -96,4 +107,4 @@ async function discordApi(path, token, type = 'Bearer') {
   return { ok: r.ok, status: r.status, body };
 }
 
-module.exports = { bool, arr, list, num, str, lines, action, isAdmin, inviteUrl, flash, requireAuth, requireAdmin, checkCsrf, loadBot, requireBotManage, loadGuild, discordApi };
+module.exports = { audit, snowflake, bool, arr, list, num, str, lines, action, isAdmin, inviteUrl, flash, requireAuth, requireAdmin, checkCsrf, loadBot, requireBotManage, loadGuild, discordApi };

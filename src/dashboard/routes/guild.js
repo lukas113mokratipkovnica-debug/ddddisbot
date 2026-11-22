@@ -9,7 +9,9 @@ const rolePanels = require('../../bot/systems/rolePanels');
 const verification = require('../../bot/systems/verification');
 const { createStatChannels } = require('../../bot/systems/tickers');
 const { parseDuration } = require('../../bot/utils');
-const { bool, arr, list, num, str, lines, action, flash, requireAuth, checkCsrf, loadBot, loadGuild } = require('../helpers');
+const { bool, arr, list, num, str, lines, action, flash, audit, snowflake: sf, requireAuth, checkCsrf, loadBot, loadGuild } = require('../helpers');
+const { LANGS } = require('../../i18n');
+const ids = (v) => arr(v).filter((x) => sf(x));
 
 const router = express.Router();
 const G = '/bots/:botId/g/:guildId';
@@ -74,26 +76,27 @@ const back = (req, res, page) => res.redirect(`${res.locals.base}/${page}`);
 // ------------------------------------------------------------------ settings sections
 const SECTIONS = {
   general: ['general', (b, s) => {
-    s.prefix = str(b.prefix, 5).trim() || '!';
-    s.modRole = str(b.modRole, 30);
+    s.prefix = str(b.prefix, 5).trim().replace(/[<>"'`]/g, '') || '!';
+    s.language = LANGS[b.language] ? b.language : s.language;
+    s.modRole = sf(b.modRole);
     s.disabledCommands = arr(b.disabledCommands);
   }],
   welcome: ['welcome', (b, s) => {
-    s.welcome = { enabled: bool(b.welcomeEnabled), channel: str(b.welcomeChannel, 30), message: str(b.welcomeMessage, 2000), embed: bool(b.welcomeEmbed), dm: bool(b.welcomeDm), dmMessage: str(b.welcomeDmMessage, 2000) };
-    s.goodbye = { enabled: bool(b.goodbyeEnabled), channel: str(b.goodbyeChannel, 30), message: str(b.goodbyeMessage, 2000), embed: bool(b.goodbyeEmbed) };
-    s.autorole = { enabled: bool(b.autoroleEnabled), roles: arr(b.autoroleRoles), botRoles: arr(b.autoroleBotRoles) };
+    s.welcome = { enabled: bool(b.welcomeEnabled), channel: sf(b.welcomeChannel), message: str(b.welcomeMessage, 2000), embed: bool(b.welcomeEmbed), dm: bool(b.welcomeDm), dmMessage: str(b.welcomeDmMessage, 2000) };
+    s.goodbye = { enabled: bool(b.goodbyeEnabled), channel: sf(b.goodbyeChannel), message: str(b.goodbyeMessage, 2000), embed: bool(b.goodbyeEmbed) };
+    s.autorole = { enabled: bool(b.autoroleEnabled), roles: ids(b.autoroleRoles), botRoles: ids(b.autoroleBotRoles) };
   }],
-  invites: ['welcome', (b, s) => { s.invites = { enabled: bool(b.enabled), channel: str(b.channel, 30), message: str(b.message, 1000) || DEFAULTS.invites.message }; }],
+  invites: ['welcome', (b, s) => { s.invites = { enabled: bool(b.enabled), channel: sf(b.channel), message: str(b.message, 1000) || DEFAULTS.invites.message }; }],
   verification: ['verification', (b, s) => {
-    s.verification = { enabled: bool(b.enabled), role: str(b.role, 30), removeRole: str(b.removeRole, 30), captcha: bool(b.captcha), title: str(b.title, 256) || DEFAULTS.verification.title, message: str(b.message, 2000) || DEFAULTS.verification.message };
+    s.verification = { enabled: bool(b.enabled), role: sf(b.role), removeRole: sf(b.removeRole), captcha: bool(b.captcha), title: str(b.title, 256) || DEFAULTS.verification.title, message: str(b.message, 2000) || DEFAULTS.verification.message };
   }],
   logs: ['logs', (b, s) => {
-    s.logs = { enabled: bool(b.enabled), channel: str(b.channel, 30), messageDelete: bool(b.messageDelete), messageEdit: bool(b.messageEdit), memberJoin: bool(b.memberJoin),
+    s.logs = { enabled: bool(b.enabled), channel: sf(b.channel), messageDelete: bool(b.messageDelete), messageEdit: bool(b.messageEdit), memberJoin: bool(b.memberJoin),
       memberLeave: bool(b.memberLeave), memberUpdate: bool(b.memberUpdate), modActions: bool(b.modActions), voice: bool(b.voice), channels: bool(b.channels) };
   }],
   automod: ['automod', (b, s) => {
     s.automod = {
-      enabled: bool(b.enabled), ignoredChannels: arr(b.ignoredChannels), ignoredRoles: arr(b.ignoredRoles), timeoutMinutes: num(b.timeoutMinutes, 1, 40320, 10),
+      enabled: bool(b.enabled), ignoredChannels: ids(b.ignoredChannels), ignoredRoles: ids(b.ignoredRoles), timeoutMinutes: num(b.timeoutMinutes, 1, 40320, 10),
       badWords: { enabled: bool(b.badWordsEnabled), words: lines(b.badWords), action: action(b.badWordsAction) },
       invites: { enabled: bool(b.invitesEnabled), action: action(b.invitesAction) },
       links: { enabled: bool(b.linksEnabled), whitelist: lines(b.linksWhitelist), action: action(b.linksAction) },
@@ -110,8 +113,8 @@ const SECTIONS = {
     const xpMin = num(b.xpMin, 1, 1000, 15);
     s.leveling = {
       enabled: bool(b.enabled), xpMin, xpMax: Math.max(xpMin, num(b.xpMax, 1, 1000, 25)), cooldown: num(b.cooldown, 0, 3600, 60),
-      announce: ['current', 'channel', 'dm', 'off'].includes(b.announce) ? b.announce : 'current', channel: str(b.channel, 30), message: str(b.message, 1000) || DEFAULTS.leveling.message,
-      rewards: rewards.sort((x, y) => x.level - y.level), stackRewards: bool(b.stackRewards), noXpChannels: arr(b.noXpChannels), noXpRoles: arr(b.noXpRoles), multiplier: num(b.multiplier, 0.1, 10, 1),
+      announce: ['current', 'channel', 'dm', 'off'].includes(b.announce) ? b.announce : 'current', channel: sf(b.channel), message: str(b.message, 1000) || DEFAULTS.leveling.message,
+      rewards: rewards.sort((x, y) => x.level - y.level), stackRewards: bool(b.stackRewards), noXpChannels: ids(b.noXpChannels), noXpRoles: ids(b.noXpRoles), multiplier: num(b.multiplier, 0.1, 10, 1),
     };
   }],
   economy: ['economy', (b, s) => {
@@ -130,18 +133,18 @@ const SECTIONS = {
     };
   }],
   tickets: ['tickets', (b, s) => {
-    s.tickets = { ...s.tickets, enabled: bool(b.enabled), category: str(b.category, 30), supportRoles: arr(b.supportRoles), logChannel: str(b.logChannel, 30),
+    s.tickets = { ...s.tickets, enabled: bool(b.enabled), category: sf(b.category), supportRoles: ids(b.supportRoles), logChannel: sf(b.logChannel),
       panelTitle: str(b.panelTitle, 256) || '🎫 Podrška', panelDescription: str(b.panelDescription, 4000), welcomeMessage: str(b.welcomeMessage, 2000), maxOpen: num(b.maxOpen, 1, 10, 1) };
   }],
-  starboard: ['community', (b, s) => { s.starboard = { enabled: bool(b.enabled), channel: str(b.channel, 30), emoji: str(b.emoji, 64).trim() || '⭐', threshold: num(b.threshold, 1, 100, 3) }; }],
-  suggestions: ['community', (b, s) => { s.suggestions = { enabled: bool(b.enabled), channel: str(b.channel, 30) }; }],
-  confessions: ['community', (b, s) => { s.confessions = { ...s.confessions, enabled: bool(b.enabled), channel: str(b.channel, 30), logChannel: str(b.logChannel, 30) }; }],
-  counting: ['community', (b, s) => { s.counting = { enabled: bool(b.enabled), channel: str(b.channel, 30), sameUserTwice: bool(b.sameUserTwice), resetOnFail: bool(b.resetOnFail) }; }],
-  birthdays: ['community', (b, s) => { s.birthdays = { enabled: bool(b.enabled), channel: str(b.channel, 30), role: str(b.role, 30), message: str(b.message, 1000) || DEFAULTS.birthdays.message }; }],
-  tempvoice: ['voice', (b, s) => { s.tempvoice = { enabled: bool(b.enabled), hub: str(b.hub, 30), category: str(b.category, 30), nameTemplate: str(b.nameTemplate, 90) || DEFAULTS.tempvoice.nameTemplate, userLimit: num(b.userLimit, 0, 99, 0) }; }],
+  starboard: ['community', (b, s) => { s.starboard = { enabled: bool(b.enabled), channel: sf(b.channel), emoji: str(b.emoji, 64).trim() || '⭐', threshold: num(b.threshold, 1, 100, 3) }; }],
+  suggestions: ['community', (b, s) => { s.suggestions = { enabled: bool(b.enabled), channel: sf(b.channel) }; }],
+  confessions: ['community', (b, s) => { s.confessions = { ...s.confessions, enabled: bool(b.enabled), channel: sf(b.channel), logChannel: sf(b.logChannel) }; }],
+  counting: ['community', (b, s) => { s.counting = { enabled: bool(b.enabled), channel: sf(b.channel), sameUserTwice: bool(b.sameUserTwice), resetOnFail: bool(b.resetOnFail) }; }],
+  birthdays: ['community', (b, s) => { s.birthdays = { enabled: bool(b.enabled), channel: sf(b.channel), role: sf(b.role), message: str(b.message, 1000) || DEFAULTS.birthdays.message }; }],
+  tempvoice: ['voice', (b, s) => { s.tempvoice = { enabled: bool(b.enabled), hub: sf(b.hub), category: sf(b.category), nameTemplate: str(b.nameTemplate, 90) || DEFAULTS.tempvoice.nameTemplate, userLimit: num(b.userLimit, 0, 99, 0) }; }],
   serverstats: ['voice', (b, s) => {
     s.serverstats = { ...s.serverstats, enabled: bool(b.enabled) };
-    for (const k of ['members', 'humans', 'bots', 'boosts']) { s.serverstats[k] = str(b[k], 30); s.serverstats[`${k}Name`] = str(b[`${k}Name`], 90) || DEFAULTS.serverstats[`${k}Name`]; }
+    for (const k of ['members', 'humans', 'bots', 'boosts']) { s.serverstats[k] = sf(b[k]); s.serverstats[`${k}Name`] = str(b[`${k}Name`], 90) || DEFAULTS.serverstats[`${k}Name`]; }
   }],
 };
 
@@ -149,6 +152,7 @@ router.post(`${G}/save/:section`, post, (req, res) => {
   const sec = SECTIONS[req.params.section];
   if (!sec) return res.status(400).send('Nepoznata sekcija');
   req.db.updateSettings(req.guild.id, (s) => sec[1](req.body, s));
+  audit(req, 'guild.settings', `${req.botRec.id}/${req.guild.id}`, { section: req.params.section });
   flash(req, 'success', 'Postavke spremljene ✓');
   back(req, res, sec[0]);
 });
@@ -173,7 +177,7 @@ router.post(`${G}/roles/create`, post, async (req, res) => {
   const roles = [];
   roleIds.forEach((r, k) => { if (r && req.guild.roles.cache.has(r)) roles.push({ role: r, label: str(labels[k], 80), emoji: str(emojis[k], 64).trim(), style: str(styles[k], 12), description: str(descs[k], 100) }); });
   if (!roles.length || !b.channel) { flash(req, 'error', 'Odaberi kanal i barem jednu ulogu.'); return back(req, res, 'roles'); }
-  const id = req.db.rolePanels.create(req.guild.id, str(b.channel, 30), str(b.title, 256) || 'Odaberi uloge', str(b.description, 2000), bool(b.unique), roles.slice(0, 25));
+  const id = req.db.rolePanels.create(req.guild.id, sf(b.channel), str(b.title, 256) || 'Odaberi uloge', str(b.description, 2000), bool(b.unique), roles.slice(0, 25));
   try { await rolePanels.publish(req.client, id, req.guild.id); flash(req, 'success', 'Panel objavljen.'); } catch (e) { req.db.rolePanels.remove(req.guild.id, id); flash(req, 'error', `Greška pri objavi: ${e.message}`); }
   back(req, res, 'roles');
 });

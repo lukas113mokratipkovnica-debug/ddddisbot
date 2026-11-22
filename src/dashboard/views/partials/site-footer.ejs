@@ -5,7 +5,11 @@
       <p class="muted">Discord botovi bez kodiranja. Odaberi, poveži, podesi — gotovo.</p>
     </div>
     <div><h4>Platforma</h4><a href="/catalog">Katalog botova</a><a href="/pricing">Cijene</a><a href="/app">Dashboard</a></div>
-    <div><h4>Resursi</h4><a href="/#faq">Česta pitanja</a><a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Developer Portal</a><% if (supportUrl) { %><a href="<%= supportUrl %>" target="_blank" rel="noopener">Podrška</a><% } %></div>
+    <div><h4>Resursi</h4><a href="/#faq">Česta pitanja</a><a href="/status">Status sustava</a><a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">Developer Portal</a></div>
+    <div><h4>Jezik</h4><% Object.values(langs).forEach(l => { %><a href="/lang/<%= l.code %>?next=<%= encodeURIComponent(url) %>" data-notr><%= l.name %></a><% }) %><% if (supportUrl) { %><a href="<%= supportUrl %>" target="_blank" rel="noopener noreferrer">Podrška</a><% } %></div>
   </div>
-  <div class="wrap footer-bottom muted">© <%= new Date().getFullYear() %> <%= brand %>. Nije povezano s Discord Inc.</div>
+  <div class="wrap footer-bottom muted">
+    <span>© <%= new Date().getFullYear() %> <span data-notr><%= brand %></span>. Nije povezano s Discord Inc.</span>
+    <a class="status-dot-link" href="/status"><i class="dot dot-online"></i>Svi sustavi rade</a>
+  </div>
 </footer>

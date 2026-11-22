@@ -1,13 +1,14 @@
 <header class="site-nav">
-  <div class="wrap nav-inner">
+  <div class="nav-inner">
     <%- include('logo') %>
-    <nav class="nav-links" id="navLinks">
+    <nav class="nav-links">
       <a href="/catalog">Botovi</a>
       <a href="/#moduli">Moduli</a>
       <a href="/pricing">Cijene</a>
-      <a href="/#faq">FAQ</a>
+      <a href="/status">Status</a>
     </nav>
     <div class="nav-cta">
+      <%- include('prefs') %>
       <% if (user) { %>
         <a class="btn btn-primary" href="/app"><img class="avatar-xs" src="<%= user.avatar %>" alt="">Dashboard</a>
       <% } else { %>

@@ -16,9 +16,11 @@
 <div class="shell">
   <aside class="side" id="side">
     <div class="side-top"><%- include('logo') %></div>
+    <button class="search-btn" type="button" data-palette-open><%- ic('search') %><span>Traži…</span><span class="kbd">Ctrl K</span></button>
     <nav class="side-nav">
       <a href="/app" class="<%= path === '/app' ? 'active' : '' %>"><%- ic('grid') %>Moji botovi</a>
       <a href="/app/new" class="<%= path === '/app/new' ? 'active' : '' %>"><%- ic('plus') %>Novi bot</a>
+      <a href="/account" class="<%= path === '/account' ? 'active' : '' %>"><%- ic('shield-check') %>Račun i sigurnost</a>
       <a href="/catalog"><%- ic('book') %>Katalog</a>
       <% if (isAdmin) { %><a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><%- ic('crown') %>Admin</a><% } %>
     </nav>
@@ -26,8 +28,8 @@
     <% if (hasBot) { %>
       <div class="side-section">
         <a class="side-bot" href="/bots/<%= botRec.id %>">
-          <span class="avatar-wrap"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>"></i></span>
-          <span><b><%= botRec.name %></b><small><%= STATUS[botInfo.status] || botInfo.status %></small></span>
+          <span class="avatar-wrap"><img src="<%= botInfo.avatar || botRec.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" alt=""><i class="dot dot-<%= botInfo.status %>" data-bot-dot="<%= botRec.id %>"></i></span>
+          <span><b data-notr><%= botRec.name %></b><small data-bot-status-text="<%= botRec.id %>"><%= STATUS[botInfo.status] || botInfo.status %></small></span>
         </a>
         <nav class="side-nav">
           <a href="/bots/<%= botRec.id %>" class="<%= sec === 'overview' ? 'active' : '' %>"><%- ic('activity') %>Pregled</a>
@@ -43,8 +45,8 @@
     <% if (hasGuild) { %>
       <div class="side-section">
         <div class="side-guild">
-          <% if (guild.iconURL()) { %><img src="<%= guild.iconURL({ size: 64 }) %>" alt=""><% } else { %><span class="guild-fallback"><%= guild.name.slice(0, 2) %></span><% } %>
-          <span><b><%= guild.name %></b><small><%= guild.memberCount %> članova</small></span>
+          <% if (guild.iconURL()) { %><img src="<%= guild.iconURL({ size: 64 }) %>" alt=""><% } else { %><span class="guild-fallback" data-notr><%= guild.name.slice(0, 2) %></span><% } %>
+          <span><b data-notr><%= guild.name %></b><small><%= guild.memberCount %> članova</small></span>
         </div>
         <nav class="side-nav">
           <% GUILD_NAV.filter(([k]) => pageEnabled(k, modules)).forEach(([key, icon, label]) => { %>
@@ -55,13 +57,11 @@
     <% } %>
 
     <div class="side-bottom">
-      <% if (userPlan) { %>
-        <a class="plan-chip" href="/pricing"><%- ic('crown') %><span>Paket <b><%= userPlan.name %></b></span></a>
-      <% } %>
+      <% if (userPlan) { %><a class="plan-chip" href="/pricing"><%- ic('crown') %><span>Paket <b><%= userPlan.name %></b></span></a><% } %>
       <div class="side-user">
-        <img src="<%= user.avatar %>" alt="">
-        <span><%= user.username %></span>
-        <a href="/logout" class="icon-btn" title="Odjava"><%- ic('logout') %></a>
+        <a href="/account" class="row nowrap" style="flex:1;min-width:0;color:var(--text)"><img src="<%= user.avatar %>" alt=""><span class="name" data-notr><%= user.username %></span></a>
+        <%- include('prefs', { up: true }) %>
+        <form method="post" action="/logout" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="icon-btn" title="Odjava" aria-label="Odjava"><%- ic('logout') %></button></form>
       </div>
     </div>
   </aside>
@@ -71,17 +71,19 @@
       <button class="icon-btn menu-btn" type="button" data-open-side aria-label="Meni"><%- ic('menu') %></button>
       <div class="crumbs">
         <a href="/app">Botovi</a>
-        <% if (hasBot) { %><span>/</span><a href="/bots/<%= botRec.id %>"><%= botRec.name %></a><% } %>
-        <% if (hasGuild) { %><span>/</span><a href="<%= base %>"><%= guild.name %></a><% } %>
+        <% if (hasBot) { %><span class="sep">/</span><a href="/bots/<%= botRec.id %>" data-notr><%= botRec.name %></a><% } %>
+        <% if (hasGuild) { %><span class="sep">/</span><a href="<%= base %>" data-notr><%= guild.name %></a><% } %>
       </div>
-      <% if (hasBot && botManage) { %>
-        <div class="topbar-actions">
+      <div class="topbar-actions">
+        <span class="live-dot hide-sm" data-live-indicator>LIVE</span>
+        <button class="icon-btn" type="button" data-palette-open title="Traži (Ctrl K)" aria-label="Traži"><%- ic('search') %></button>
+        <% if (hasBot && botManage) { %>
           <% if (botInfo.status === 'online') { %>
             <form method="post" action="/bots/<%= botRec.id %>/power/restart"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-sm" title="Restart"><%- ic('refresh') %><span class="hide-sm">Restart</span></button></form>
           <% } else { %>
             <form method="post" action="/bots/<%= botRec.id %>/power/start"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-success btn-sm"><%- ic('power') %>Pokreni</button></form>
           <% } %>
-        </div>
-      <% } %>
+        <% } %>
+      </div>
     </div>
     <div class="content">

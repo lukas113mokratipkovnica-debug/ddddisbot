@@ -34,7 +34,7 @@
       </div>
       <div class="actions">
         <form method="post" action="<%= base %>/roles/<%= p.id %>/republish"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Osvježi</button></form>
-        <form method="post" action="<%= base %>/roles/<%= p.id %>/delete" onsubmit="return confirm('Obrisati panel i poruku?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
+        <form method="post" action="<%= base %>/roles/<%= p.id %>/delete" data-confirm="Obrisati panel i poruku?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-xs">Obriši</button></form>
       </div>
     </div>
   <% }) %>

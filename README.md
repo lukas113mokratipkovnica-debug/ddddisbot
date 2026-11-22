@@ -4,6 +4,19 @@ Web platforma na kojoj korisnici sami prave svoje Discord botove bez kodiranja: 
 
 Ime usluge mijenjaš u `.env` (`BRAND_NAME`).
 
+## Novo u v3
+- **Višejezičnost (HR / EN):** dashboard (automatski prema pregledniku ili ručni odabir) i botovi (svaki server bira jezik, a novi serveri ga dobiju prema jeziku Discord servera). Slash komande imaju Discordove nativne prijevode: engleski je zadani, a hrvatski se prikazuje korisnicima s hrvatskim Discordom.
+- **Dizajn „Aurora Glass“:** tamna i svijetla tema, korisnik bira boju naglaska (cijelo sučelje se preboji), stakleni slojevi, bento landing stranica, command palette (**Ctrl+K** ili **/**), statusi i konzola uživo preko Server-Sent Events.
+- **Sigurnost:** stroga CSP (bez inline JS-a), HSTS, X-Frame-Options, COOP/CORP, Permissions-Policy; CSRF token i provjera Origin zaglavlja; rate limiting (globalno, prijava, dodavanje bota, token, restart); SSRF zaštita za RSS i avatare (blokira privatne mreže, preusmjeravanja i prevelike datoteke); validacija Discord ID-eva; regeneracija sesije pri prijavi i odjava samo POST-om; `__Host-` kolačić na HTTPS-u; audit log; sigurnosni centar s aktivnim sesijama i odjavom uređaja; provjera tajni pri pokretanju.
+- **Javna status stranica** (`/status`) s dostupnošću u zadnja 24 sata i `/api/status` JSON-om.
+
+## Dodavanje jezika
+Prijevodi su u `src/i18n/locales/<jezik>.json`. Ključ je hrvatski tekst, a `{0}` / `{ime}` su zamjenski dijelovi. Za novi jezik:
+1. kopiraj `en.json` u npr. `de.json` i prevedi vrijednosti,
+2. dodaj jezik u `LANGS` u `src/i18n/index.js` (kod, ime, Discord locale).
+
+Sve ostalo (dashboard, poruke bota, opisi komandi) radi automatski. Prijevodi se primjenjuju na izlazu, pa u kodu nema `t('...')` poziva oko svake poruke. Netaknuti zadani tekstovi (npr. poruka dobrodošlice) prevode se sami, a tekstovi koje je admin sam napisao ostaju kakvi jesu.
+
 ## Što platforma ima
 
 **Za posjetitelje:** landing stranica (hero, katalog botova, moduli, cijene, FAQ), `/catalog` s komandama svakog modula, `/pricing`.
@@ -75,7 +88,7 @@ cp .env.example .env   # popuni
 npm start
 ```
 
-Važno u `.env`:
+Važno u `.env` (u produkciji postavi i `NODE_ENV=production` i `TRUST_PROXY=1` ako si iza Nginxa/Caddyja):
 - `OWNER_IDS`: tvoj Discord ID, da dobiješ Admin panel i neograničen broj botova
 - `ENCRYPTION_KEY`: postavi dugi random string **prije** nego korisnici dodaju botove i nikad ga ne mijenjaj (njime su šifrirani tokeni)
 - `BRAND_NAME`, `SUPPORT_URL`: ime usluge i link na support
