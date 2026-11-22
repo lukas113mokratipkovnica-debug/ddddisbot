@@ -2,8 +2,8 @@
 <%- include('partials/site-nav') %>
 <section class="error-page"><div class="wrap narrow center">
   <div class="error-code grad"><%= /^\d+$/.test(title) ? title : '!' %></div>
-  <h1><%= /^\d+$/.test(title) ? (title === '404' ? 'Stranica ne postoji' : 'Polako!') : title %></h1>
+  <h1><%= /^\d+$/.test(title) ? (title === '404' ? 'Page not found' : 'Slow down!') : title %></h1>
   <p class="lead muted" style="margin:0 auto"><%= message %></p>
-  <div class="hero-actions center"><a class="btn btn-primary" href="/app">Natrag na dashboard</a><a class="btn btn-ghost" href="/">Početna</a></div>
+  <div class="hero-actions center"><a class="btn btn-primary" href="/app">Back to dashboard</a><a class="btn btn-ghost" href="/">Home</a></div>
 </div></section>
 <%- include('partials/foot') %>

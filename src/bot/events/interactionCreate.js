@@ -1,6 +1,5 @@
 const { Events, MessageFlags } = require('discord.js');
 const { fail } = require('../utils');
-const i18n = require('../../i18n');
 const tickets = require('../systems/tickets');
 const giveaways = require('../systems/giveaways');
 const rolePanels = require('../systems/rolePanels');
@@ -15,18 +14,16 @@ module.exports = {
   name: Events.InteractionCreate,
   async execute(i, client) {
     if (!i.inGuild()) {
-      if (i.isRepliable()) return i.reply({ content: 'Komande rade samo na serverima.', flags: MessageFlags.Ephemeral });
+      if (i.isRepliable()) return i.reply({ content: 'Commands only work in servers.', flags: MessageFlags.Ephemeral });
       return;
     }
     const has = (m) => client.modules.has(m);
-    const lang = 'en';
-    if (i.showModal) { const show = i.showModal.bind(i); i.showModal = (modal, opts) => show(i18n.translateModal(lang, modal), opts); }
     try {
       if (i.isChatInputCommand()) {
         const cmd = client.commands.get(i.commandName);
-        if (!cmd) return i.reply({ embeds: [fail('Ova komanda trenutno nije uključena.')], flags: MessageFlags.Ephemeral });
+        if (!cmd) return i.reply({ embeds: [fail('This command is not enabled right now.')], flags: MessageFlags.Ephemeral });
         if (client.db.getSettings(i.guild.id).disabledCommands.includes(i.commandName)) {
-          return i.reply({ embeds: [fail('Ova komanda je isključena na ovom serveru.')], flags: MessageFlags.Ephemeral });
+          return i.reply({ embeds: [fail('This command is disabled on this server.')], flags: MessageFlags.Ephemeral });
         }
         client.db.stats.bump(i.guild.id, 'commands');
         client.log?.('cmd', `/${i.commandName} — ${i.user.tag} @ ${i.guild.name}`);
@@ -42,7 +39,7 @@ module.exports = {
         if (ns === 'gw' && a === 'join' && has('giveaways')) return await giveaways.handleJoin(i, b);
         if (ns === 'rr' && has('roles')) return await rolePanels.handleButton(i, a, b);
         if (ns === 'verify' && has('verification')) return await verification.handleButton(i, a);
-        return i.reply({ embeds: [fail('Ovaj modul je isključen.')], flags: MessageFlags.Ephemeral });
+        return i.reply({ embeds: [fail('This module is disabled.')], flags: MessageFlags.Ephemeral });
       }
       if (i.isModalSubmit()) {
         if (i.customId === 'ticket:modal') return await tickets.openTicket(i, i.fields.getTextInputValue('topic') || '');
@@ -51,7 +48,7 @@ module.exports = {
     } catch (e) {
       console.error(`[interaction] ${i.customId || i.commandName}:`, e);
       client.log?.('error', `${i.customId || `/${i.commandName}`}: ${e.message}`);
-      await safeReply(i, { embeds: [fail(`Došlo je do greške: ${e.message}`)] });
+      await safeReply(i, { embeds: [fail(`Something went wrong: ${e.message}`)] });
     }
   },
 };

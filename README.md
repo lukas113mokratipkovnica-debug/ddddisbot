@@ -1,145 +1,110 @@
-# Botnica — platforma za Discord botove
+# ServerPulse — Discord bot hosting platform
 
-Web platforma na kojoj korisnici sami prave svoje Discord botove bez kodiranja: prijave se Discordom, odaberu gotovog bota, zalijepe token, i bot je online 24/7 na tvom serveru. Sve se podešava klikom u dashboardu.
+A full-stack platform where users create and host their own Discord bots without writing code: sign in with Discord, pick a ready-made bot (template), paste a bot token, and the platform runs it 24/7. Everything is configured from a web dashboard.
 
-Ime usluge mijenjaš u `.env` (`BRAND_NAME`).
+Change the service name in `.env` (`BRAND_NAME`).
 
-## Novo u v5 — engleski, ažurirano i brže
+## Highlights
+- **No-code bots** — 13 templates over 25 modules / 60 slash commands.
+- **Multi-bot hosting** — many bots run in one Node process, each with its own SQLite database. Bot tokens are encrypted at rest (AES-256-GCM).
+- **Web dashboard** — marketing site, catalog, pricing, live status page; customer area (my bots, new-bot wizard, modules, settings, console, account & security); admin panel. Modern UI with light/dark theme, accent-color picker, command palette (Ctrl+K) and live updates over SSE.
+- **Self-serve billing** — Stripe Checkout + Customer Portal.
+- **Refund kill-switch** — on refund / chargeback / cancellation / expiry the plan drops to Free and bots over the limit are paused (kept, not deleted) and restored when payment resumes. Transparent, logged, reversible.
+- **AI support** — Claude-backed chat widget with a platform knowledge base; falls back to an FAQ matcher when no API key is set.
+- **English-only** — the entire app and codebase are English.
+- **Secure** — strict CSP, security headers, CSRF + origin checks, rate limiting, SSRF-safe fetch, snowflake validation, audit log, session management, startup secret checks.
 
-- **Samo engleski jezik.** Cijela aplikacija (dashboard i botovi) je na engleskom. Prebacivač jezika i hrvatski su uklonjeni. (Interno je izvorni jezik koda hrvatski, a prevodi se na engleski na izlazu — za tebe kao vlasnika nevažno, UI je 100% engleski.)
-- **Ovisnosti ažurirane na zadnje verzije:** Express 5, EJS 7, Stripe 23, better-sqlite3 13, `@anthropic-ai/sdk` 1.x, dotenv 18 (+ `compression`). Sve testirano.
-- **Brže i lakše:** gzip kompresija odgovora (osim live streama), SQLite `synchronous = NORMAL` uz WAL (brži upisi), i memorijski keš prijevoda. Dodan `GET /healthz` za load balancere/monitoring.
+## Modules (25) and commands (60)
 
-### Zašto NE C++
-Platforma je I/O-vezana — najviše vremena provodi čekajući Discord, Stripe, mrežu i SQLite, a ne računajući. C++ tu ne bi bio brže, a izgubio bi zrele biblioteke (discord.js, Stripe i Anthropic SDK, Express) i tražio višetjedni rewrite s puno više rizika i koda. Node.js je ovdje pravi izbor; ubrzanje je došlo kroz gornje optimizacije.
-
-## Novo u v4 — platforma radi sama
-
-- **Online naplata (Stripe Checkout):** korisnik na stranici Cijene klikne paket → Stripe Checkout → webhook automatski diže paket. "Upravljaj pretplatom" otvara Stripe Customer Portal (promjena kartice, otkazivanje). Bez ljudske intervencije.
-- **Automatsko gašenje na povrat novca (kill-switch):** Stripe webhook na `charge.refunded`, `charge.dispute.created` (chargeback), `customer.subscription.deleted` (otkazivanje) i istek pretplate automatski snizi paket na Free i **pauzira** botove iznad limita (zaustavi ih, zabrani pokretanje). Ništa se ne briše. Čim korisnik ponovo plati, pauzirani botovi se vrate i pokrenu sami. Sve je zapisano u audit log i vidljivo korisniku na stranici Naplata i na botu. Webhookovi su idempotentni (duplikati se ignoriraju).
-- **AI korisnička podrška:** chat widget (dolje desno, na svim stranicama). Odgovara Claude s bazom znanja o platformi (moduli, paketi, naplata, "zašto je bot offline") i poznaje kontekst prijavljenog korisnika (njegov paket i status botova). Bez API ključa radi rezervni FAQ odgovarač, pa podrška radi i besplatno.
-- **Samostalnost:** istek pretplate provjerava se i bez webhooka (sat vremena), tako da platforma radi i ako Stripe webhook zakaže.
-
-### Postavljanje naplate i AI-a (oboje opcionalno)
-Bez ovih ključeva platforma radi kao i prije (paket dodjeljuje admin ručno, podrška je FAQ).
-- **Stripe:** u `.env` postavi `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, te `STRIPE_PRICE_PRO` i `STRIPE_PRICE_BUSINESS` (Price ID-evi mjesečnih pretplata iz Stripe → Products). Webhook endpoint: `https://tvoja-domena/billing/webhook`. U Stripeu uključi evente: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created`, `invoice.payment_failed`.
-- **AI:** u `.env` postavi `ANTHROPIC_API_KEY`. Za jeftiniju podršku postavi `AI_MODEL=claude-haiku-5-5`.
-
-## Što platforma ima
-
-## Novo u v3
-- ~~Višejezičnost~~ — od v5 je aplikacija **samo na engleskom** (vidi gore).
-- **Dizajn „Aurora Glass“:** tamna i svijetla tema, korisnik bira boju naglaska (cijelo sučelje se preboji), stakleni slojevi, bento landing stranica, command palette (**Ctrl+K** ili **/**), statusi i konzola uživo preko Server-Sent Events.
-- **Sigurnost:** stroga CSP (bez inline JS-a), HSTS, X-Frame-Options, COOP/CORP, Permissions-Policy; CSRF token i provjera Origin zaglavlja; rate limiting (globalno, prijava, dodavanje bota, token, restart); SSRF zaštita za RSS i avatare (blokira privatne mreže, preusmjeravanja i prevelike datoteke); validacija Discord ID-eva; regeneracija sesije pri prijavi i odjava samo POST-om; `__Host-` kolačić na HTTPS-u; audit log; sigurnosni centar s aktivnim sesijama i odjavom uređaja; provjera tajni pri pokretanju.
-- **Javna status stranica** (`/status`) s dostupnošću u zadnja 24 sata i `/api/status` JSON-om.
-
-## Jezik
-Aplikacija je samo na engleskom. Mapa `src/i18n/` i dalje postoji jer se njome engleski prikaz izvodi iz internih (hrvatskih) izvornih tekstova koda; prijevod se primjenjuje na izlazu pa u kodu nema `t('...')` poziva oko svake poruke. Ako ikad poželiš vratiti više jezika, dodaj jezik u `LANGS` u `src/i18n/index.js` i datoteku `src/i18n/locales/<kod>.json`.
-
-## Što platforma ima
-
-**Za posjetitelje:** landing stranica (hero, katalog botova, moduli, cijene, FAQ), `/catalog` s komandama svakog modula, `/pricing`.
-
-**Za korisnike (`/app`):**
-- **Moji botovi**: kartice sa statusom uživo, serverima i korisnicima, te limit po paketu
-- **Novi bot**: odabir predloška, upute za Developer Portal i token. Token se provjerava kod Discorda, kao i jesu li uključeni intenti, pa se bot odmah pokreće.
-- **Pregled bota**: statistika, start/stop/restart, link za dodavanje na server, popis servera
-- **Moduli**: uključivanje i isključivanje 25 modula. Slash komande se same ponovo registriraju.
-- **Postavke**: status/aktivnost, ime i avatar bota, zamjena tokena, autostart, brisanje
-- **Konzola**: log bota uživo
-- **Server postavke**: svaki modul ima svoju stranicu, a vide se samo uključeni moduli
-
-**Admin (`/admin`, korisnici iz `OWNER_IDS`):** svi botovi i korisnici, dodjela paketa (Free/Pro/Business), blokiranje korisnika, start/stop bilo kojeg bota.
-
-**Službeni bot:** bot iz `.env` je All-in-One bot platforme. Svatko ga može dodati na svoj server i podesiti bez pravljenja vlastitog bota.
-
-## Gotovi botovi (predlošci)
-
-All-in-One · Moderator · Leveling · Ekonomija · Support · Welcome · Giveaway · Community · Voice Master · Notifier · Utility · Role Manager · Fun
-
-Predložak je samo početna kombinacija modula, a svaki bot može uključiti bilo koji modul.
-
-## Moduli (25) i komande (60)
-
-| Modul | Što radi |
+| Module | What it does |
 |---|---|
-| Moderacija | `/ban` `/unban` `/kick` `/timeout` `/untimeout` `/warn` `/warnings` `/delwarn` `/purge` `/slowmode` `/lock` `/unlock` `/nick` `/role`, slučajevi s brojem |
-| AutoMod | psovke (wildcard), invite, linkovi s whitelistom, spam, CAPS, masovni tagovi; automatska kazna nakon X upozorenja |
-| Logovi | brisanje/uređivanje poruka, ulasci/izlasci, uloge, nadimci, timeout, voice, kanali, banovi |
-| Verifikacija | panel s dugmetom i captcha kodom, daje ulogu i opcionalno skida "unverified" ulogu, `/verify-panel` |
-| Dobrodošlica | poruka ulaska i izlaska (embed), DM, autorole za ljude i botove |
-| Praćenje pozivnica | tko je koga pozvao, `{inviter}` u dobrodošlici, `/invites user/top` |
-| Button role | paneli do 25 dugmadi, način "samo jedna uloga" |
-| Leveling | XP, `/rank`, `/leaderboard`, `/xp`, nagradne uloge, multiplikator, kanali bez XP-a |
-| Ekonomija | `/balance` `/daily` `/work` `/pay` `/deposit` `/withdraw` `/gamble` `/slots` `/rob` `/shop` `/buy` `/inventory` `/richest` `/eco`, shop s ulogama |
-| Giveaway | `/giveaway start/end/reroll`, prijava dugmetom, pokretanje i s dashboarda |
-| Brojanje | counting kanal s rekordom i pravilima |
-| Zabava | `/rps` `/choose` `/rate` `/ship` `/8ball` `/coinflip` `/roll` `/trivia` |
-| Tiketi | panel → modal → privatni kanal, preuzimanje, transkript u log i DM |
-| Custom komande | `!okidač` komande + autoresponder (sadrži / točno / počinje s) + reakcija emojijem |
-| Sticky poruke | poruka koja uvijek ostaje na dnu kanala, `/sticky` ili dashboard |
-| Starboard | najbolje poruke po reakcijama |
-| Prijedlozi | `/suggest` s glasanjem i threadom |
-| Anonimne ispovijesti | `/confess`, privatni log autora za moderatore |
-| Rođendani | `/birthday set/remove/list`, čestitka i uloga za taj dan |
-| Privremeni voice | "uđi za kreiranje" kanal, `/voice name/limit/lock/unlock/kick/claim` |
-| Statistika kanali | voice kanali s brojem članova/ljudi/botova/boostova, automatsko kreiranje |
-| Podsjetnici | `/remind set/list/delete` |
-| AFK | `/afk`, odgovor kad te netko tagne, automatski povratak |
-| Obavijesti | novi YouTube videi i RSS/Atom objave u kanal |
-| Korisno | `/serverinfo` `/userinfo` `/avatar` `/poll` `/say` `/embed` |
+| Moderation | `/ban` `/unban` `/kick` `/timeout` `/untimeout` `/warn` `/warnings` `/delwarn` `/purge` `/slowmode` `/lock` `/unlock` `/nick` `/role`; every action gets a case number and goes to the log |
+| AutoMod | banned words (wildcards), invites, links with a whitelist, spam, CAPS, mass mentions; auto-punishment after X warnings |
+| Logs | deleted/edited messages, joins/leaves, role & nickname changes, timeouts, voice, channels, bans |
+| Verification | button + captcha panel, grants a role (optionally removes an "unverified" role), `/verify-panel` |
+| Welcome | join/leave messages (embed), DM, autoroles for humans and bots |
+| Invite tracking | who invited whom, `{inviter}` in welcome, `/invites user/top` |
+| Button roles | panels with up to 25 buttons, "single role" mode |
+| Leveling | XP, `/rank`, `/leaderboard`, `/xp`, reward roles, multiplier, no-XP channels |
+| Economy | `/balance` `/daily` `/work` `/pay` `/deposit` `/withdraw` `/gamble` `/slots` `/rob` `/shop` `/buy` `/inventory` `/richest` `/eco`, a role shop |
+| Giveaways | `/giveaway start/end/reroll`, button entry, dashboard controls |
+| Counting | counting channel with a high score and rules |
+| Fun | `/rps` `/choose` `/rate` `/ship` `/8ball` `/coinflip` `/roll` `/trivia` |
+| Tickets | panel → modal → private channel, claim, `/ticket add/remove/close`, transcript to log and DM |
+| Custom commands | `!trigger` commands + autoresponder (contains / exact / starts with) + emoji reaction |
+| Sticky messages | a message that stays at the bottom of a channel |
+| Starboard | best messages by reactions |
+| Suggestions | `/suggest` with voting and a thread |
+| Confessions | `/confess`, private author log for moderators |
+| Birthdays | `/birthday set/remove/list`, wishes and a birthday role for the day |
+| Temp voice | "join to create" channel, `/voice name/limit/lock/unlock/kick/claim` |
+| Server stats channels | voice channels showing member/human/bot/boost counts |
+| Reminders | `/remind set/list/delete` |
+| AFK | `/afk`, reply when mentioned, auto return |
+| Notifications | new YouTube videos and RSS posts in a channel |
+| Utility | `/serverinfo` `/userinfo` `/avatar` `/poll` `/say` `/embed` |
 
-Uvijek uključeno: `/help` `/ping` `/botinfo` `/dashboard`.
+Always on: `/help` `/ping` `/botinfo` `/dashboard`.
 
-## Postavljanje
+## Setup
 
-### 1. Službena Discord aplikacija (za login i službeni bot)
-1. <https://discord.com/developers/applications> → **New Application**
-2. **Bot** → Reset Token → kopiraj. Uključi **Server Members Intent** i **Message Content Intent**.
-3. **OAuth2** → kopiraj Client ID i Client Secret, a pod **Redirects** dodaj `DASHBOARD_URL/callback` (npr. `http://localhost:3000/callback`).
+### 1. Official Discord application (for login and the official bot)
+1. <https://discord.com/developers/applications> → **New Application**.
+2. **Bot** tab → Reset Token → copy it. Enable **Server Members Intent** and **Message Content Intent**.
+3. **OAuth2** tab → copy Client ID and Secret; under **Redirects** add `DASHBOARD_URL/callback` (e.g. `http://localhost:3000/callback`).
 
-### 2. Pokretanje
-Node.js 18.17+ (preporuka 20/22).
+### 2. Run
+Requires Node.js 18.17+ (20/22 recommended).
 
 ```bash
 npm install
-cp .env.example .env   # popuni
+cp .env.example .env   # then fill it in
 npm start
 ```
 
-Važno u `.env` (u produkciji postavi i `NODE_ENV=production` i `TRUST_PROXY=1` ako si iza Nginxa/Caddyja):
-- `OWNER_IDS`: tvoj Discord ID, da dobiješ Admin panel i neograničen broj botova
-- `ENCRYPTION_KEY`: postavi dugi random string **prije** nego korisnici dodaju botove i nikad ga ne mijenjaj (njime su šifrirani tokeni)
-- `BRAND_NAME`, `SUPPORT_URL`: ime usluge i link na support
+Important in `.env`:
+- `DISCORD_TOKEN`, `CLIENT_ID`, `CLIENT_SECRET` — from step 1.
+- `OWNER_IDS` — your Discord ID, to get the Admin panel and an unlimited bot count.
+- `ENCRYPTION_KEY` — set a long random string **before** the first customer adds a bot and never change it (bot tokens are encrypted with it).
+- `BRAND_NAME`, `SUPPORT_URL` — service name and support link.
+- In production, also set `NODE_ENV=production` and `TRUST_PROXY=1` if you run behind Nginx/Caddy.
 
-### 3. Paketi i cijene
-Uređuju se u `src/plans.js` (ime, cijena, broj botova, popis pogodnosti). **Naplata nije integrirana.** Paket korisniku dodjeljuješ ručno u Admin panelu nakon što plati (PayPal, uplata, Ko-fi…). Stripe se može dodati kasnije.
+### 3. Billing and AI (both optional)
+Without these keys the platform works as before (plans assigned manually in the Admin panel, support uses the FAQ fallback).
+- **Stripe:** set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` (monthly subscription Price IDs from Stripe → Products). Webhook endpoint: `https://your-domain/billing/webhook`. In Stripe enable these events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created`, `invoice.payment_failed`.
+- **AI:** set `ANTHROPIC_API_KEY`. For cheaper support set `AI_MODEL=claude-haiku-5-5`.
 
 ## Hosting
-Svi botovi rade u jednom Node procesu. Za par desetaka manjih botova dovoljan je VPS s 1–2 GB RAM-a.
+All bots run in one Node process. A VPS with 1–2 GB RAM handles a few dozen small bots.
+- **VPS:** `pm2 start src/index.js --name serverpulse && pm2 save && pm2 startup`. Put Nginx/Caddy with HTTPS in front and set `DASHBOARD_URL=https://…`.
+- **Railway / Render / Fly:** `npm start`, env vars, and a **persistent volume** mounted at `data/`, otherwise all bots and data are lost on each deploy.
+- Health check: `GET /healthz`.
 
-- **VPS:** `pm2 start src/index.js --name botnica && pm2 save && pm2 startup`. Ispred stavi Nginx/Caddy s HTTPS-om i `DASHBOARD_URL=https://…`.
-- **Railway/Render/Fly:** `npm start`, env varijable i **persistent volume** na `data/`, inače se gube svi botovi i podaci.
-
-## Podaci
+## Data
 ```
-data/platform.db       korisnici, botovi (tokeni šifrirani AES-256-GCM), sesije
-data/bots/<id>.db      zasebna baza za svakog bota (postavke, XP, novac, upozorenja…)
+data/platform.db       users, bots (encrypted tokens), sessions, audit, billing events
+data/bots/<id>.db      a separate database per bot (settings, XP, money, warnings…)
 ```
+Secrets (`.env`), `node_modules/` and runtime databases (`data/`) are intentionally not committed.
 
-## Struktura
+## Structure
 ```
 src/
-  index.js               pokreće dashboard i sve botove
-  config.js  plans.js  modules.js (katalog modula i predložaka)
-  platform.js            korisnici, botovi, šifriranje tokena
-  database.js            baza po botu
+  index.js               starts the dashboard and all bots
+  config.js  plans.js  modules.js
+  platform.js            users, bots, token encryption, audit, sessions
+  database.js            per-bot database factory
+  billing.js             Stripe + entitlement enforcement (kill-switch)
+  security.js            SSRF-safe fetch, rate limiting, CSRF helpers
+  ai/                    AI support (knowledge base + Claude)
   bot/
-    manager.js           start/stop/restart više botova, status i log
-    createClient.js      discord.js klijent s uključenim modulima
+    manager.js           start/stop/restart many bots, status, logs, plan enforcement
+    createClient.js      a discord.js client with the enabled modules
     commands/ events/ systems/
   dashboard/
-    server.js  helpers.js  routes/{app,guild,admin}.js
-    views/               EJS (landing, app, guild, admin)
-    public/              CSS + JS
+    server.js  helpers.js  routes/{app,account,guild,admin,billing,support}.js
+    views/                 EJS pages
+    public/                CSS + JS
 ```
+
+Not affiliated with Discord Inc.

@@ -18,7 +18,7 @@ router.get('/admin', requireAuth, requireAdmin, (req, res) => {
 router.post('/admin/users/:uid/plan', requireAuth, requireAdmin, checkCsrf, (req, res) => {
   platform.users.setPlan(req.params.uid, plans[req.body.plan] ? req.body.plan : 'free');
   audit(req, 'admin.plan', req.params.uid, { plan: req.body.plan });
-  flash(req, 'success', 'Paket promijenjen.');
+  flash(req, 'success', 'Plan changed.');
   res.redirect('/admin');
 });
 router.post('/admin/users/:uid/ban', requireAuth, requireAdmin, checkCsrf, async (req, res) => {
@@ -27,7 +27,7 @@ router.post('/admin/users/:uid/ban', requireAuth, requireAdmin, checkCsrf, async
   audit(req, banned ? 'admin.ban' : 'admin.unban', req.params.uid);
   if (banned) platform.sessions.destroyUser(req.params.uid);
   if (banned) for (const b of platform.bots.byOwner(req.params.uid)) await manager.stop(b.id);
-  flash(req, 'success', banned ? 'Korisnik blokiran, botovi zaustavljeni.' : 'Korisnik odblokiran.');
+  flash(req, 'success', banned ? 'User blocked, bots stopped.' : 'User unblocked.');
   res.redirect('/admin');
 });
 

@@ -25,8 +25,8 @@ function log(id, level, msg) {
 
 function friendlyError(e) {
   const m = e?.message || String(e);
-  if (/disallowed intents/i.test(m)) return 'Uključi "Server Members Intent" i "Message Content Intent" u Developer Portalu (Bot tab), pa pokreni ponovo.';
-  if (/invalid token|TokenInvalid|401/i.test(m)) return 'Token nije ispravan ili je resetiran. Unesi novi token u postavkama bota.';
+  if (/disallowed intents/i.test(m)) return 'Enable "Server Members Intent" and "Message Content Intent" in the Developer Portal (Bot tab), then start again.';
+  if (/invalid token|TokenInvalid|401/i.test(m)) return 'The token is invalid or was reset. Enter a new token in the bot settings.';
   return m;
 }
 
@@ -40,13 +40,13 @@ function recordFor(id) {
 
 async function start(id) {
   const rec = recordFor(id);
-  if (!rec) throw new Error('Bot ne postoji');
+  if (!rec) throw new Error('Bot not found');
   const e = entry(id);
   if (e.client) await stop(id);
-  if (id !== MAIN_ID && platform.bots.get(id)?.suspended) throw new Error('Bot je pauziran (pretplata nije aktivna). Obnovi pretplatu da ga ponovo pokreneš.');
+  if (id !== MAIN_ID && platform.bots.get(id)?.suspended) throw new Error('The bot is paused (subscription inactive). Renew your subscription to start it again.');
   const token = id === MAIN_ID ? config.token : platform.bots.token(id);
   e.status = 'starting'; e.error = null;
-  log(id, 'info', 'Pokretanje…');
+  log(id, 'info', 'Starting…');
   const client = createBotClient({
     id, token, modules: rec.modules, presence: rec.presence,
     devGuildId: id === MAIN_ID ? config.devGuildId : null,
@@ -72,7 +72,7 @@ async function start(id) {
 
 async function stop(id) {
   const e = entry(id);
-  if (e.client) { await e.client.shutdown().catch(() => {}); log(id, 'info', 'Zaustavljen'); }
+  if (e.client) { await e.client.shutdown().catch(() => {}); log(id, 'info', 'Stopped'); }
   e.client = null; e.status = 'offline'; e.startedAt = null;
   events.emit('status', id);
 }
@@ -85,7 +85,7 @@ async function setModules(id, modules) {
   if (c?.isReady()) {
     c.setModules(modules);
     const n = await c.registerCommands();
-    log(id, 'info', `Moduli ažurirani (${modules.length}), ${n} komandi registrirano`);
+    log(id, 'info', `Modules updated (${modules.length}), ${n} commands registered`);
   }
 }
 
@@ -130,7 +130,7 @@ const statusSamples = () => platform.kv.get('status.samples', []);
 async function startAll() {
   setTimeout(sampleStatus, 60_000).unref?.();
   setInterval(sampleStatus, 15 * 60_000).unref?.();
-  await start(MAIN_ID).catch((e) => console.error('[manager] Glavni bot se nije pokrenuo:', e.message));
+  await start(MAIN_ID).catch((e) => console.error('[manager] Main bot failed to start:', e.message));
   for (const b of platform.bots.autostart()) {
     await start(b.id).catch(() => {});
     await new Promise((r) => setTimeout(r, 1500)); // be gentle with the gateway

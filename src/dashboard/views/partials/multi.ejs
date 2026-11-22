@@ -3,7 +3,7 @@
   const sel = new Set(values || []);
 %>
 <div class="multi" data-multi>
-  <input type="search" class="multi-filter" placeholder="Traži…">
+  <input type="search" class="multi-filter" placeholder="Search…">
   <div class="multi-list">
     <% items.forEach(it => { %>
       <label class="multi-item">
@@ -11,6 +11,6 @@
         <% if (kind === 'role') { %><span class="dot" style="background:<%= it.color === '#000000' ? '#99aab5' : it.color %>"></span>@<%= it.name %><% } else if (kind === 'category') { %>📁 <%= it.name %><% } else { %>#<%= it.name %><% if (it.parent) { %> <small><%= it.parent %></small><% } %><% } %>
       </label>
     <% }) %>
-    <% if (!items.length) { %><em class="muted">Nema stavki.</em><% } %>
+    <% if (!items.length) { %><em class="muted">No items.</em><% } %>
   </div>
 </div>

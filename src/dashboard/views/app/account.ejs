@@ -1,41 +1,41 @@
 <%- include('../partials/app-start') %>
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
-   const ACTIONS = { login: 'Prijava', logout: 'Odjava', 'bot.create': 'Bot dodan', 'bot.delete': 'Bot obrisan', 'bot.token': 'Token promijenjen', 'bot.modules': 'Moduli promijenjeni', 'bot.presence': 'Status bota promijenjen', 'bot.profile': 'Profil bota promijenjen', 'bot.start': 'Bot pokrenut', 'bot.stop': 'Bot zaustavljen', 'bot.restart': 'Bot ponovo pokrenut', 'guild.settings': 'Postavke servera', 'session.revoke': 'Sesija odjavljena', 'session.revoke_all': 'Odjava sa svih uređaja', 'admin.plan': 'Paket promijenjen', 'admin.ban': 'Korisnik blokiran', 'admin.unban': 'Korisnik odblokiran', 'billing.checkout': 'Checkout pokrenut', 'billing.subscribe': 'Pretplata aktivirana', 'billing.plan': 'Paket promijenjen', 'billing.update': 'Pretplata promijenjena', 'billing.canceled': 'Pretplata otkazana', 'billing.refunded': 'Povrat novca — paket snižen', 'billing.disputed': 'Osporeno plaćanje — paket snižen', 'billing.expired': 'Pretplata istekla', 'billing.portal': 'Upravljanje pretplatom' };
+   const ACTIONS = { login: 'Sign in', logout: 'Sign out', 'bot.create': 'Bot added', 'bot.delete': 'Bot deleted', 'bot.token': 'Token changed', 'bot.modules': 'Modules changed', 'bot.presence': 'Bot status changed', 'bot.profile': 'Bot profile changed', 'bot.start': 'Bot started', 'bot.stop': 'Bot stopped', 'bot.restart': 'Bot restarted', 'guild.settings': 'Server settings', 'session.revoke': 'Session signed out', 'session.revoke_all': 'Signed out of all devices', 'admin.plan': 'Plan changed', 'admin.ban': 'User blocked', 'admin.unban': 'User unblocked', 'billing.checkout': 'Checkout started', 'billing.subscribe': 'Subscription activated', 'billing.plan': 'Plan changed', 'billing.update': 'Subscription changed', 'billing.canceled': 'Subscription canceled', 'billing.refunded': 'Refund — plan downgraded', 'billing.disputed': 'Disputed payment — plan downgraded', 'billing.expired': 'Subscription expired', 'billing.portal': 'Manage subscription' };
    const others = sessionList.filter(s => !s.current).length;
    const score = 70 + (others === 0 ? 15 : 0) + (auditList.some(a => a.action === 'bot.token') ? 15 : 0); %>
-<%- include('../partials/pagehead', { heading: 'Račun i sigurnost', icon: 'shield-check', sub: 'Aktivne sesije, povijest aktivnosti i preporuke za zaštitu računa.' }) %>
+<%- include('../partials/pagehead', { heading: 'Account & security', icon: 'shield-check', sub: 'Active sessions, activity history and recommendations to keep your account safe.' }) %>
 <div class="two-col">
   <div class="card" data-spot>
     <div class="profile-preview"><img src="<%= user.avatar %>" alt=""><div><b data-notr><%= user.username %></b><div class="muted small">Discord ID <code><%= user.id %></code></div></div></div>
-    <div class="mini-stats"><div><b><%= plan.name %></b><span>paket</span></div><div><b><%= bots %> / <%= plan.maxBots %></b><span>botova</span></div><div><b><%= sessionList.length %></b><span>aktivnih sesija</span></div></div>
+    <div class="mini-stats"><div><b><%= plan.name %></b><span>plan</span></div><div><b><%= bots %> / <%= plan.maxBots %></b><span>bots</span></div><div><b><%= sessionList.length %></b><span>active sessions</span></div></div>
   </div>
   <div class="card" data-spot>
-    <div class="sec-score"><div class="sec-ring" style="--p:<%= score %>"><%= score %></div><div><h3 style="margin:0">Sigurnosni rezultat</h3><p class="muted small" style="margin:0">Što je više, to bolje.</p></div></div>
+    <div class="sec-score"><div class="sec-ring" style="--p:<%= score %>"><%= score %></div><div><h3 style="margin:0">Security score</h3><p class="muted small" style="margin:0">Higher is better.</p></div></div>
     <ul class="checklist" style="margin-top:1rem">
-      <li><%- ic('check') %>Prijava isključivo preko Discorda (OAuth2), bez lozinki na našoj strani.</li>
-      <li><%- ic('check') %>Tokeni botova su šifrirani (AES-256-GCM) i nikad se ne prikazuju.</li>
-      <li><%- ic(others === 0 ? 'check' : 'zap') %><%= others === 0 ? 'Prijavljen/a si samo na ovom uređaju.' : 'Imaš aktivne sesije na drugim uređajima. Odjavi one koje ne prepoznaješ.' %></li>
-      <li><%- ic('check') %>Uključi dvofaktorsku autentifikaciju (2FA) na svom Discord računu.</li>
+      <li><%- ic('check') %>Sign-in only through Discord (OAuth2) — no passwords stored on our side.</li>
+      <li><%- ic('check') %>Bot tokens are encrypted (AES-256-GCM) and never shown.</li>
+      <li><%- ic(others === 0 ? 'check' : 'zap') %><%= others === 0 ? "You're signed in on this device only." : 'You have active sessions on other devices. Sign out of any you don\'t recognise.' %></li>
+      <li><%- ic('check') %>Turn on two-factor authentication (2FA) on your Discord account.</li>
     </ul>
   </div>
 </div>
 
 <div class="card">
-  <div class="row between"><h3>Aktivne sesije</h3>
-    <% if (others) { %><form method="post" action="/account/sessions/revoke-all" data-confirm="Odjaviti sve ostale uređaje?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-sm"><%- ic('logout') %>Odjavi ostale uređaje</button></form><% } %>
+  <div class="row between"><h3>Active sessions</h3>
+    <% if (others) { %><form method="post" action="/account/sessions/revoke-all" data-confirm="Sign out all other devices?"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-sm"><%- ic('logout') %>Sign out other devices</button></form><% } %>
   </div>
   <% sessionList.forEach(s => { %>
     <div class="session-item <%= s.current ? 'current' : '' %>">
       <span class="session-icon"><%- ic(/Android|iOS/.test(s.device) ? 'phone' : 'monitor') %></span>
-      <div><b data-notr><%= s.device %></b><% if (s.current) { %> <span class="status status-online">ovaj uređaj</span><% } %><small><span data-notr><%= s.ip %></span> · prijava <%= s.createdAt ? new Date(s.createdAt).toLocaleString(numLocale) : '—' %></small></div>
-      <% if (!s.current) { %><form method="post" action="/account/sessions/<%= s.id %>/revoke"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Odjavi</button></form><% } %>
+      <div><b data-notr><%= s.device %></b><% if (s.current) { %> <span class="status status-online">this device</span><% } %><small><span data-notr><%= s.ip %></span> · prijava <%= s.createdAt ? new Date(s.createdAt).toLocaleString(numLocale) : '—' %></small></div>
+      <% if (!s.current) { %><form method="post" action="/account/sessions/<%= s.id %>/revoke"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-ghost btn-xs">Sign out</button></form><% } %>
     </div>
   <% }) %>
 </div>
 
 <div class="card">
-  <h3><%- ic('history') %> Povijest aktivnosti</h3>
-  <% if (!auditList.length) { %><p class="muted">Još nema zapisa.</p><% } %>
+  <h3><%- ic('history') %> Activity history</h3>
+  <% if (!auditList.length) { %><p class="muted">No entries yet.</p><% } %>
   <ul class="timeline">
     <% auditList.forEach(a => { %>
       <li><time><%= new Date(a.created_at).toLocaleString(numLocale) %></time><div class="ev"><b><%= ACTIONS[a.action] || a.action %></b><small data-notr><%= a.ip || '' %><%= a.target ? ' · ' + a.target : '' %></small></div></li>

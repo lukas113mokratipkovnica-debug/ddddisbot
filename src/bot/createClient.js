@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, Partials, Collection, ActivityType, MessagePayload } = require('discord.js');
-const i18n = require('../i18n');
+const { Client, GatewayIntentBits, Partials, Collection, ActivityType } = require('discord.js');
 const { createDatabase } = require('../database');
 const giveaways = require('./systems/giveaways');
 const tickers = require('./systems/tickers');
@@ -22,18 +21,6 @@ for (const file of fs.readdirSync(path.join(__dirname, 'commands')).filter((f) =
 }
 const EVENTS = fs.readdirSync(path.join(__dirname, 'events')).filter((f) => f.endsWith('.js'))
   .flatMap((f) => { const e = require(path.join(__dirname, 'events', f)); return Array.isArray(e) ? e : [e]; });
-
-// Every outgoing message (reply, send, edit, follow-up) passes through MessagePayload.create,
-// so translating there localizes the whole bot without touching individual commands.
-function langOf() { return 'en'; } // single user-facing language
-if (!MessagePayload.__i18n) {
-  const original = MessagePayload.create;
-  MessagePayload.create = function create(target, options, extra) {
-    return original.call(this, target, i18n.translatePayload(langOf(target), options), extra);
-  };
-  MessagePayload.__i18n = true;
-}
-function eventLang() { return 'en'; }
 
 const ACTIVITY = { playing: ActivityType.Playing, watching: ActivityType.Watching, listening: ActivityType.Listening, competing: ActivityType.Competing, custom: ActivityType.Custom };
 
@@ -63,7 +50,7 @@ function createBotClient(opts) {
   client.setModules(opts.modules);
 
   client.registerCommands = async () => {
-    const body = client.commands.map((c) => i18n.localizeCommand(c.data.toJSON()));
+    const body = client.commands.map((c) => c.data.toJSON());
     if (opts.devGuildId) {
       const g = await client.guilds.fetch(opts.devGuildId).catch(() => null);
       if (g) { await g.commands.set(body); await client.application.commands.set([]); return body.length; }
@@ -74,7 +61,7 @@ function createBotClient(opts) {
 
   client.applyPresence = () => {
     const p = client.presenceConfig;
-    const text = (p.text || '{servers} servera • /help').replace('{servers}', client.guilds.cache.size).replace('{members}', client.guilds.cache.reduce((a, g) => a + g.memberCount, 0));
+    const text = (p.text || '{servers} servers • /help').replace('{servers}', client.guilds.cache.size).replace('{members}', client.guilds.cache.reduce((a, g) => a + g.memberCount, 0));
     const type = ACTIVITY[p.type] ?? ActivityType.Watching;
     client.user.setPresence({
       status: ['online', 'idle', 'dnd', 'invisible'].includes(p.status) ? p.status : 'online',
@@ -83,7 +70,7 @@ function createBotClient(opts) {
   };
 
   for (const ev of EVENTS) {
-    const run = (...args) => i18n.context.run({ lang: 'en' }, () => Promise.resolve(ev.execute(...args, client))).catch((e) => {
+    const run = (...args) => Promise.resolve(ev.execute(...args, client)).catch((e) => {
       console.error(`[${opts.id}:${ev.name}]`, e);
       client.log('error', `${ev.name}: ${e.message}`);
     });
@@ -91,8 +78,8 @@ function createBotClient(opts) {
   }
 
   client.once('clientReady', async () => {
-    client.log('info', `Prijavljen kao ${client.user.tag} na ${client.guilds.cache.size} servera`);
-    try { client.log('info', `Registrirano ${await client.registerCommands()} slash komandi`); } catch (e) { client.log('error', `Registracija komandi: ${e.message}`); }
+    client.log('info', `Logged in as ${client.user.tag} on ${client.guilds.cache.size} servers`);
+    try { client.log('info', `Registered ${await client.registerCommands()} slash commands`); } catch (e) { client.log('error', `Command registration: ${e.message}`); }
     client.applyPresence();
     client.timers.push(setInterval(() => client.applyPresence(), 10 * 60_000));
     client.timers.push(giveaways.startTicker(client));

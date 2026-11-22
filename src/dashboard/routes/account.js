@@ -3,7 +3,6 @@ const express = require('express');
 const crypto = require('crypto');
 const platform = require('../../platform');
 const manager = require('../../bot/manager');
-const i18n = require('../../i18n');
 const { requireAuth, checkCsrf, flash, audit, isAdmin } = require('../helpers');
 
 const router = express.Router();
@@ -20,18 +19,18 @@ router.get('/account', requireAuth, (req, res) => {
   const list = platform.sessions.byUser(req.session.user.id).map((s) => ({
     id: sidHash(s.sid), current: s.sid === req.sessionID, device: describeUa(s.ua), ip: maskIp(s.ip), createdAt: s.createdAt, expires: s.expires,
   })).sort((a, b) => Number(b.current) - Number(a.current));
-  res.render('app/account', { title: 'Račun i sigurnost', section: 'account', sessionList: list, auditList: platform.audit.byUser(req.session.user.id, 40), plan: platform.users.plan(req.session.user.id), bots: platform.bots.byOwner(req.session.user.id).length });
+  res.render('app/account', { title: 'Account & security', section: 'account', sessionList: list, auditList: platform.audit.byUser(req.session.user.id, 40), plan: platform.users.plan(req.session.user.id), bots: platform.bots.byOwner(req.session.user.id).length });
 });
 
 router.post('/account/sessions/:id/revoke', requireAuth, checkCsrf, (req, res) => {
   const target = platform.sessions.byUser(req.session.user.id).find((s) => sidHash(s.sid) === req.params.id);
-  if (target && target.sid !== req.sessionID) { platform.sessions.destroy(target.sid); audit(req, 'session.revoke'); flash(req, 'success', 'Sesija je odjavljena.'); }
+  if (target && target.sid !== req.sessionID) { platform.sessions.destroy(target.sid); audit(req, 'session.revoke'); flash(req, 'success', 'Session signed out.'); }
   res.redirect('/account');
 });
 router.post('/account/sessions/revoke-all', requireAuth, checkCsrf, (req, res) => {
   const n = platform.sessions.destroyUser(req.session.user.id, req.sessionID);
   audit(req, 'session.revoke_all', null, { n });
-  flash(req, 'success', `Odjavljeno s ostalih uređaja: ${n}.`);
+  flash(req, 'success', `Signed out of other devices: ${n}.`);
   res.redirect('/account');
 });
 
@@ -63,7 +62,7 @@ router.get('/api/stream', requireAuth, (req, res) => {
   streams++;
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   const onStatus = (id) => { if (visible(id)) send('status', { id, ...manager.info(id) }); };
-  const onLog = (id, entry) => { if (canSeeLogs(id)) send('log', { id, ...entry, msg: i18n.translateText(req.lang, entry.msg) }); };
+  const onLog = (id, entry) => { if (canSeeLogs(id)) send('log', { id, ...entry }); };
   manager.events.on('status', onStatus);
   manager.events.on('log', onLog);
   const beat = setInterval(() => res.write(': ping\n\n'), 25_000);

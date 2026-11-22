@@ -17,10 +17,10 @@ async function counting(message) {
     return true;
   }
   await message.react('❌').catch(() => {});
-  const why = sameUser ? 'ne možeš brojati dvaput zaredom' : `sljedeći broj je bio **${state.current + 1}**`;
+  const why = sameUser ? 'you can\'t count twice in a row' : `the next number was **${state.current + 1}**`;
   if (C.resetOnFail) {
     db.counting.set(message.guild.id, 0, null);
-    await message.channel.send(`💥 ${message.author} je pokvario/la niz na **${state.current}** (${why}). Krećemo od **1**! Rekord: **${Math.max(state.high_score, state.current)}**`).catch(() => {});
+    await message.channel.send(`💥 ${message.author} broke the streak at **${state.current}** (${why}). Starting again from **1**! High score: **${Math.max(state.high_score, state.current)}**`).catch(() => {});
   } else {
     await message.channel.send(`⚠️ ${message.author}, ${why}.`).then((x) => setTimeout(() => x.delete().catch(() => {}), 5000)).catch(() => {});
   }
@@ -36,12 +36,12 @@ async function afk(message) {
     if (message.member?.manageable && message.member.displayName.startsWith('[AFK] ')) {
       await message.member.setNickname(message.member.displayName.slice(6) || null).catch(() => {});
     }
-    await message.reply(`👋 Dobrodošao/la nazad! Bio/la si AFK <t:${Math.floor(mine.since / 1000)}:R>.`).then((x) => setTimeout(() => x.delete().catch(() => {}), 8000)).catch(() => {});
+    await message.reply(`👋 Welcome back! You went AFK <t:${Math.floor(mine.since / 1000)}:R>.`).then((x) => setTimeout(() => x.delete().catch(() => {}), 8000)).catch(() => {});
   }
   const notes = [];
   for (const user of message.mentions.users.values()) {
     const a = db.afk.get(g, user.id);
-    if (a) notes.push(`💤 **${user.username}** je AFK: ${a.reason} (<t:${Math.floor(a.since / 1000)}:R>)`);
+    if (a) notes.push(`💤 **${user.username}** is AFK: ${a.reason} (<t:${Math.floor(a.since / 1000)}:R>)`);
   }
   if (notes.length) await message.reply({ content: notes.slice(0, 5).join('\n'), allowedMentions: { parse: [] } }).catch(() => {});
 }
@@ -69,7 +69,7 @@ async function autoresponder(message, fill) {
     const t = r.trigger;
     const hit = r.match_type === 'exact' ? content.trim() === t
       : r.match_type === 'startswith' ? content.startsWith(t)
-        : new RegExp(`(^|\\W)${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|\\W)`, 'i').test(content);
+        : new RegExp(`(^|\\W)${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|\\W)`, 'and').test(content);
     if (!hit) continue;
     db.customCommands.used(r.id);
     if (r.reaction) await message.react(r.reaction).catch(() => {});

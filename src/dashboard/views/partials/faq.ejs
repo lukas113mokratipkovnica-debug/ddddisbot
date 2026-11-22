@@ -1,11 +1,11 @@
 <div class="faq">
   <% [
-    ['Trebam li znati programirati?', 'Ne. Napraviš aplikaciju u Discord Developer Portalu (vodimo te kroz to), zalijepiš token i sve ostalo radiš klikom u dashboardu.'],
-    ['Gdje se bot hosta?', 'Na našim serverima, 24/7. Ne trebaš ništa instalirati niti držati računalo upaljeno.'],
-    ['Mogu li imati svoje ime i sliku bota?', 'Da — to je tvoj bot, s tvojim imenom, avatarom i statusom. Mijenjaš ih u postavkama bota.'],
-    ['Je li moj token siguran?', 'Token se sprema šifriran (AES-256-GCM) i nikad se ne prikazuje u dashboardu. Možeš ga resetirati u Developer Portalu kad god želiš.'],
-    ['Mogu li jednog bota koristiti na više servera?', 'Da. Svaki server ima svoje, potpuno odvojene postavke, XP, novac i statistiku.'],
-    ['Mogu li kasnije promijeniti tip bota?', 'Naravno. Predložak je samo početna kombinacija modula — u "Moduli" uključuješ i isključuješ bilo što.'],
+    ['Do I need to know how to code?', 'No. You create an application in the Discord Developer Portal (we guide you), paste the token and do everything else with clicks in the dashboard.'],
+    ['Where is the bot hosted?', 'On our servers, 24/7. You don\'t need to install anything or keep your computer on.'],
+    ['Can my bot have its own name and avatar?', 'Yes — it\'s your bot, with your name, avatar and status. You change them in the bot settings.'],
+    ['Is my token safe?', 'The token is stored encrypted (AES-256-GCM) and never shown in the dashboard. You can reset it in the Developer Portal whenever you like.'],
+    ['Can I use one bot on multiple servers?', 'Yes. Every server has its own, fully separate settings, XP, money and statistics.'],
+    ['Can I change the bot type later?', 'Of course. A template is just a starting set of modules — in "Modules" you can turn anything on or off.'],
   ].forEach(([q, a]) => { %>
     <details><summary><%= q %><svg class="ic"><use href="#i-plus"/></svg></summary><p><%= a %></p></details>
   <% }) %>

@@ -1,7 +1,7 @@
 <%- include('partials/head', { bodyClass: 'site' }) %>
 <%- include('partials/site-nav') %>
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; %>
-<section class="page-hero"><div class="wrap"><span class="eyebrow">Katalog</span><h1>Svi botovi i moduli</h1><p class="lead muted">Gotovi botovi su kombinacije modula. Svaki modul možeš uključiti na bilo kojem botu.</p></div></section>
+<section class="page-hero"><div class="wrap"><span class="eyebrow">Catalog</span><h1>All bots and modules</h1><p class="lead muted">Ready-made bots are combinations of modules. You can enable any module on any bot.</p></div></section>
 <section class="section tight">
   <div class="wrap">
     <div class="tpl-grid">
@@ -9,7 +9,7 @@
         <a class="tpl-card" href="<%= user ? '/app/new?template=' + key : '/login' %>" style="--c:<%= t.color %>">
           <span class="tpl-icon"><%- ic(t.icon) %></span><h3><%= t.name %> bot</h3><p><%= t.desc %></p>
           <div class="tpl-mods"><% t.modules.forEach(m => { %><span><%= MODULES[m].name %></span><% }) %></div>
-          <span class="tpl-go">Napravi <%- ic('arrow-right') %></span>
+          <span class="tpl-go">Create <%- ic('arrow-right') %></span>
         </a>
       <% }) %>
     </div>
@@ -17,13 +17,13 @@
 </section>
 <section class="section alt">
   <div class="wrap">
-    <div class="section-head"><h2>Moduli i komande</h2></div>
+    <div class="section-head"><h2>Modules and commands</h2></div>
     <div class="catalog-mods">
       <% Object.entries(MODULES).forEach(([key, m]) => { const cmds = byModule[key] || []; %>
         <div class="card catalog-mod">
           <div class="catalog-mod-head"><span class="mod-icon"><%- ic(m.icon) %></span><div><h3><%= m.name %></h3><small class="muted"><%= m.group %></small></div></div>
           <p class="muted"><%= m.desc %></p>
-          <% if (cmds.length) { %><div class="cmd-chips"><% cmds.forEach(c => { %><code title="<%= c.description %>">/<%= c.name %></code><% }) %></div><% } else { %><small class="muted">Radi automatski, podešava se na dashboardu.</small><% } %>
+          <% if (cmds.length) { %><div class="cmd-chips"><% cmds.forEach(c => { %><code title="<%= c.description %>">/<%= c.name %></code><% }) %></div><% } else { %><small class="muted">Works automatically, configured in the dashboard.</small><% } %>
         </div>
       <% }) %>
     </div>

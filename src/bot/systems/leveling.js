@@ -15,12 +15,12 @@ async function applyRewards(member, level, settings) {
   try {
     if (settings.leveling.stackRewards) {
       const toAdd = earned.map((r) => r.role).filter((id) => !member.roles.cache.has(id) && assignable(id));
-      if (toAdd.length) await member.roles.add(toAdd, 'Level nagrada');
+      if (toAdd.length) await member.roles.add(toAdd, 'Level reward');
     } else {
       const top = earned[earned.length - 1].role;
       const toRemove = rewards.map((r) => r.role).filter((id) => id !== top && member.roles.cache.has(id) && assignable(id));
-      if (toRemove.length) await member.roles.remove(toRemove, 'Level nagrada (zamjena)');
-      if (!member.roles.cache.has(top) && assignable(top)) await member.roles.add(top, 'Level nagrada');
+      if (toRemove.length) await member.roles.remove(toRemove, 'Level reward (replacement)');
+      if (!member.roles.cache.has(top) && assignable(top)) await member.roles.add(top, 'Level reward');
     }
   } catch (e) {
     console.warn('[leveling] reward error:', e.message);

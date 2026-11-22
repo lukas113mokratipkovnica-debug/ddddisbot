@@ -6,7 +6,7 @@ const { safeFetch } = require('../../security');
 async function reminders(client) {
   for (const r of client.db.reminders.due()) {
     client.db.reminders.done(r.id);
-    const text = `⏰ <@${r.user_id}>, podsjetnik: **${r.text}**`;
+    const text = `⏰ <@${r.user_id}>, reminder: **${r.text}**`;
     const ch = r.channel_id && client.channels.cache.get(r.channel_id);
     const sent = ch ? await ch.send({ content: text, allowedMentions: { users: [r.user_id] } }).catch(() => null) : null;
     if (!sent) await client.users.send(r.user_id, text).catch(() => {});

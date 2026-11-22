@@ -26,11 +26,11 @@ function flash(req, type, msg) { req.session.flash = { type, msg }; }
 function requireAuth(req, res, next) {
   if (!req.session.user) { req.session.returnTo = req.originalUrl; return res.redirect('/login'); }
   const u = platform.users.get(req.session.user.id);
-  if (u?.banned) { req.session.destroy(() => {}); return res.status(403).render('error', { title: 'Račun blokiran', message: 'Tvoj račun je blokiran na ovoj platformi.' }); }
+  if (u?.banned) { req.session.destroy(() => {}); return res.status(403).render('error', { title: 'Account blocked', message: 'Your account is blocked on this platform.' }); }
   next();
 }
 function requireAdmin(req, res, next) {
-  if (!isAdmin(req.session.user)) return res.status(403).render('error', { title: 'Nemaš pristup', message: 'Samo administratori platforme.' });
+  if (!isAdmin(req.session.user)) return res.status(403).render('error', { title: 'Access denied', message: 'Platform administrators only.' });
   next();
 }
 const ALLOWED_ORIGIN = new URL(config.dashboardUrl).origin;
@@ -38,9 +38,9 @@ function checkCsrf(req, res, next) {
   // 1) same-origin check (browsers always send Origin on cross-site POSTs), 2) synchronizer token
   const origin = req.get('origin');
   if (origin && origin !== ALLOWED_ORIGIN && origin !== `${req.protocol}://${req.get('host')}`) {
-    return res.status(403).render('error', { title: 'Zahtjev odbijen', message: 'Zahtjev nije došao s ove stranice.' });
+    return res.status(403).render('error', { title: 'Request rejected', message: 'The request didn\'t come from this site.' });
   }
-  if (!safeEqual(req.body?._csrf, req.session.csrf)) return res.status(403).render('error', { title: 'Sesija je istekla', message: 'Osvježi stranicu i pokušaj ponovo.' });
+  if (!safeEqual(req.body?._csrf, req.session.csrf)) return res.status(403).render('error', { title: 'Session expired', message: 'Refresh the page and try again.' });
   next();
 }
 function audit(req, action, target = null, meta = null) {
@@ -50,10 +50,10 @@ function audit(req, action, target = null, meta = null) {
 /** Loads bot record + live info. `manage` = user may change modules/settings/token. */
 function loadBot(req, res, next) {
   const rec = manager.recordFor(req.params.botId);
-  if (!rec) return res.status(404).render('error', { title: 'Bot ne postoji', message: 'Taj bot ne postoji ili je obrisan.' });
+  if (!rec) return res.status(404).render('error', { title: 'Bot not found', message: 'This bot doesn\'t exist or was deleted.' });
   const user = req.session.user;
   const owner = rec.owner_id === user.id;
-  if (!rec.official && !owner && !isAdmin(user)) return res.status(403).render('error', { title: 'Nemaš pristup', message: 'Ovo nije tvoj bot.' });
+  if (!rec.official && !owner && !isAdmin(user)) return res.status(403).render('error', { title: 'Access denied', message: 'This is not your bot.' });
   req.botRec = rec;
   req.botManage = owner || isAdmin(user);
   res.locals.botRec = rec;
@@ -63,15 +63,15 @@ function loadBot(req, res, next) {
   next();
 }
 function requireBotManage(req, res, next) {
-  if (!req.botManage) return res.status(403).render('error', { title: 'Nemaš pristup', message: 'Samo vlasnik bota može mijenjati ove postavke.' });
+  if (!req.botManage) return res.status(403).render('error', { title: 'Access denied', message: 'Only the bot owner can change these settings.' });
   next();
 }
 
 async function loadGuild(req, res, next) {
   const client = manager.client(req.botRec.id);
-  if (!client?.isReady()) return res.status(503).render('error', { title: 'Bot nije online', message: 'Pokreni bota da bi upravljao serverima.' });
+  if (!client?.isReady()) return res.status(503).render('error', { title: 'Bot is offline', message: 'Start the bot to manage servers.' });
   const guild = client.guilds.cache.get(req.params.guildId);
-  if (!snowflake(req.params.guildId)) return res.status(404).render('error', { title: '404', message: 'Server ne postoji.' });
+  if (!snowflake(req.params.guildId)) return res.status(404).render('error', { title: '404', message: 'Server not found.' });
   if (!guild) return res.redirect(inviteUrl(req.botRec.application_id, req.params.guildId));
   const uid = req.session.user.id;
   let allowed = req.botManage || guild.ownerId === uid;
@@ -79,7 +79,7 @@ async function loadGuild(req, res, next) {
     const member = await guild.members.fetch(uid).catch(() => null);
     allowed = Boolean(member?.permissions.has(PermissionFlagsBits.ManageGuild));
   }
-  if (!allowed) return res.status(403).render('error', { title: 'Nemaš pristup', message: 'Treba ti dozvola "Manage Server" na tom serveru.' });
+  if (!allowed) return res.status(403).render('error', { title: 'Access denied', message: 'You need the "Manage Server" permission on that server.' });
   req.client = client;
   req.db = client.db;
   req.guild = guild;

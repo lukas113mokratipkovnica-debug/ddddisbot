@@ -16,8 +16,8 @@ module.exports = {
       }
     }
     const roles = member.roles?.cache?.filter((r) => r.id !== member.guild.id).map((r) => `${r}`).join(' ');
-    await sendLog(member.guild, 'memberLeave', new EmbedBuilder().setColor(0xed4245).setTitle('Član izašao').setThumbnail(member.user.displayAvatarURL())
-      .setDescription(`<@${member.id}> • ${member.user.tag}${member.joinedTimestamp ? `\nBio član od <t:${Math.floor(member.joinedTimestamp / 1000)}:R>` : ''}${roles ? `\n**Uloge:** ${roles.slice(0, 900)}` : ''}`)
+    await sendLog(member.guild, 'memberLeave', new EmbedBuilder().setColor(0xed4245).setTitle('Member left').setThumbnail(member.user.displayAvatarURL())
+      .setDescription(`<@${member.id}> • ${member.user.tag}${member.joinedTimestamp ? `\nMember since <t:${Math.floor(member.joinedTimestamp / 1000)}:R>` : ''}${roles ? `\n**Roles:** ${roles.slice(0, 900)}` : ''}`)
       .setFooter({ text: `ID: ${member.id}` }));
   },
 };

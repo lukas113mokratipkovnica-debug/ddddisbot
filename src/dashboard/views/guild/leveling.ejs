@@ -1,30 +1,30 @@
 <%- include('../partials/app-start') %>
 <% const L = settings.leveling; %>
-<%- include('../partials/pagehead', { heading: 'Leveling', icon: 'trending', sub: 'XP za aktivnost, nagradne uloge i leaderboard.' }) %>
+<%- include('../partials/pagehead', { heading: 'Leveling', icon: 'trending', sub: 'XP for activity, reward roles and a leaderboard.' }) %>
 <form method="post" action="<%= base %>/save/leveling">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
   <div class="card">
-    <%- include('../partials/toggle', { name: 'enabled', checked: L.enabled, label: 'Leveling uključen' }) %>
+    <%- include('../partials/toggle', { name: 'enabled', checked: L.enabled, label: 'Leveling enabled' }) %>
     <div class="grid3">
-      <label>Min XP po poruci<input type="number" name="xpMin" min="1" max="1000" value="<%= L.xpMin %>"></label>
-      <label>Max XP po poruci<input type="number" name="xpMax" min="1" max="1000" value="<%= L.xpMax %>"></label>
-      <label>Cooldown (sek)<input type="number" name="cooldown" min="0" max="3600" value="<%= L.cooldown %>"></label>
-      <label>XP multiplikator<input type="number" name="multiplier" min="0.1" max="10" step="0.1" value="<%= L.multiplier %>"></label>
+      <label>Min XP per message<input type="number" name="xpMin" min="1" max="1000" value="<%= L.xpMin %>"></label>
+      <label>Max XP per message<input type="number" name="xpMax" min="1" max="1000" value="<%= L.xpMax %>"></label>
+      <label>Cooldown (sec)<input type="number" name="cooldown" min="0" max="3600" value="<%= L.cooldown %>"></label>
+      <label>XP multiplier<input type="number" name="multiplier" min="0.1" max="10" step="0.1" value="<%= L.multiplier %>"></label>
     </div>
   </div>
   <div class="card">
-    <h3>Level-up obavijest</h3>
+    <h3>Level-up announcement</h3>
     <div class="grid2">
-      <label>Gdje<select name="announce">
-        <% [['current','U istom kanalu'],['channel','U određenom kanalu'],['dm','U DM'],['off','Isključeno']].forEach(([v,l]) => { %><option value="<%= v %>" <%= L.announce === v ? 'selected' : '' %>><%= l %></option><% }) %>
+      <label>Where<select name="announce">
+        <% [['current','In the same channel'],['channel','In a specific channel'],['dm','In DMs'],['off','Off']].forEach(([v,l]) => { %><option value="<%= v %>" <%= L.announce === v ? 'selected' : '' %>><%= l %></option><% }) %>
       </select></label>
-      <label>Kanal (ako je "određeni")<%- include('../partials/channelSelect', { name: 'channel', value: L.channel }) %></label>
+      <label>Channel (if "specific")<%- include('../partials/channelSelect', { name: 'channel', value: L.channel }) %></label>
     </div>
-    <label>Poruka<textarea name="message" rows="2"><%= L.message %></textarea></label>
+    <label>Message<textarea name="message" rows="2"><%= L.message %></textarea></label>
     <%- include('../partials/placeholders', { extra: '<code>{level}</code>' }) %>
   </div>
   <div class="card">
-    <h3>🏅 Nagradne uloge</h3>
+    <h3>🏅 Reward roles</h3>
     <div id="rewards">
       <% (L.rewards.length ? L.rewards : [{ level: '', role: '' }]).forEach(r => { %>
         <div class="row reward-row">
@@ -34,14 +34,14 @@
         </div>
       <% }) %>
     </div>
-    <button type="button" class="btn btn-ghost btn-sm" data-add-row="rewards">+ Dodaj nagradu</button>
-    <%- include('../partials/toggle', { name: 'stackRewards', checked: L.stackRewards, label: 'Zadrži prethodne nagrade (inače samo najviša)' }) %>
+    <button type="button" class="btn btn-ghost btn-sm" data-add-row="rewards">+ Add reward</button>
+    <%- include('../partials/toggle', { name: 'stackRewards', checked: L.stackRewards, label: 'Keep previous rewards (otherwise only the highest)' }) %>
   </div>
   <div class="card">
-    <h3>Bez XP-a</h3>
+    <h3>No XP</h3>
     <div class="grid2">
-      <div><b>Kanali</b><%- include('../partials/multi', { name: 'noXpChannels', kind: 'channel', values: L.noXpChannels }) %></div>
-      <div><b>Uloge</b><%- include('../partials/multi', { name: 'noXpRoles', kind: 'role', values: L.noXpRoles }) %></div>
+      <div><b>Channels</b><%- include('../partials/multi', { name: 'noXpChannels', kind: 'channel', values: L.noXpChannels }) %></div>
+      <div><b>Roles</b><%- include('../partials/multi', { name: 'noXpRoles', kind: 'role', values: L.noXpRoles }) %></div>
     </div>
   </div>
   <%- include('../partials/saveBar') %>
@@ -49,12 +49,12 @@
 
 <div class="card">
   <div class="row between"><h3>🏆 Leaderboard</h3>
-    <form method="post" action="<%= base %>/leveling/reset" data-confirm="Resetirati XP SVIH članova? Ovo se ne može vratiti.">
-      <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Resetiraj sve</button>
+    <form method="post" action="<%= base %>/leveling/reset" data-confirm="Reset XP for ALL members? This cannot be undone.">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-danger btn-sm">Reset all</button>
     </form>
   </div>
-  <% if (!leaderboard.length) { %><p class="muted">Još nema podataka.</p><% } else { %>
-  <table class="table"><thead><tr><th>#</th><th>Član</th><th>Level</th><th>XP</th><th>Napredak</th><th>Poruke</th><th></th></tr></thead><tbody>
+  <% if (!leaderboard.length) { %><p class="muted">No data yet.</p><% } else { %>
+  <table class="table"><thead><tr><th>#</th><th>Member</th><th>Level</th><th>XP</th><th>Progress</th><th>Messages</th><th></th></tr></thead><tbody>
     <% leaderboard.forEach((r, i) => { %>
       <tr>
         <td><%= (lbPage - 1) * 50 + i + 1 %></td>
@@ -62,14 +62,14 @@
         <td><%= r.level %></td><td><%= r.xp %></td>
         <td><div class="bar"><i style="width:<%= Math.floor(r.current / r.needed * 100) %>%"></i></div></td>
         <td><%= r.messages %></td>
-        <td><form method="post" action="<%= base %>/leveling/reset" data-confirm="Resetirati ovog člana?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="userId" value="<%= r.user_id %>"><button class="btn btn-ghost btn-xs">Reset</button></form></td>
+        <td><form method="post" action="<%= base %>/leveling/reset" data-confirm="Reset this member?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="userId" value="<%= r.user_id %>"><button class="btn btn-ghost btn-xs">Reset</button></form></td>
       </tr>
     <% }) %>
   </tbody></table>
   <div class="pager">
-    <% if (lbPage > 1) { %><a class="btn btn-ghost btn-sm" href="?p=<%= lbPage - 1 %>">← Prethodna</a><% } %>
-    <span class="muted">Stranica <%= lbPage %> / <%= lbPages %></span>
-    <% if (lbPage < lbPages) { %><a class="btn btn-ghost btn-sm" href="?p=<%= lbPage + 1 %>">Sljedeća →</a><% } %>
+    <% if (lbPage > 1) { %><a class="btn btn-ghost btn-sm" href="?p=<%= lbPage - 1 %>">← Previous</a><% } %>
+    <span class="muted">Page <%= lbPage %> / <%= lbPages %></span>
+    <% if (lbPage < lbPages) { %><a class="btn btn-ghost btn-sm" href="?p=<%= lbPage + 1 %>">Next →</a><% } %>
   </div>
   <% } %>
 </div>

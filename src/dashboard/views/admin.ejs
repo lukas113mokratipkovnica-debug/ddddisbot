@@ -1,16 +1,16 @@
 <%- include('partials/app-start') %>
 <% const ic = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`; %>
-<%- include('partials/pagehead', { heading: 'Admin panel', icon: 'crown', sub: 'Pregled cijele platforme.' }) %>
+<%- include('partials/pagehead', { heading: 'Admin panel', icon: 'crown', sub: 'Overview of the whole platform.' }) %>
 <div class="stat-grid">
-  <div class="card stat"><span class="stat-icon"><%- ic('bot') %></span><span>Botovi</span><strong><%= totals.online %> / <%= bots.length %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Korisnici platforme</span><strong><%= users.length %></strong></div>
-  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Serveri (ukupno)</span><strong><%= totals.guilds %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('bot') %></span><span>Bots</span><strong><%= totals.online %> / <%= bots.length %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('users') %></span><span>Platform users</span><strong><%= users.length %></strong></div>
+  <div class="card stat"><span class="stat-icon"><%- ic('server') %></span><span>Servers (total)</span><strong><%= totals.guilds %></strong></div>
   <div class="card stat"><span class="stat-icon"><%- ic('activity') %></span><span>RAM / uptime</span><strong><%= ram %> MB · <%= Math.floor(uptime / 3600) %>h</strong></div>
 </div>
 <div class="card">
-  <h3>Botovi</h3>
+  <h3>Bots</h3>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>Bot</th><th>Vlasnik</th><th>Tip</th><th>Status</th><th>Serveri</th><th></th></tr></thead>
+    <thead><tr><th>Bot</th><th>Owner</th><th>Type</th><th>Status</th><th>Servers</th><th></th></tr></thead>
     <tbody>
       <% bots.forEach(b => { %>
         <tr>
@@ -28,13 +28,13 @@
   </table></div>
 </div>
 <div class="card">
-  <h3>Korisnici</h3>
+  <h3>Users</h3>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>Korisnik</th><th>Botovi</th><th>Registriran</th><th>Paket</th><th></th></tr></thead>
+    <thead><tr><th>Member</th><th>Bots</th><th>Registered</th><th>Plan</th><th></th></tr></thead>
     <tbody>
       <% users.forEach(u => { %>
         <tr>
-          <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blokiran</span><% } %><% if (u.sub_status && u.sub_status !== 'active') { %> <span class="tag tag-warn" data-notr><%= u.sub_status %></span><% } %></td>
+          <td class="user"><img src="<%= u.avatar %>" alt=""><%= u.username %><% if (u.banned) { %> <span class="tag tag-ban">blocked</span><% } %><% if (u.sub_status && u.sub_status !== 'active') { %> <span class="tag tag-warn" data-notr><%= u.sub_status %></span><% } %></td>
           <td><%= u.bot_count %></td>
           <td><%= new Date(u.created_at).toLocaleDateString(numLocale) %></td>
           <td>
@@ -43,7 +43,7 @@
             </form>
           </td>
           <td class="actions">
-            <form method="post" action="/admin/users/<%= u.id %>/ban" data-confirm="Sigurno?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="banned" value="<%= u.banned ? '0' : '1' %>"><button class="btn btn-xs <%= u.banned ? 'btn-ghost' : 'btn-danger' %>"><%= u.banned ? 'Odblokiraj' : 'Blokiraj' %></button></form>
+            <form method="post" action="/admin/users/<%= u.id %>/ban" data-confirm="Are you sure?"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="banned" value="<%= u.banned ? '0' : '1' %>"><button class="btn btn-xs <%= u.banned ? 'btn-ghost' : 'btn-danger' %>"><%= u.banned ? 'Unblock' : 'Block' %></button></form>
           </td>
         </tr>
       <% }) %>
@@ -51,7 +51,7 @@
   </table></div>
 </div>
 <div class="card">
-  <h3><%- ic('history') %> Audit log platforme</h3>
+  <h3><%- ic('history') %> Platform audit log</h3>
   <ul class="timeline">
     <% auditList.forEach(a => { %><li><time><%= new Date(a.created_at).toLocaleString(numLocale) %></time><div class="ev"><b data-notr><%= a.action %></b><small data-notr><%= ownerName(a.user_id) %> · <%= a.ip || '' %><%= a.target ? ' · ' + a.target : '' %></small></div></li><% }) %>
   </ul>

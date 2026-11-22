@@ -26,7 +26,9 @@ module.exports = [
         return;
       }
       const e = new EmbedBuilder().setColor(0xfee75c).setAuthor({ name: msg.author.tag, iconURL: msg.author.displayAvatarURL() })
-        .setDescription(`${msg.content || ''}\n\n[Skoči na poruku](${msg.url})`.trim()).setTimestamp(msg.createdTimestamp);
+        .setDescription(`${msg.content || ''}
+
+[Jump to message](${msg.url})`.trim()).setTimestamp(msg.createdTimestamp);
       const img = msg.attachments.find((a) => a.contentType?.startsWith('image/'));
       if (img) e.setImage(img.url);
       const sent = await ch.send({ content, embeds: [e] });
@@ -42,9 +44,9 @@ module.exports = [
   {
     name: Events.GuildCreate,
     async execute(guild, client) {
-      client.log?.('info', `Dodan na server: ${guild.name} (${guild.memberCount} članova)`);
+      client.log?.('info', `Added to server: ${guild.name} (${guild.memberCount} members)`);
       if (client.modules.has('invites')) await invites.cacheGuild(guild);
     },
   },
-  { name: Events.GuildDelete, async execute(guild, client) { client.log?.('info', `Uklonjen sa servera: ${guild.name}`); } },
+  { name: Events.GuildDelete, async execute(guild, client) { client.log?.('info', `Removed from server: ${guild.name}`); } },
 ];

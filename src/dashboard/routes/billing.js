@@ -13,16 +13,16 @@ router.get('/billing', requireAuth, (req, res) => {
   const u = platform.users.get(req.session.user.id) || {};
   const plan = platform.users.plan(req.session.user.id);
   res.render('app/billing', {
-    title: 'Naplata', section: 'billing', plan, billingEnabled: billing.enabled(),
+    title: 'Billing', section: 'billing', plan, billingEnabled: billing.enabled(),
     subStatus: u.sub_status || null, planUntil: u.plan_until || null, hasCustomer: Boolean(u.stripe_customer),
     bots: platform.bots.byOwner(req.session.user.id),
   });
 });
 
 router.post('/billing/checkout/:plan', requireAuth, checkoutLimit, checkCsrf, async (req, res) => {
-  if (!billing.enabled()) { flash(req, 'error', 'Naplata trenutno nije dostupna. Javi se administratoru.'); return res.redirect('/pricing'); }
+  if (!billing.enabled()) { flash(req, 'error', 'Billing isn\'t available right now. Contact an administrator.'); return res.redirect('/pricing'); }
   const planKey = req.params.plan;
-  if (!plans[planKey] || planKey === 'free') { flash(req, 'error', 'Nepoznat paket.'); return res.redirect('/pricing'); }
+  if (!plans[planKey] || planKey === 'free') { flash(req, 'error', 'Unknown plan.'); return res.redirect('/pricing'); }
   try {
     const url = await billing.createCheckout(req.session.user, planKey, { reqIp: req.ip });
     res.redirect(303, url);

@@ -10,9 +10,9 @@ const { str, bool, arr, flash, audit, requireAuth, checkCsrf, loadBot, requireBo
 const { rateLimit, safeFetch } = require('../../security');
 
 const userKey = (req) => req.session.user?.id || req.ip;
-const createLimit = rateLimit('bot-create', { max: 6, windowMs: 15 * 60_000, key: userKey, message: 'Previše pokušaja dodavanja bota. Pričekaj 15 minuta.' });
+const createLimit = rateLimit('bot-create', { max: 6, windowMs: 15 * 60_000, key: userKey, message: 'Too many attempts to add a bot. Wait 15 minutes.' });
 const tokenLimit = rateLimit('bot-token', { max: 6, windowMs: 15 * 60_000, key: userKey });
-const powerLimit = rateLimit('bot-power', { max: 20, windowMs: 5 * 60_000, key: userKey, message: 'Previše restartova. Discord ograničava prijave botova — pričekaj par minuta.' });
+const powerLimit = rateLimit('bot-power', { max: 20, windowMs: 5 * 60_000, key: userKey, message: 'Too many restarts. Discord limits bot logins — wait a few minutes.' });
 
 const router = express.Router();
 const INTENT_FLAGS = { members: (1 << 14) | (1 << 15), content: (1 << 18) | (1 << 19) };
@@ -24,7 +24,7 @@ function botCard(rec) {
 router.get('/app', requireAuth, (req, res) => {
   const mine = platform.bots.byOwner(req.session.user.id).map(botCard);
   const official = botCard(manager.recordFor(manager.MAIN_ID));
-  res.render('app/home', { title: 'Moji botovi', mine, official, plan: platform.users.plan(req.session.user.id) });
+  res.render('app/home', { title: 'My bots', mine, official, plan: platform.users.plan(req.session.user.id) });
 });
 
 // ------------------------------------------------------------------ create
@@ -32,7 +32,7 @@ router.get('/app/new', requireAuth, (req, res) => {
   const template = TEMPLATES[req.query.template] ? req.query.template : null;
   const plan = platform.users.plan(req.session.user.id);
   const used = platform.bots.byOwner(req.session.user.id).length;
-  res.render('app/new', { title: 'Novi bot', template, plan, used, limitReached: used >= plan.maxBots });
+  res.render('app/new', { title: 'New bot', template, plan, used, limitReached: used >= plan.maxBots });
 });
 
 router.post('/app/new', requireAuth, createLimit, checkCsrf, async (req, res) => {
@@ -40,29 +40,29 @@ router.post('/app/new', requireAuth, createLimit, checkCsrf, async (req, res) =>
   const template = TEMPLATES[req.body.template] ? req.body.template : 'allinone';
   const back = (msg) => { flash(req, 'error', msg); res.redirect(`/app/new?template=${template}`); };
   const plan = platform.users.plan(uid);
-  if (platform.bots.byOwner(uid).length >= plan.maxBots) return back(`Tvoj paket (${plan.name}) dozvoljava ${plan.maxBots} bot(a). Nadogradi paket za više.`);
+  if (platform.bots.byOwner(uid).length >= plan.maxBots) return back(`Your plan (${plan.name}) allows ${plan.maxBots} bot(s). Upgrade for more.`);
 
   const token = str(req.body.token, 200).trim().replace(/^Bot\s+/i, '');
-  if (!/^[\w-]+\.[\w-]+\.[\w-]+$/.test(token)) return back('To ne izgleda kao bot token. Kopiraj ga iz Developer Portala → Bot → Reset Token.');
+  if (!/^[\w-]+\.[\w-]+\.[\w-]+$/.test(token)) return back('That doesn\'t look like a bot token. Copy it from the Developer Portal → Bot → Reset Token.');
   const [me, appInfo] = await Promise.all([discordApi('/users/@me', token, 'Bot'), discordApi('/oauth2/applications/@me', token, 'Bot')]);
-  if (!me.ok || !me.body.bot) return back('Discord je odbio token. Provjeri je li ispravan i nije li resetiran.');
+  if (!me.ok || !me.body.bot) return back('Discord rejected the token. Check that it\'s correct and hasn\'t been reset.');
   const appId = appInfo.body.id || me.body.id;
-  if (appId === config.clientId) return back('To je token službenog bota platforme.');
-  if (platform.bots.byApplication(appId)) return back('Ovaj bot je već dodan na platformu.');
+  if (appId === config.clientId) return back('That is the platform\'s official bot token.');
+  if (platform.bots.byApplication(appId)) return back('This bot has already been added to the platform.');
   const flags = appInfo.body.flags || 0;
   const missing = [];
   if (!(flags & INTENT_FLAGS.members)) missing.push('Server Members Intent');
   if (!(flags & INTENT_FLAGS.content)) missing.push('Message Content Intent');
-  if (missing.length) return back(`U Developer Portalu (Bot tab → Privileged Gateway Intents) uključi: ${missing.join(' i ')}. Zatim pokušaj ponovo.`);
+  if (missing.length) return back(`In the Developer Portal (Bot tab → Privileged Gateway Intents) enable: ${missing.join(' and ')}. Then try again.`);
 
   const avatar = me.body.avatar ? `https://cdn.discordapp.com/avatars/${me.body.id}/${me.body.avatar}.png?size=256` : null;
   const id = platform.bots.create({ ownerId: uid, applicationId: appId, name: me.body.username, avatar, token, template, modules: TEMPLATES[template].modules });
   audit(req, 'bot.create', id, { name: me.body.username, template });
   try {
     await manager.start(id);
-    flash(req, 'success', `${me.body.username} je online! 🎉 Sada ga dodaj na svoj server.`);
+    flash(req, 'success', `${me.body.username} is online! 🎉 Now add it to your server.`);
   } catch (e) {
-    flash(req, 'error', `Bot je spremljen, ali se nije pokrenuo: ${e.message}`);
+    flash(req, 'error', `The bot was saved but didn't start: ${e.message}`);
   }
   res.redirect(`/bots/${id}`);
 });
@@ -89,16 +89,16 @@ router.get('/bots/:botId', requireAuth, loadBot, (req, res) => {
 router.get('/bots/:botId/modules', requireAuth, loadBot, requireBotManage, (req, res) => {
   const counts = {};
   for (const c of ALL_COMMANDS.values()) counts[c.module] = (counts[c.module] || 0) + 1;
-  res.render('app/modules', { title: 'Moduli', section: 'modules', counts });
+  res.render('app/modules', { title: 'Modules', section: 'modules', counts });
 });
 router.post('/bots/:botId/modules', requireAuth, checkCsrf, loadBot, requireBotManage, async (req, res) => {
   const mods = arr(req.body.modules).filter((m) => MODULES[m]);
   audit(req, 'bot.modules', req.botRec.id, { count: mods.length });
-  try { await manager.setModules(req.botRec.id, mods); flash(req, 'success', `Spremljeno — uključeno ${mods.length} modula. Komande su ažurirane.`); } catch (e) { flash(req, 'error', e.message); }
+  try { await manager.setModules(req.botRec.id, mods); flash(req, 'success', `Saved — ${mods.length} modules enabled. Commands updated.`); } catch (e) { flash(req, 'error', e.message); }
   res.redirect(`/bots/${req.botRec.id}/modules`);
 });
 
-router.get('/bots/:botId/settings', requireAuth, loadBot, requireBotManage, (req, res) => res.render('app/settings', { title: 'Postavke bota', section: 'settings' }));
+router.get('/bots/:botId/settings', requireAuth, loadBot, requireBotManage, (req, res) => res.render('app/settings', { title: 'Bot settings', section: 'settings' }));
 
 router.post('/bots/:botId/presence', requireAuth, checkCsrf, loadBot, requireBotManage, (req, res) => {
   const p = {
@@ -108,13 +108,13 @@ router.post('/bots/:botId/presence', requireAuth, checkCsrf, loadBot, requireBot
   };
   manager.setPresence(req.botRec.id, p);
   audit(req, 'bot.presence', req.botRec.id);
-  flash(req, 'success', 'Status ažuriran.');
+  flash(req, 'success', 'Status updated.');
   res.redirect(`/bots/${req.botRec.id}/settings`);
 });
 
 router.post('/bots/:botId/profile', requireAuth, checkCsrf, loadBot, requireBotManage, async (req, res) => {
   const client = manager.client(req.botRec.id);
-  if (!client?.isReady()) { flash(req, 'error', 'Bot mora biti online.'); return res.redirect(`/bots/${req.botRec.id}/settings`); }
+  if (!client?.isReady()) { flash(req, 'error', 'The bot must be online.'); return res.redirect(`/bots/${req.botRec.id}/settings`); }
   const name = str(req.body.username, 32).trim();
   const avatar = str(req.body.avatar, 500).trim();
   try {
@@ -122,14 +122,14 @@ router.post('/bots/:botId/profile', requireAuth, checkCsrf, loadBot, requireBotM
     if (name && name !== client.user.username) patch.username = name;
     if (avatar) {
       const img = await safeFetch(avatar, { maxBytes: 8_000_000 }); // SSRF-safe: never let Discord.js fetch arbitrary URLs from our server
-      if (!img.ok || !/^image\/(png|jpe?g|gif|webp)/.test(img.headers.get('content-type') || '')) throw new Error('URL mora voditi na PNG, JPG, GIF ili WEBP sliku');
+      if (!img.ok || !/^image\/(png|jpe?g|gif|webp)/.test(img.headers.get('content-type') || '')) throw new Error('The URL must point to a PNG, JPG, GIF or WEBP image');
       patch.avatar = img.buffer;
     }
     if (Object.keys(patch).length) { await client.user.edit(patch); audit(req, 'bot.profile', req.botRec.id); }
     if (req.botRec.id !== manager.MAIN_ID) platform.bots.setProfile(req.botRec.id, client.user.username, client.user.displayAvatarURL({ size: 256 }));
-    flash(req, 'success', 'Profil ažuriran.');
+    flash(req, 'success', 'Profile updated.');
   } catch (e) {
-    flash(req, 'error', `Discord je odbio promjenu: ${e.message} (ime se smije mijenjati ~2 puta na sat)`);
+    flash(req, 'error', `Discord rejected the change: ${e.message} (the name can be changed ~2 times per hour)`);
   }
   res.redirect(`/bots/${req.botRec.id}/settings`);
 });
@@ -140,18 +140,18 @@ router.post('/bots/:botId/token', requireAuth, tokenLimit, checkCsrf, loadBot, r
   const me = await discordApi('/users/@me', token, 'Bot');
   const appInfo = await discordApi('/oauth2/applications/@me', token, 'Bot');
   if (!me.ok || (appInfo.body.id || me.body.id) !== req.botRec.application_id) {
-    flash(req, 'error', 'Token nije ispravan ili pripada drugom botu.');
+    flash(req, 'error', 'The token is invalid or belongs to a different bot.');
   } else {
     platform.bots.setToken(req.botRec.id, token);
     audit(req, 'bot.token', req.botRec.id);
-    await manager.restart(req.botRec.id).then(() => flash(req, 'success', 'Token ažuriran i bot ponovo pokrenut.')).catch((e) => flash(req, 'error', e.message));
+    await manager.restart(req.botRec.id).then(() => flash(req, 'success', 'Token updated and bot restarted.')).catch((e) => flash(req, 'error', e.message));
   }
   res.redirect(`/bots/${req.botRec.id}/settings`);
 });
 
 router.post('/bots/:botId/autostart', requireAuth, checkCsrf, loadBot, requireBotManage, (req, res) => {
   if (!req.botRec.official) platform.bots.setAutostart(req.botRec.id, bool(req.body.autostart));
-  flash(req, 'success', 'Spremljeno.');
+  flash(req, 'success', 'Saved.');
   res.redirect(`/bots/${req.botRec.id}/settings`);
 });
 
@@ -163,7 +163,7 @@ router.post('/bots/:botId/power/:action', requireAuth, powerLimit, checkCsrf, lo
     if (req.params.action === 'start') await manager.start(id);
     else if (req.params.action === 'stop') await manager.stop(id);
     else if (req.params.action === 'restart') await manager.restart(id);
-    flash(req, 'success', { start: 'Bot pokrenut.', stop: 'Bot zaustavljen.', restart: 'Bot ponovo pokrenut.' }[req.params.action] || 'Gotovo.');
+    flash(req, 'success', { start: 'Bot started.', stop: 'Bot stopped.', restart: 'Bot restarted.' }[req.params.action] || 'Done.');
   } catch (e) { flash(req, 'error', e.message); }
   const ref = req.get('Referrer') || '';
   let back = `/bots/${id}`;
@@ -174,18 +174,18 @@ router.post('/bots/:botId/power/:action', requireAuth, powerLimit, checkCsrf, lo
 router.post('/bots/:botId/delete', requireAuth, checkCsrf, loadBot, requireBotManage, async (req, res) => {
   if (req.botRec.official) return res.redirect('/app');
   if (str(req.body.confirm).trim() !== req.botRec.name) {
-    flash(req, 'error', 'Za brisanje upiši točno ime bota.');
+    flash(req, 'error', 'To delete, type the bot\'s exact name.');
     return res.redirect(`/bots/${req.botRec.id}/settings`);
   }
   audit(req, 'bot.delete', req.botRec.id, { name: req.botRec.name });
   await manager.remove(req.botRec.id);
   platform.bots.remove(req.botRec.id);
   deleteDatabase(req.botRec.id);
-  flash(req, 'success', `${req.botRec.name} je obrisan s platforme.`);
+  flash(req, 'success', `${req.botRec.name} was deleted from the platform.`);
   res.redirect('/app');
 });
 
-router.get('/bots/:botId/console', requireAuth, loadBot, requireBotManage, (req, res) => res.render('app/console', { title: 'Konzola', section: 'console', logs: manager.logs(req.botRec.id) }));
+router.get('/bots/:botId/console', requireAuth, loadBot, requireBotManage, (req, res) => res.render('app/console', { title: 'Console', section: 'console', logs: manager.logs(req.botRec.id) }));
 router.get('/bots/:botId/status.json', requireAuth, loadBot, (req, res) => {
   res.json({ info: manager.info(req.botRec.id), logs: req.botManage ? manager.logs(req.botRec.id).slice(-100) : [] });
 });

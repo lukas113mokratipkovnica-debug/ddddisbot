@@ -24,7 +24,7 @@ module.exports = {
       }
       if (s.invites.enabled && s.invites.channel) {
         const ch = member.guild.channels.cache.get(s.invites.channel);
-        const text = fillPlaceholders(s.invites.message, { member, extra: { inviter: inviter ? inviter.username : (used?.vanity ? 'vanity link' : 'nepoznato'), invites: inviteCount } });
+        const text = fillPlaceholders(s.invites.message, { member, extra: { inviter: inviter ? inviter.username : (used?.vanity ? 'vanity link' : 'unknown'), invites: inviteCount } });
         if (ch?.isTextBased()) await ch.send({ content: text, allowedMentions: { users: [member.id] } }).catch(() => {});
       }
     }
@@ -36,15 +36,15 @@ module.exports = {
           const r = member.guild.roles.cache.get(id);
           return r && !r.managed && r.position < me.roles.highest.position;
         });
-        if (roles.length) await member.roles.add(roles, 'Autorole').catch((e) => client.log?.('warn', `Autorole: ${e.message}`));
+        if (roles.length) await member.roles.add(roles, 'Autoroles').catch((e) => client.log?.('warn', `Autorole: ${e.message}`));
       }
-      const extra = { inviter: inviter ? inviter.username : 'nepoznato', invites: inviteCount };
+      const extra = { inviter: inviter ? inviter.username : 'unknown', invites: inviteCount };
       if (s.welcome.enabled && s.welcome.channel) {
         const ch = member.guild.channels.cache.get(s.welcome.channel);
         if (ch?.isTextBased()) {
           const text = fillPlaceholders(s.welcome.message, { member, extra });
           const payload = s.welcome.embed
-            ? { content: `<@${member.id}>`, embeds: [new EmbedBuilder().setColor(config.color).setTitle('👋 Dobrodošlica').setDescription(text).setThumbnail(member.user.displayAvatarURL({ size: 256 })).setFooter({ text: `Član #${member.guild.memberCount}` }).setTimestamp()] }
+            ? { content: `<@${member.id}>`, embeds: [new EmbedBuilder().setColor(config.color).setTitle('👋 Welcome').setDescription(text).setThumbnail(member.user.displayAvatarURL({ size: 256 })).setFooter({ text: `Member #${member.guild.memberCount}` }).setTimestamp()] }
             : { content: text };
           await ch.send(payload).catch(() => {});
         }
@@ -53,8 +53,8 @@ module.exports = {
     }
 
     const age = Date.now() - member.user.createdTimestamp;
-    await sendLog(member.guild, 'memberJoin', new EmbedBuilder().setColor(0x57f287).setTitle('Član ušao').setThumbnail(member.user.displayAvatarURL())
-      .setDescription(`<@${member.id}> • ${member.user.tag}\nRačun kreiran <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>${age < 7 * 864e5 ? '\n⚠️ **Novi račun!**' : ''}${inviter ? `\nPozvao: <@${inviter.id}>` : ''}`)
+    await sendLog(member.guild, 'memberJoin', new EmbedBuilder().setColor(0x57f287).setTitle('Member joined').setThumbnail(member.user.displayAvatarURL())
+      .setDescription(`<@${member.id}> • ${member.user.tag}\nAccount created <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>${age < 7 * 864e5 ? '\n⚠️ **New account!**' : ''}${inviter ? `\nInvited by: <@${inviter.id}>` : ''}`)
       .setFooter({ text: `ID: ${member.id}` }));
   },
 };

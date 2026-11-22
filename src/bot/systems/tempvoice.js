@@ -34,7 +34,7 @@ async function handleVoice(oldState, newState) {
       const ch = guild.channels.cache.get(oldState.channelId);
       if (!ch) db.tempVoice.remove(oldState.channelId);
       else if (ch.members.size === 0) {
-        await ch.delete('Privremeni kanal prazan').catch(() => {});
+        await ch.delete('Temporary channel empty').catch(() => {});
         db.tempVoice.remove(oldState.channelId);
       }
     }

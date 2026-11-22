@@ -1,12 +1,12 @@
     </div>
   </main>
 </div>
-<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Pretraga">
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Search">
   <div class="palette-box">
-    <div class="palette-input"><svg class="ic"><use href="#i-search"/></svg><input type="text" id="paletteInput" placeholder="Traži botove, servere, stranice…" autocomplete="off" spellcheck="false"></div>
+    <div class="palette-input"><svg class="ic"><use href="#i-search"/></svg><input type="text" id="paletteInput" placeholder="Search bots, servers, pages…" autocomplete="off" spellcheck="false"></div>
     <div class="palette-list" id="paletteList"></div>
-    <div class="palette-foot"><span><span class="kbd">↑↓</span> odabir</span><span><span class="kbd">Enter</span> otvori</span><span><span class="kbd">Esc</span> zatvori</span></div>
+    <div class="palette-foot"><span><span class="kbd">↑↓</span> select</span><span><span class="kbd">Enter</span> open</span><span><span class="kbd">Esc</span> close</span></div>
   </div>
 </div>
-<div hidden id="paletteLabels"><% [['pages','Stranice'],['bots','Botovi'],['servers','Serveri'],['empty','Nema rezultata'],['app','Moji botovi'],['new','Novi bot'],['account','Račun i sigurnost'],['catalog','Katalog'],['pricing','Cijene'],['status','Status'],['admin','Admin'],['theme','Promijeni temu'],['logout','Odjava']].forEach(([k, v]) => { %><span data-k="<%= k %>"><%= v %></span><% }) %><span data-k="isAdmin"><%= isAdmin ? '1' : '' %></span></div>
+<div hidden id="paletteLabels"><% [['pages','Pages'],['bots','Bots'],['servers','Servers'],['empty','No results'],['app','My bots'],['new','New bot'],['account','Account & security'],['catalog','Catalog'],['pricing','Pricing'],['status','Status'],['admin','Admin'],['theme','Toggle theme'],['logout','Sign out']].forEach(([k, v]) => { %><span data-k="<%= k %>"><%= v %></span><% }) %><span data-k="isAdmin"><%= isAdmin ? '1' : '' %></span></div>
 <%- include('foot') %>
