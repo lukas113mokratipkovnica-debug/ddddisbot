@@ -7,12 +7,14 @@ const path = require('path');
 const { AsyncLocalStorage } = require('async_hooks');
 
 const SOURCE = 'hr';
+// English is the only user-facing language. Croatian ('hr') remains the internal
+// source language the code is written in; everything is translated to English on output.
 const LANGS = {
-  hr: { code: 'hr', name: 'Hrvatski', short: 'HR', locale: 'hr-HR', discord: ['hr'] },
   en: { code: 'en', name: 'English', short: 'EN', locale: 'en-GB', discord: ['en-US', 'en-GB'] },
 };
 
 const context = new AsyncLocalStorage();
+const trCache = new Map(); // bounded memo for translateText (single target language)
 const misses = new Set(); // filled only when I18N_TRACK=1 (used to find untranslated text)
 const TRACK = process.env.I18N_TRACK === '1';
 const PH = /\{(\w+)\}/g;
@@ -85,13 +87,15 @@ function lookup(lang, core, depth = 0) {
 /** Translate already-rendered text (keeps surrounding whitespace, falls back line by line). */
 function translateText(lang, text, html = false) {
   if (!text || lang === SOURCE || !dicts[lang] || typeof text !== 'string') return text;
+  const ck = html ? null : `${lang}\u0000${text}`;
+  if (ck && trCache.has(ck)) return trCache.get(ck);
   const lead = text.match(/^\s*/)[0];
   const trail = text.slice(lead.length).match(/\s*$/)[0];
   const core = text.slice(lead.length, text.length - trail.length);
   if (!core || !/\p{L}/u.test(core)) return text;
   const key = html ? normHtml(core) : norm(core);
   const single = lookup(lang, key);
-  if (single !== null) return lead + single + trail;
+  if (single !== null) { const out = lead + single + trail; if (ck) { if (trCache.size > 8000) trCache.clear(); trCache.set(ck, out); } return out; }
   if (key.includes('\n')) return lead + key.split('\n').map((l) => translateText(lang, l)).join('\n') + trail;
   if (TRACK) misses.add(key);
   return text;
@@ -179,20 +183,8 @@ function localizeCommand(json) {
 }
 
 /** Discord guild preferred locale -> our language code. */
-function fromDiscordLocale(locale) {
-  for (const [code, l] of Object.entries(LANGS)) if (l.discord.includes(locale)) return code;
-  if (/^(hr|sr|bs)/i.test(locale || '')) return 'hr';
-  return 'en';
-}
-function fromAcceptLanguage(header) {
-  const tags = String(header || '').toLowerCase().split(',').map((x) => x.split(';')[0].trim());
-  for (const tag of tags) {
-    const base = tag.split('-')[0];
-    if (LANGS[base]) return base;
-    if (['sr', 'bs', 'sh', 'cnr'].includes(base)) return 'hr';
-  }
-  return 'en';
-}
+function fromDiscordLocale() { return 'en'; }
+function fromAcceptLanguage() { return 'en'; }
 
 module.exports = {
   SOURCE, LANGS, context, t, translateText, translateHtml, translatePayload, translateModal, localizeCommand,

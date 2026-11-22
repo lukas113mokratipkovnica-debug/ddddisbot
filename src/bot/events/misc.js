@@ -2,7 +2,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const tempvoice = require('../systems/tempvoice');
 const invites = require('../systems/invites');
-const i18n = require('../../i18n');
 
 module.exports = [
   {
@@ -44,10 +43,6 @@ module.exports = [
     name: Events.GuildCreate,
     async execute(guild, client) {
       client.log?.('info', `Dodan na server: ${guild.name} (${guild.memberCount} članova)`);
-      if (!client.db.hasSettings(guild.id)) {
-        const language = i18n.fromDiscordLocale(guild.preferredLocale);
-        client.db.updateSettings(guild.id, (s) => { s.language = language; });
-      }
       if (client.modules.has('invites')) await invites.cacheGuild(guild);
     },
   },

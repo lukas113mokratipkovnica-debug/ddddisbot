@@ -19,7 +19,7 @@ module.exports = {
       return;
     }
     const has = (m) => client.modules.has(m);
-    const lang = client.db.getSettings(i.guild.id).language;
+    const lang = 'en';
     if (i.showModal) { const show = i.showModal.bind(i); i.showModal = (modal, opts) => show(i18n.translateModal(lang, modal), opts); }
     try {
       if (i.isChatInputCommand()) {

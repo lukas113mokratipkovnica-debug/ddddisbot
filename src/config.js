@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const crypto = require('crypto');
 
 const required = ['DISCORD_TOKEN', 'CLIENT_ID', 'CLIENT_SECRET'];

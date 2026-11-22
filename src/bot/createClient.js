@@ -25,12 +25,7 @@ const EVENTS = fs.readdirSync(path.join(__dirname, 'events')).filter((f) => f.en
 
 // Every outgoing message (reply, send, edit, follow-up) passes through MessagePayload.create,
 // so translating there localizes the whole bot without touching individual commands.
-function langOf(target) {
-  const client = target?.client;
-  const guildId = target?.guildId ?? target?.guild?.id ?? target?.channel?.guild?.id;
-  if (guildId && client?.db) return client.db.getSettings(guildId).language;
-  return i18n.context.getStore()?.lang;
-}
+function langOf() { return 'en'; } // single user-facing language
 if (!MessagePayload.__i18n) {
   const original = MessagePayload.create;
   MessagePayload.create = function create(target, options, extra) {
@@ -38,13 +33,7 @@ if (!MessagePayload.__i18n) {
   };
   MessagePayload.__i18n = true;
 }
-function eventLang(client, args) {
-  for (const a of args) {
-    const gid = a?.guildId ?? a?.guild?.id ?? (a?.members && a?.channels ? a.id : null);
-    if (gid) return client.db.getSettings(gid).language;
-  }
-  return i18n.SOURCE;
-}
+function eventLang() { return 'en'; }
 
 const ACTIVITY = { playing: ActivityType.Playing, watching: ActivityType.Watching, listening: ActivityType.Listening, competing: ActivityType.Competing, custom: ActivityType.Custom };
 
@@ -94,7 +83,7 @@ function createBotClient(opts) {
   };
 
   for (const ev of EVENTS) {
-    const run = (...args) => i18n.context.run({ lang: eventLang(client, args) }, () => Promise.resolve(ev.execute(...args, client))).catch((e) => {
+    const run = (...args) => i18n.context.run({ lang: 'en' }, () => Promise.resolve(ev.execute(...args, client))).catch((e) => {
       console.error(`[${opts.id}:${ev.name}]`, e);
       client.log('error', `${ev.name}: ${e.message}`);
     });

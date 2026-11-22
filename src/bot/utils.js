@@ -4,9 +4,7 @@ const i18n = require('../i18n');
 
 function fillPlaceholders(text, { member, user, guild, extra = {} } = {}) {
   if (!text) return '';
-  const g0 = guild || member?.guild;
-  const lang = g0?.client?.db ? g0.client.db.getSettings(g0.id).language : i18n.context.getStore()?.lang;
-  if (lang) text = i18n.t(lang, text); // translates untouched default templates
+  text = i18n.t('en', text); // translate untouched default templates to English
   const u = user || member?.user;
   const g = guild || member?.guild;
   const map = {

@@ -5,9 +5,9 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="pill"><b><%- ic('sparkles') %>Novo</b><span>Višejezični botovi · <%= stats.modules %> modula · <%= stats.commands %> komandi</span></span>
+      <span class="pill"><b><%- ic('sparkles') %>New</b><span><%= stats.modules %> modules · <%= stats.commands %> commands · hosting included</span></span>
       <h1>Tvoj Discord bot.<span class="line2 grad">Spreman prije kave.</span></h1>
-      <p class="lead">Odaberi gotovog bota, zalijepi token i on radi 24/7. Moderacija, leveling, ekonomija, tiketi, giveaway i još 20 modula. Sve podešavaš klikom, na svom jeziku.</p>
+      <p class="lead">Pick a ready-made bot, paste the token and it runs 24/7. Moderation, leveling, economy, tickets, giveaways and 20 more modules. Everything is configured with a click, no coding.</p>
       <div class="hero-actions">
         <a class="btn btn-primary btn-lg" href="<%= user ? '/app/new' : '/login' %>"><%- ic('zap') %>Napravi bota besplatno</a>
         <a class="btn btn-ghost btn-lg" href="/catalog">Pogledaj botove <%- ic('arrow-right') %></a>
@@ -54,10 +54,10 @@
         <div class="mini-bars"><% [30,55,40,70,50,85,65,95,75,100,80,90].forEach((h, i) => { %><i style="height:<%= h %>%;animation-delay:<%= i * 60 %>ms"></i><% }) %></div>
       </div>
       <div class="b-small" data-spot style="--c: oklch(80% .14 200)">
-        <span class="bento-icon"><%- ic('languages') %></span>
-        <h3>Govori jezik tvog servera</h3>
-        <p>Svaki server bira jezik bota. Komande se automatski prevode prema jeziku Discord klijenta.</p>
-        <div class="lang-art"><% Object.values(langs).forEach(l => { %><span data-notr><%= l.short %></span><% }) %></div>
+        <span class="bento-icon"><%- ic('activity') %></span>
+        <h3>Everything live</h3>
+        <p>Bot status and the console refresh live. No manual refreshing, no waiting.</p>
+        <div class="chip-row"><span><%- ic('zap') %>Live console</span><span><%- ic('server') %>Server status</span></div>
       </div>
       <div class="b-small" data-spot style="--c: oklch(72% .17 152)">
         <span class="lock-art"><%- ic('shield-check') %></span>
@@ -107,7 +107,7 @@
     <div class="steps">
       <div class="step" data-spot><span class="step-icon"><%- ic('key') %></span><h3>Napravi aplikaciju</h3><p>U Discord Developer Portalu napravi aplikaciju, uključi dva intenta i kopiraj token. Vodimo te korak po korak.</p></div>
       <div class="step" data-spot><span class="step-icon"><%- ic('bot') %></span><h3>Odaberi bota</h3><p>Zalijepi token, odaberi predložak i bot je odmah online. Hostamo ga mi, bez servera i bez koda.</p></div>
-      <div class="step" data-spot><span class="step-icon"><%- ic('settings') %></span><h3>Podesi sve klikom</h3><p>Uključi module, podesi kanale, poruke, uloge i jezik, za svaki server posebno.</p></div>
+      <div class="step" data-spot><span class="step-icon"><%- ic('settings') %></span><h3>Configure everything with a click</h3><p>Enable modules, set channels, messages and roles, separately for every server.</p></div>
     </div>
   </div>
 </section>

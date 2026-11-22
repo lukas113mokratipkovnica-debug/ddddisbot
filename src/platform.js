@@ -10,6 +10,7 @@ const dataDir = path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 const db = new Database(path.join(dataDir, 'platform.db'));
 db.pragma('journal_mode = WAL');
+db.pragma('synchronous = NORMAL');
 for (const [table, col, def] of [['users', 'stripe_customer', 'TEXT'], ['users', 'subscription', 'TEXT'], ['users', 'sub_status', 'TEXT'], ['users', 'plan_until', 'INTEGER'], ['bots', 'suspended', 'INTEGER NOT NULL DEFAULT 0']]) {
   try { db.prepare(`SELECT ${col} FROM ${table} LIMIT 1`).get(); } catch { try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`); } catch { /* table not yet created */ } }
 }

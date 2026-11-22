@@ -1,6 +1,7 @@
 const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
+const compression = require('compression');
 const session = require('express-session');
 const config = require('../config');
 const platform = require('../platform');
@@ -52,6 +53,8 @@ function startDashboard() {
   app.disable('x-powered-by');
   app.use(securityHeaders);
   app.use('/static', express.static(path.join(__dirname, 'public'), { maxAge: config.production ? '7d' : 0 }));
+  app.get('/healthz', (req, res) => res.json({ status: 'ok', uptime: Math.floor(process.uptime()) }));
+  app.use(compression({ filter: (req, res) => req.path !== '/api/stream' && compression.filter(req, res) }));
   app.post('/billing/webhook', express.raw({ type: 'application/json', limit: '1mb' }), async (req, res) => {
     if (!billing.enabled()) return res.status(503).end();
     let event;
@@ -70,10 +73,7 @@ function startDashboard() {
   // ------------------------------------------------------------------ locals + i18n
   app.use((req, res, next) => {
     req.session.csrf ||= crypto.randomBytes(32).toString('hex');
-    const lang = i18n.LANGS[req.session.lang] ? req.session.lang : (() => {
-      const c = /(?:^|;\s*)lang=(\w+)/.exec(req.headers.cookie || '');
-      return c && i18n.LANGS[c[1]] ? c[1] : i18n.fromAcceptLanguage(req.headers['accept-language']);
-    })();
+    const lang = 'en'; // English is the only user-facing language
     req.lang = lang;
     Object.assign(res.locals, {
       lang, langs: i18n.LANGS, numLocale: i18n.LANGS[lang].locale, t: (s, v) => i18n.t(lang, s, v),
@@ -86,21 +86,13 @@ function startDashboard() {
     const main = manager.mainClient();
     res.locals.brandLogo = main?.isReady() ? main.user.displayAvatarURL({ size: 128 }) : null;
     delete req.session.flash;
-    // every rendered page is translated in one pass (source language = Croatian)
+    // every rendered page is translated to English in one pass (code is written in Croatian internally)
     const render = res.render.bind(res);
     res.render = (view, opts = {}) => render(view, opts, (err, html) => {
       if (err) return next(err);
       res.type('html').send(i18n.translateHtml(lang, html));
     });
     next();
-  });
-
-  app.get('/lang/:code', (req, res) => {
-    const code = i18n.LANGS[req.params.code] ? req.params.code : 'en';
-    req.session.lang = code;
-    res.cookie('lang', code, { maxAge: 365 * 864e5, sameSite: 'lax', secure: HTTPS, httpOnly: true });
-    const next = typeof req.query.next === 'string' && req.query.next.startsWith('/') && !req.query.next.startsWith('//') ? req.query.next : '/';
-    res.redirect(next);
   });
 
   // ------------------------------------------------------------------ marketing + status

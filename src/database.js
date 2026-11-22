@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS confessions (id INTEGER PRIMARY KEY AUTOINCREMENT, gu
 `;
 
 const DEFAULTS = {
-  language: 'hr',
+  language: 'en',
   prefix: '!',
   modRole: '',
   disabledCommands: [],
@@ -94,6 +94,7 @@ function createDatabase(botId) {
   if (instances.has(botId)) return instances.get(botId);
   const db = new Database(path.join(botsDir, `${botId.replace(/[^a-z0-9_-]/gi, '')}.db`));
   db.pragma('journal_mode = WAL');
+  db.pragma('synchronous = NORMAL');
   db.exec(SCHEMA);
   const q = (sql) => db.prepare(sql);
 

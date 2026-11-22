@@ -10,7 +10,6 @@ const verification = require('../../bot/systems/verification');
 const { createStatChannels } = require('../../bot/systems/tickers');
 const { parseDuration } = require('../../bot/utils');
 const { bool, arr, list, num, str, lines, action, flash, audit, snowflake: sf, requireAuth, checkCsrf, loadBot, loadGuild } = require('../helpers');
-const { LANGS } = require('../../i18n');
 const ids = (v) => arr(v).filter((x) => sf(x));
 
 const router = express.Router();
@@ -77,7 +76,6 @@ const back = (req, res, page) => res.redirect(`${res.locals.base}/${page}`);
 const SECTIONS = {
   general: ['general', (b, s) => {
     s.prefix = str(b.prefix, 5).trim().replace(/[<>"'`]/g, '') || '!';
-    s.language = LANGS[b.language] ? b.language : s.language;
     s.modRole = sf(b.modRole);
     s.disabledCommands = arr(b.disabledCommands);
   }],

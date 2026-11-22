@@ -4,6 +4,15 @@ Web platforma na kojoj korisnici sami prave svoje Discord botove bez kodiranja: 
 
 Ime usluge mijenjaš u `.env` (`BRAND_NAME`).
 
+## Novo u v5 — engleski, ažurirano i brže
+
+- **Samo engleski jezik.** Cijela aplikacija (dashboard i botovi) je na engleskom. Prebacivač jezika i hrvatski su uklonjeni. (Interno je izvorni jezik koda hrvatski, a prevodi se na engleski na izlazu — za tebe kao vlasnika nevažno, UI je 100% engleski.)
+- **Ovisnosti ažurirane na zadnje verzije:** Express 5, EJS 7, Stripe 23, better-sqlite3 13, `@anthropic-ai/sdk` 1.x, dotenv 18 (+ `compression`). Sve testirano.
+- **Brže i lakše:** gzip kompresija odgovora (osim live streama), SQLite `synchronous = NORMAL` uz WAL (brži upisi), i memorijski keš prijevoda. Dodan `GET /healthz` za load balancere/monitoring.
+
+### Zašto NE C++
+Platforma je I/O-vezana — najviše vremena provodi čekajući Discord, Stripe, mrežu i SQLite, a ne računajući. C++ tu ne bi bio brže, a izgubio bi zrele biblioteke (discord.js, Stripe i Anthropic SDK, Express) i tražio višetjedni rewrite s puno više rizika i koda. Node.js je ovdje pravi izbor; ubrzanje je došlo kroz gornje optimizacije.
+
 ## Novo u v4 — platforma radi sama
 
 - **Online naplata (Stripe Checkout):** korisnik na stranici Cijene klikne paket → Stripe Checkout → webhook automatski diže paket. "Upravljaj pretplatom" otvara Stripe Customer Portal (promjena kartice, otkazivanje). Bez ljudske intervencije.
@@ -19,17 +28,13 @@ Bez ovih ključeva platforma radi kao i prije (paket dodjeljuje admin ručno, po
 ## Što platforma ima
 
 ## Novo u v3
-- **Višejezičnost (HR / EN):** dashboard (automatski prema pregledniku ili ručni odabir) i botovi (svaki server bira jezik, a novi serveri ga dobiju prema jeziku Discord servera). Slash komande imaju Discordove nativne prijevode: engleski je zadani, a hrvatski se prikazuje korisnicima s hrvatskim Discordom.
+- ~~Višejezičnost~~ — od v5 je aplikacija **samo na engleskom** (vidi gore).
 - **Dizajn „Aurora Glass“:** tamna i svijetla tema, korisnik bira boju naglaska (cijelo sučelje se preboji), stakleni slojevi, bento landing stranica, command palette (**Ctrl+K** ili **/**), statusi i konzola uživo preko Server-Sent Events.
 - **Sigurnost:** stroga CSP (bez inline JS-a), HSTS, X-Frame-Options, COOP/CORP, Permissions-Policy; CSRF token i provjera Origin zaglavlja; rate limiting (globalno, prijava, dodavanje bota, token, restart); SSRF zaštita za RSS i avatare (blokira privatne mreže, preusmjeravanja i prevelike datoteke); validacija Discord ID-eva; regeneracija sesije pri prijavi i odjava samo POST-om; `__Host-` kolačić na HTTPS-u; audit log; sigurnosni centar s aktivnim sesijama i odjavom uređaja; provjera tajni pri pokretanju.
 - **Javna status stranica** (`/status`) s dostupnošću u zadnja 24 sata i `/api/status` JSON-om.
 
-## Dodavanje jezika
-Prijevodi su u `src/i18n/locales/<jezik>.json`. Ključ je hrvatski tekst, a `{0}` / `{ime}` su zamjenski dijelovi. Za novi jezik:
-1. kopiraj `en.json` u npr. `de.json` i prevedi vrijednosti,
-2. dodaj jezik u `LANGS` u `src/i18n/index.js` (kod, ime, Discord locale).
-
-Sve ostalo (dashboard, poruke bota, opisi komandi) radi automatski. Prijevodi se primjenjuju na izlazu, pa u kodu nema `t('...')` poziva oko svake poruke. Netaknuti zadani tekstovi (npr. poruka dobrodošlice) prevode se sami, a tekstovi koje je admin sam napisao ostaju kakvi jesu.
+## Jezik
+Aplikacija je samo na engleskom. Mapa `src/i18n/` i dalje postoji jer se njome engleski prikaz izvodi iz internih (hrvatskih) izvornih tekstova koda; prijevod se primjenjuje na izlazu pa u kodu nema `t('...')` poziva oko svake poruke. Ako ikad poželiš vratiti više jezika, dodaj jezik u `LANGS` u `src/i18n/index.js` i datoteku `src/i18n/locales/<kod>.json`.
 
 ## Što platforma ima
 

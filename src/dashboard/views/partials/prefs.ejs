@@ -1,11 +1,7 @@
 <%# language + theme + accent popover; `up` opens upwards (sidebar) %>
 <details class="pop">
-  <summary class="icon-btn" title="Jezik i izgled" aria-label="Jezik i izgled"><svg class="ic"><use href="#i-globe"/></svg></summary>
+  <summary class="icon-btn" title="Izgled" aria-label="Izgled"><svg class="ic"><use href="#i-sun"/></svg></summary>
   <div class="pop-panel <%= typeof up !== 'undefined' && up ? 'up' : '' %>">
-    <span class="pop-label">Jezik</span>
-    <% Object.values(langs).forEach(l => { %>
-      <a href="/lang/<%= l.code %>?next=<%= encodeURIComponent(url) %>" class="<%= lang === l.code ? 'on' : '' %>" hreflang="<%= l.code %>"><span class="lang-code"><%= l.short %></span><span data-notr><%= l.name %></span></a>
-    <% }) %>
     <span class="pop-label">Tema</span>
     <div class="seg" data-theme-seg>
       <button type="button" data-theme-set="auto" title="Automatski"><svg class="ic"><use href="#i-sparkles"/></svg></button>
